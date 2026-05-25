@@ -7281,12 +7281,12 @@ window.addEventListener('load', function () {
 }},
 { delay: 7000, fn: function () {
     if (!window._isLoggedIn) return;
-    // الجرد المالي
     var today = fin_localToday();
     var ff = document.getElementById('fin_dateFrom');
     var ft = document.getElementById('fin_dateTo');
     if (ff) ff.value = today;
     if (ft) ft.value = today;
+    fin_isFirstLoad = false;
     if (typeof fin_loadFinancialData === 'function') fin_loadFinancialData();
 }}
 
