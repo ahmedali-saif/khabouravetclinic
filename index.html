@@ -985,7 +985,15 @@ if (pageId === 'treatment' && !window._treatmentInitialized) {
   if (trOverlay) trOverlay.style.display = 'none';
   if (typeof trinit === 'function') trinit();
 }
+if (pageId === 'breeder' && !window._breederInitialized) {
+  window._breederInitialized = true;
+  if (typeof bd_init === 'function') bd_init();
+}
 
+if (pageId === 'samples' && !window._samplesInitialized) {
+  window._samplesInitialized = true;
+  if (typeof foinit === 'function') foinit();
+}
 if (pageId === 'vaccination' && !window._vaccinationInitialized) {
     window._vaccinationInitialized = true;
     if (typeof vaccInit === 'function') vaccInit();
@@ -4201,7 +4209,7 @@ function bd_init(){
   bd_refreshDropdowns().then(function(){ bd_hideLoading(); }).catch(function(){ bd_hideLoading(); });
 }
 
-bd_init();
+// bd_init() تُستدعى من showPage فقط — لا تشغّل هنا
 </script>
 
 </div>
@@ -6028,11 +6036,7 @@ async function foinit(){
 }
 
 // بدء التهيئة عند تحميل DOM
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', foinit);
-} else {
-  foinit();
-}
+// foinit تُستدعى من initQueue بعد تسجيل الدخول
 </script>
 </div>
 
@@ -7296,15 +7300,25 @@ window.addEventListener('load', function () {
         if (!window._isLoggedIn) return;  // ← أضف هذا
         if (typeof rpt_loadReport === 'function') rpt_loadReport();
     }},
-    { delay: 6000, fn: function () {
-        if (!window._isLoggedIn) return;  // ← أضف هذا
-        if (typeof bd_refreshDropdowns === 'function') bd_refreshDropdowns();
-    }},
-    { delay: 6500, fn: function () {
-        if (!window._isLoggedIn) return;  // ← أضف هذا
-        if (typeof foloadDropdowns === 'function') foloadDropdowns();
-        if (typeof foloadUniqueCount === 'function') foloadUniqueCount();
-    }},
+{ delay: 6000, fn: function () {
+    if (!window._isLoggedIn) return;
+    if (!window._breederInitialized) {
+      window._breederInitialized = true;
+      if (typeof bd_init === 'function') bd_init();
+    } else {
+      if (typeof bd_refreshDropdowns === 'function') bd_refreshDropdowns();
+    }
+}},
+{ delay: 6500, fn: function () {
+    if (!window._isLoggedIn) return;
+    if (!window._samplesInitialized) {
+      window._samplesInitialized = true;
+      if (typeof foinit === 'function') foinit();
+    } else {
+      if (typeof foloadDropdowns === 'function') foloadDropdowns();
+      if (typeof foloadUniqueCount === 'function') foloadUniqueCount();
+    }
+}},
     { delay: 7000, fn: function () {
         if (!window._isLoggedIn) return;  // ← أضف هذا
         var today = fin_localToday();
