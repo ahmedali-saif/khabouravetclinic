@@ -7264,9 +7264,9 @@ if(card){document.querySelectorAll('.card').forEach(function(c){c.style.backgrou
 })();
 
 window.addEventListener('load', function () {
-
   var initQueue = [
     { delay: 1500, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         if (!window._treatmentInitialized) {
           window._treatmentInitialized = true;
           var ov = document.getElementById('loadingOverlay');
@@ -7275,6 +7275,7 @@ window.addEventListener('load', function () {
         }
     }},
     { delay: 2500, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         if (!window._vaccinationInitialized) {
           window._vaccinationInitialized = true;
           var ov = document.getElementById('vacc_loadingOverlay');
@@ -7283,31 +7284,35 @@ window.addEventListener('load', function () {
         }
     }},
     { delay: 3500, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         if (!window._vrInitialized) {
           window._vrInitialized = true;
           if (typeof vr_loadData === 'function') vr_loadData();
         }
     }},
-   { delay: 4000, fn: function () {
-        // dtr_initLoad تُستدعى من DOMContentLoaded
-    }},
     { delay: 4500, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         if (typeof ani_loadData === 'function') ani_loadData();
     }},
     { delay: 5000, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         if (typeof dim_loadData === 'function') dim_loadData();
     }},
     { delay: 5500, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         if (typeof rpt_loadReport === 'function') rpt_loadReport();
     }},
     { delay: 6000, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         if (typeof bd_refreshDropdowns === 'function') bd_refreshDropdowns();
     }},
     { delay: 6500, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         if (typeof foloadDropdowns === 'function') foloadDropdowns();
         if (typeof foloadUniqueCount === 'function') foloadUniqueCount();
     }},
     { delay: 7000, fn: function () {
+        if (!window._isLoggedIn) return;  // ← أضف هذا
         var today = fin_localToday();
         var ff = document.getElementById('fin_dateFrom');
         var ft = document.getElementById('fin_dateTo');
@@ -7320,7 +7325,6 @@ window.addEventListener('load', function () {
   initQueue.forEach(function (item) {
     setTimeout(item.fn, item.delay);
   });
-
 });
   // ===== Overdue Samples Alert =====
 var overdueSessionDismissed = false;
