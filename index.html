@@ -298,11 +298,17 @@ button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 3px 8px
 
 #vaccination { position: relative; min-height: 200px; }
 #rpt_loadingOverlay {
-  position: fixed; inset: 0;
-  background: rgba(255,255,255,.9);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999;
-  font-size: 20px; font-weight: bold; color: #00b8d9;
+  display: none;
+  width: 100%;
+  padding: 50px 20px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #00b8d9;
+  background: #f0fbff;
+  border-radius: 8px;
+  border: 2px solid #00b8d9;
+  margin-bottom: 12px;
 }
 
 /* ============================================================
@@ -7068,7 +7074,7 @@ function rpt_buildAll() {
 }
 
 async function rpt_loadReport() {
-  document.getElementById('rpt_loadingOverlay').style.display = 'flex';
+  document.getElementById('rpt_loadingOverlay').style.display = 'block';
   try {
     rpt_D = await rpt_callApi("getReportData");
     rpt_buildAll();
