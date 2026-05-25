@@ -2441,7 +2441,6 @@ function dim_printTable() {
   w.document.write('<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>الأدوية المصروفة</title><style>body{font-family:Tahoma;padding:20px}h2{text-align:center}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #333;padding:6px;text-align:center}th{background:#00b8d9;color:#fff}tfoot td{background:#fffbe6;font-weight:bold}</style></head><body><h2>تقرير الأدوية المصروفة</h2><p style="text-align:center">من '+from+' إلى '+to+'</p>'+tbl+'</body></html>');
   w.document.close(); w.focus(); setTimeout(function(){ w.print(); }, 300);
 }
-document.addEventListener('DOMContentLoaded', function(){ dim_loadData(); });
 </script>
 </div>
 
@@ -6181,18 +6180,6 @@ function fin_localToday() {
   return y + '-' + m + '-' + day;
 }
 
-/* تعيين التاريخ فوراً لحظة تحليل السكريبت */
-(function () {
-  function setDates() {
-    var today = fin_localToday();
-    var ff = document.getElementById('fin_dateFrom');
-    var ft = document.getElementById('fin_dateTo');
-    if (ff) ff.value = today;
-    if (ft) ft.value = today;
-  }
-  setDates();
-  document.addEventListener('DOMContentLoaded', setDates);
-})();
 </script>
 
 </div>
@@ -6772,14 +6759,6 @@ async function dtr_initLoad() {
   document.getElementById('dtr_dateTo').value   = '';
   dtr_loadData();
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-  dtr_initLoad();
-  document.getElementById('dtr_diseaseSelect').addEventListener('change', function() {
-    dtr_userClick = true;
-    dtr_loadData();
-  });
-});
 </script>
 
 </div>
@@ -6910,37 +6889,6 @@ function ani_setDefaultDates() {
   if (toEl)   toEl.value   = y + '-' + m + '-' + d;
 }
 
-// تهيئة
-document.addEventListener('DOMContentLoaded', function() {
-  ani_setDefaultDates();
-  ani_loadData();
-
-  // ربط أحداث التاريخ بالبحث التلقائي
-  document.getElementById('ani_dateFrom').addEventListener('change', function() {
-    var to = document.getElementById('ani_dateTo').value;
-    if (to && this.value > to) {
-      showToast('⚠️ تاريخ البداية يجب أن يكون أصغر من تاريخ النهاية', 'warning');
-      this.value = '';
-      return;
-    }
-    ani_loadData();
-  });
-
-  document.getElementById('ani_dateTo').addEventListener('change', function() {
-    var from = document.getElementById('ani_dateFrom').value;
-    if (!from) {
-      showToast('⚠️ الرجاء إدخال تاريخ البداية أولاً', 'warning');
-      this.value = '';
-      return;
-    }
-    if (from > this.value) {
-      showToast('⚠️ تاريخ البداية يجب أن يكون أصغر من تاريخ النهاية', 'warning');
-      this.value = '';
-      return;
-    }
-    ani_loadData();
-  });
-});
 </script>
 
 </div>
@@ -7181,10 +7129,6 @@ async function rpt_saveDates() {
     showToast('❌ فشل: ' + err.message, 'error');
   }
 }
-// تهيئة
-document.addEventListener('DOMContentLoaded', function() {
-  rpt_loadReport();
-});
 </script>
 </div>
 </div>
@@ -7300,34 +7244,52 @@ window.addEventListener('load', function () {
         if (!window._isLoggedIn) return;  // ← أضف هذا
         if (typeof rpt_loadReport === 'function') rpt_loadReport();
     }},
-{ delay: 6000, fn: function () {
+    { delay: 7500, fn: function () {
     if (!window._isLoggedIn) return;
-    if (!window._breederInitialized) {
-      window._breederInitialized = true;
-      if (typeof bd_init === 'function') bd_init();
-    } else {
-      if (typeof bd_refreshDropdowns === 'function') bd_refreshDropdowns();
+    // تتبع المرض
+    if (typeof dtr_loadDiseaseList === 'function') {
+      dtr_loadDiseaseList().then(function() {
+        document.getElementById('dtr_dateFrom').value = '';
+        document.getElementById('dtr_dateTo').value = '';
+        if (typeof dtr_loadData === 'function') dtr_loadData();
+      });
     }
+    document.getElementById('dtr_diseaseSelect').addEventListener('change', function() {
+      dtr_userClick = true;
+      dtr_loadData();
+    });
 }},
-{ delay: 6500, fn: function () {
+{ delay: 8000, fn: function () {
     if (!window._isLoggedIn) return;
-    if (!window._samplesInitialized) {
-      window._samplesInitialized = true;
-      if (typeof foinit === 'function') foinit();
-    } else {
-      if (typeof foloadDropdowns === 'function') foloadDropdowns();
-      if (typeof foloadUniqueCount === 'function') foloadUniqueCount();
-    }
+    // الحيوانات المحصنة
+    if (typeof ani_setDefaultDates === 'function') ani_setDefaultDates();
+    if (typeof ani_loadData === 'function') ani_loadData();
+    // ربط أحداث التاريخ
+    var af = document.getElementById('ani_dateFrom');
+    var at = document.getElementById('ani_dateTo');
+    if (af) af.addEventListener('change', function() {
+      var to = document.getElementById('ani_dateTo').value;
+      if (to && this.value > to) { showToast('⚠️ تاريخ البداية أكبر', 'warning'); this.value = ''; return; }
+      ani_loadData();
+    });
+    if (at) at.addEventListener('change', function() {
+      var from = document.getElementById('ani_dateFrom').value;
+      if (!from) { showToast('⚠️ أدخل تاريخ البداية أولاً', 'warning'); this.value = ''; return; }
+      if (from > this.value) { showToast('⚠️ تاريخ البداية أكبر', 'warning'); this.value = ''; return; }
+      ani_loadData();
+    });
 }},
-    { delay: 7000, fn: function () {
-        if (!window._isLoggedIn) return;  // ← أضف هذا
-        var today = fin_localToday();
-        var ff = document.getElementById('fin_dateFrom');
-        var ft = document.getElementById('fin_dateTo');
-        if (ff) ff.value = today;
-        if (ft) ft.value = today;
-        if (typeof fin_loadFinancialData === 'function') fin_loadFinancialData();
-    }}
+{ delay: 7000, fn: function () {
+    if (!window._isLoggedIn) return;
+    // الجرد المالي
+    var today = fin_localToday();
+    var ff = document.getElementById('fin_dateFrom');
+    var ft = document.getElementById('fin_dateTo');
+    if (ff) ff.value = today;
+    if (ft) ft.value = today;
+    if (typeof fin_loadFinancialData === 'function') fin_loadFinancialData();
+}}
+
   ];
 
   initQueue.forEach(function (item) {
