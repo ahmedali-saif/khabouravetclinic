@@ -6129,13 +6129,14 @@ async function fin_loadFinancialData() {
     if (!fin_isFirstLoad) fin_showToast('الرجاء تحديد تاريخ من وإلى', 'error');
     return;
   }
-  if (!fin_isFirstLoad) showToast('⏳ جاري تحميل البيانات...', 'info');
+  var fin_isActive = document.getElementById('financialInventory').classList.contains('active');
+if (!fin_isFirstLoad && fin_isActive) showToast('⏳ جاري تحميل البيانات...', 'info');
   try {
     var result = await fin_callApi("getFinancialData", { dateFrom: dateFrom, dateTo: dateTo });
     fin_renderFinancialData(result.filteredData, result.annualTotal);
-    if (!fin_isFirstLoad) showToast('✅ تم تحميل البيانات بنجاح', 'success');
+    if (!fin_isFirstLoad && fin_isActive) showToast('✅ تم تحميل البيانات بنجاح', 'success');
   } catch (err) {
-    if (!fin_isFirstLoad) fin_showToast('خطأ: ' + err.message, 'error');
+    if (!fin_isFirstLoad && fin_isActive) fin_showToast('خطأ: ' + err.message, 'error');
   } finally {
     fin_isFirstLoad = false;
   }
