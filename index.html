@@ -7075,7 +7075,8 @@ async function rpt_loadReport() {
     document.getElementById('rpt_loadingOverlay').textContent = '❌ خطأ: ' + err.message;
     return;
   }
-  document.getElementById('rpt_loadingOverlay').style.display = 'none';
+ var overlay = document.getElementById('rpt_loadingOverlay');
+  overlay.style.display = 'none';
 }
 
 async function rpt_refreshData() {
