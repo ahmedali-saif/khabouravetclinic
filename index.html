@@ -7269,19 +7269,32 @@ window.addEventListener('load', function () {
     if (typeof ani_setDefaultDates === 'function') ani_setDefaultDates();
     if (typeof ani_loadData === 'function') ani_loadData();
     // ربط أحداث التاريخ
-    var af = document.getElementById('ani_dateFrom');
-    var at = document.getElementById('ani_dateTo');
-    if (af) af.addEventListener('change', function() {
-      var to = document.getElementById('ani_dateTo').value;
-      if (to && this.value > to) { showToast('⚠️ تاريخ البداية أكبر', 'warning'); this.value = ''; return; }
-      ani_loadData();
-    });
-    if (at) at.addEventListener('change', function() {
-      var from = document.getElementById('ani_dateFrom').value;
-      if (!from) { showToast('⚠️ أدخل تاريخ البداية أولاً', 'warning'); this.value = ''; return; }
-      if (from > this.value) { showToast('⚠️ تاريخ البداية أكبر', 'warning'); this.value = ''; return; }
-      ani_loadData();
-    });
+var af = document.getElementById('ani_dateFrom');
+var at = document.getElementById('ani_dateTo');
+if (af) af.addEventListener('change', function() {
+  var to = document.getElementById('ani_dateTo').value;
+  if (!to) return;
+  if (this.value > to) {
+    showToast('⚠️ تاريخ البداية يجب أن يكون أصغر من تاريخ النهاية', 'warning');
+    this.value = '';
+    return;
+  }
+  ani_loadData();
+});
+if (at) at.addEventListener('change', function() {
+  var from = document.getElementById('ani_dateFrom').value;
+  if (!from) {
+    showToast('⚠️ الرجاء إدخال تاريخ البداية أولاً', 'warning');
+    this.value = '';
+    return;
+  }
+  if (from > this.value) {
+    showToast('⚠️ تاريخ البداية يجب أن يكون أصغر من تاريخ النهاية', 'warning');
+    this.value = '';
+    return;
+  }
+  ani_loadData();
+});
 }},
 { delay: 7000, fn: function () {
     if (!window._isLoggedIn) return;
