@@ -7286,12 +7286,12 @@ window.addEventListener('load', function () {
 { delay: 7000, fn: function () {
     if (!window._isLoggedIn) return;
     var today = fin_localToday();
-    var ff = document.getElementById('dim_dateFrom');
-    var ft = document.getElementById('dim_dateTo');
+    var ff = document.getElementById('fin_dateFrom');
+    var ft = document.getElementById('fin_dateTo');
     if (ff) ff.value = today;
     if (ft) ft.value = today;
     fin_isFirstLoad = false;
-    if (typeof dim_loadData === 'function') dim_loadData();
+    if (typeof fin_loadFinancialData === 'function') fin_loadFinancialData();
 }}
 
   ];
