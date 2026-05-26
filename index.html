@@ -7096,7 +7096,7 @@ async function dp_loadAll() {
     };
 
     var results = await Promise.all([
-      call('trsearchInTreatmentSheet', {keyword:'', startDate:'', endDate:''}),
+      call('trgetAAAData'),
       call('searchVaccinationRecords', {filters:{}}),
       call('fosearchSamplesData', {showAll:true})
     ]);
