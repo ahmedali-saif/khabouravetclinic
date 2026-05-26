@@ -7704,10 +7704,7 @@ window.addEventListener('load', function () {
         if (!window._isLoggedIn) return;  // ← أضف هذا
         if (typeof rpt_loadReport === 'function') rpt_loadReport();
     }},
- { delay: 6000, fn: function () {
-    if (!window._isLoggedIn) return;
-    // لوحة أداء الأطباء تُحمَّل عند الضغط على الزر فقط
-}}
+    
     { delay: 7500, fn: function () {
     if (!window._isLoggedIn) return;
     // تتبع المرض
