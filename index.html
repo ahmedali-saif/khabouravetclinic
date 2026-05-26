@@ -6884,16 +6884,7 @@ function ani_printTable() {
 
 // تهيئة — تعيين التاريخ الافتراضي (بداية الشهر الحالي إلى اليوم)
 function ani_setDefaultDates() {
-  var today = new Date();
-  var y = today.getFullYear();
-  var m = String(today.getMonth() + 1).padStart(2, '0');
-  var d = String(today.getDate()).padStart(2, '0');
-  var firstDay = y + '-' + m + '-01';
-
-  var fromEl = document.getElementById('ani_dateFrom');
-  var toEl   = document.getElementById('ani_dateTo');
-  if (fromEl) fromEl.value = firstDay;
-  if (toEl)   toEl.value   = y + '-' + m + '-' + d;
+  // تم إيقاف التعيين التلقائي للتواريخ
 }
 
 </script>
