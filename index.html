@@ -7108,7 +7108,8 @@ function dp2Filter(rows) {
   var df  = (document.getElementById('dp2_df')||{}).value   || '';
   var dt  = (document.getElementById('dp2_dt')||{}).value   || '';
   return rows.filter(function(r) {
-    if (doc && r.doc !== doc) return false;
+    var rowDoc = String(r.doc || '').trim();
+    if (doc && rowDoc !== doc) return false;
     var d = dp2ParseDate(r.date);
     if (d) {
       if (df && dp2Fmt(d) < df) return false;
@@ -7293,9 +7294,9 @@ function dpRenderOverview() {
   document.getElementById('o_total').textContent  = tf.length+vf.length+sf.length;
 
   var allDocs = {};
-tf.forEach(function(r){ var d = r.doc != null ? String(r.doc).trim() : ''; if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].treat++; });
-vf.forEach(function(r){ var d = r.doc != null ? String(r.doc).trim() : ''; if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].vacc++; });
-sf.forEach(function(r){ var d = r.doc != null ? String(r.doc).trim() : ''; if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].sample++; });
+  tf.forEach(function(r){ var d = String(r.doc || '').trim(); if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].treat++; });
+  vf.forEach(function(r){ var d = String(r.doc || '').trim(); if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].vacc++; });
+  sf.forEach(function(r){ var d = String(r.doc || '').trim(); if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].sample++; });
   var docs = Object.keys(allDocs).sort(function(a,b){
     return (allDocs[b].treat+allDocs[b].vacc+allDocs[b].sample)-(allDocs[a].treat+allDocs[a].vacc+allDocs[a].sample);
   });
@@ -7359,13 +7360,13 @@ async function dpLoadAll() {
     if (tr && tr.success && tr.data && tr.data.length > 1) {
       tr.data.slice(1).forEach(function(row) {
      var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
-     var diseases = [g(6),g(9),g(12),g(15),g(18)].filter(function(d){return d&&d!=='-'&&d!=='0';});
-     var status = g(47).indexOf('غير')>-1 ? 'غير مكتملة' : 'مكتمل';
-     dp2_RAW.treat.push({
-     doc: g(44)||g(45)||g(23), name:g(2), phone:g(1), region:g(4),
-          date:g(46), disease:diseases[0]||'—',
-          amount:g(42)||g(43), status:status
-        });
+    var diseases = [g(7),g(10),g(13),g(16),g(19)].filter(function(d){return d&&d!=='-'&&d!=='0';});
+    var status = g(47).indexOf('غير')>-1 ? 'غير مكتملة' : 'مكتمل';
+    dp2_RAW.treat.push({
+      doc: g(6), name:g(2), phone:g(1), region:g(4),
+      date:g(46), disease:diseases[0]||'—',
+      amount:g(42)||g(43), status:status
+    });
       });
     }
 
@@ -7382,8 +7383,8 @@ async function dpLoadAll() {
           var tot=v+v2;
           if(tot>0){vaccines.push(vaccMap[ci]); dosesTotal+=tot;}
         });
-        dp2_RAW.vacc.push({
-          doc:g(25)||g(23), name:g(2), phone:g(1), region:g(4),
+          dp2_RAW.vacc.push({
+          doc: g(45), name:g(2), phone:g(1), region:g(4),
           date:g(26)||g(25), vaccines:vaccines, doses:dosesTotal
         });
       });
@@ -7409,12 +7410,31 @@ async function dpLoadAll() {
     }
 
     /* ── قائمة الأطباء ── */
+    /* ── قائمة الأطباء ── */
     var docs = [];
     var seen = {};
-    [].concat(dp2_RAW.treat,dp2_RAW.vacc,dp2_RAW.sample).forEach(function(r){
-    var d = r.doc != null ? String(r.doc).trim() : '';
-    if(d && !seen[d]){seen[d]=true;docs.push(d);}
-           });
+
+    // من سجل العلاج (العمود G = index 6)
+    if (tr && tr.success && tr.data) {
+      tr.data.slice(1).forEach(function(row){
+        var d = row[6] != null ? String(row[6]).trim() : '';
+        if(d && !seen[d]){seen[d]=true;docs.push(d);}
+      });
+    }
+    // من سجل التحصين (العمود AT = index 45)
+    if (vr && vr.success && vr.rows) {
+      vr.rows.forEach(function(row){
+        var d = row[45] != null ? String(row[45]).trim() : '';
+        if(d && !seen[d]){seen[d]=true;docs.push(d);}
+      });
+    }
+    // من سجل العينات (العمود S عبر dataEntry/dataUpdater)
+    if (sr && sr.success && sr.data) {
+      sr.data.forEach(function(r){
+        var d = String(r.dataEntry || r.dataUpdater || '').trim();
+        if(d && !seen[d]){seen[d]=true;docs.push(d);}
+      });
+    }
     docs.sort();
     var sel = document.getElementById('dp2_docSel');
     if (sel) {
