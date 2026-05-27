@@ -7304,7 +7304,7 @@ function dpRenderOverview() {
 
   document.getElementById('o_doctors').innerHTML = docs.length ? docs.map(function(d){
     var c=allDocs[d], tot=c.treat+c.vacc+c.sample;
-    var ini=d.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('');
+    var ini=String(d).split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('');
     var pct=Math.round(tot/maxT*100);
     return '<div class="doc-card"><div class="doc-ava">'+dp2Esc(ini)+'</div><div style="flex:1"><div class="doc-name">'+dp2Esc(d)+'</div><div class="doc-meta">🩺 '+c.treat+' &nbsp;|&nbsp; 💉 '+c.vacc+' &nbsp;|&nbsp; 🧪 '+c.sample+'</div><div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%"></div></div></div><div class="doc-total">'+tot+'</div></div>';
   }).join('') : '<div class="dp-empty">لا توجد بيانات</div>';
@@ -7359,11 +7359,11 @@ async function dpLoadAll() {
     var tr = results[0];
     if (tr && tr.success && tr.data && tr.data.length > 1) {
       tr.data.slice(1).forEach(function(row) {
-        var g = function(i){ return (row[i]||'').toString().trim(); };
-        var diseases = [g(6),g(9),g(12),g(15),g(18)].filter(function(d){return d&&d!=='-'&&d!=='0';});
-        var status   = g(47) && g(47).indexOf('غير')>-1 ? 'غير مكتملة' : 'مكتمل';
-        dp2_RAW.treat.push({
-          doc:g(44)||g(45), name:g(2), phone:g(1), region:g(4),
+     var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
+     var diseases = [g(6),g(9),g(12),g(15),g(18)].filter(function(d){return d&&d!=='-'&&d!=='0';});
+     var status = g(47).indexOf('غير')>-1 ? 'غير مكتملة' : 'مكتمل';
+     dp2_RAW.treat.push({
+     doc: g(44)||g(45)||g(23), name:g(2), phone:g(1), region:g(4),
           date:g(46), disease:diseases[0]||'—',
           amount:g(42)||g(43), status:status
         });
@@ -7374,7 +7374,7 @@ async function dpLoadAll() {
     var vr = results[1];
     if (vr && vr.success && vr.rows) {
       vr.rows.forEach(function(row) {
-        var g = function(i){ return (row[i]||'').toString().trim(); };
+        var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
         var vaccines=[], dosesTotal=0;
         var vaccMap={6:'التسمم المعوي',8:'طاعون/جدري',10:'الحمى القلاعية',12:'التهاب جلد عقدي',14:'السعار'};
         Object.keys(vaccMap).forEach(function(ci){
@@ -7413,8 +7413,9 @@ async function dpLoadAll() {
     var docs = [];
     var seen = {};
     [].concat(dp2_RAW.treat,dp2_RAW.vacc,dp2_RAW.sample).forEach(function(r){
-      var d=r.doc; if(d&&d.trim()&&!seen[d]){seen[d]=true;docs.push(d);}
-    });
+    var d = r.doc != null ? String(r.doc).trim() : '';
+    if(d && !seen[d]){seen[d]=true;docs.push(d);}
+           });
     docs.sort();
     var sel = document.getElementById('dp2_docSel');
     if (sel) {
