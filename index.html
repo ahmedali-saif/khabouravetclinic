@@ -7293,10 +7293,9 @@ function dpRenderOverview() {
   document.getElementById('o_total').textContent  = tf.length+vf.length+sf.length;
 
   var allDocs = {};
-  tf.forEach(function(r){ if(!r.doc||!r.doc.trim())return; if(!allDocs[r.doc])allDocs[r.doc]={treat:0,vacc:0,sample:0}; allDocs[r.doc].treat++; });
-  vf.forEach(function(r){ if(!r.doc||!r.doc.trim())return; if(!allDocs[r.doc])allDocs[r.doc]={treat:0,vacc:0,sample:0}; allDocs[r.doc].vacc++; });
-  sf.forEach(function(r){ if(!r.doc||!r.doc.trim())return; if(!allDocs[r.doc])allDocs[r.doc]={treat:0,vacc:0,sample:0}; allDocs[r.doc].sample++; });
-
+tf.forEach(function(r){ var d = r.doc != null ? String(r.doc).trim() : ''; if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].treat++; });
+vf.forEach(function(r){ var d = r.doc != null ? String(r.doc).trim() : ''; if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].vacc++; });
+sf.forEach(function(r){ var d = r.doc != null ? String(r.doc).trim() : ''; if(!d)return; if(!allDocs[d])allDocs[d]={treat:0,vacc:0,sample:0}; allDocs[d].sample++; });
   var docs = Object.keys(allDocs).sort(function(a,b){
     return (allDocs[b].treat+allDocs[b].vacc+allDocs[b].sample)-(allDocs[a].treat+allDocs[a].vacc+allDocs[a].sample);
   });
@@ -7304,7 +7303,7 @@ function dpRenderOverview() {
 
   document.getElementById('o_doctors').innerHTML = docs.length ? docs.map(function(d){
     var c=allDocs[d], tot=c.treat+c.vacc+c.sample;
-    var ini=String(d).split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('');
+    var ini = String(d || '').split(' ').slice(0,2).map(function(w){return (w[0]||'');}).join('');
     var pct=Math.round(tot/maxT*100);
     return '<div class="doc-card"><div class="doc-ava">'+dp2Esc(ini)+'</div><div style="flex:1"><div class="doc-name">'+dp2Esc(d)+'</div><div class="doc-meta">🩺 '+c.treat+' &nbsp;|&nbsp; 💉 '+c.vacc+' &nbsp;|&nbsp; 🧪 '+c.sample+'</div><div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%"></div></div></div><div class="doc-total">'+tot+'</div></div>';
   }).join('') : '<div class="dp-empty">لا توجد بيانات</div>';
@@ -7401,7 +7400,7 @@ async function dpLoadAll() {
           if(t){tests.push(t); res.push(rv||'قيد الانتظار');}
         }
         dp2_RAW.sample.push({
-          doc:r.dataEntry||r.dataUpdater||'', name:r.name||'',
+          doc: String(r.dataEntry || r.dataUpdater || '').trim(), name:r.name||'',
           phone:r.phone||'', region:r.region||'',
           date:r.sampleSentDate||r.samplesentdate||'',
           sampleType:r.sampleType||'', tests:tests, results:res
