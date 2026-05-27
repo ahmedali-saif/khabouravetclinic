@@ -7602,146 +7602,158 @@ function dp_apply() {
 async function dp_loadAll() {
   var url = window._activeApiUrl || window.TR_API_URL || window.VACC_API_URL;
   if (!url) { showToast('يرجى تسجيل الدخول أولاً', 'warning'); return; }
-
-  /* تهيئة الواجهة */
+ 
   document.getElementById('dp_loader').style.display = 'block';
   document.getElementById('dp_status').textContent   = 'جاري التحميل...';
   document.getElementById('dp_debug').textContent    = '';
   dp_RAW = { treat: [], vacc: [], sample: [] };
-
+ 
   /* دالة استدعاء API */
   async function apiCall(action, payload) {
     var body = JSON.stringify(Object.assign({ action: action }, payload || {}));
     var r = await fetch(url, {
-      method:'POST', mode:'cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: body, redirect:'follow'
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: body, redirect: 'follow'
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return await r.json();
   }
-
+ 
   try {
-    /* ────────────────────────────────────────────────────
-       أ) جلب بيانات العلاج
+ 
+    /* ════════════════════════════════════════════════════
+       ١. جلب قائمة الأطباء من ورقة "بيانات العيادة" عمود G
+       ════════════════════════════════════════════════════ */
+    var docsList = [];
+    try {
+      var clRes = await apiCall('getClinicDoctors');
+      if (clRes && clRes.success && Array.isArray(clRes.doctors)) {
+        docsList = clRes.doctors.filter(function(d){ return d && d.toString().trim(); });
+        dp_log('✅ قائمة الأطباء من الشيت: ' + docsList.join('، '));
+      } else {
+        dp_log('⚠️ getClinicDoctors لم يُرجع بيانات — سيتم بناء القائمة من السجلات');
+      }
+    } catch(e) {
+      dp_log('⚠️ getClinicDoctors فشل: ' + e.message + ' — سيتم بناء القائمة من السجلات');
+    }
+ 
+    /* ════════════════════════════════════════════════════
+       ٢. سجل العلاج — اسم الطبيب في العمود G (index 6)
           trsearchInTreatmentSheet ترجع:
-          data[0] = رؤوس الأعمدة (مصفوفة نصوص)
-          data[1..n] = صفوف البيانات (كل صف مصفوفة)
-       ──────────────────────────────────────────────────── */
+          data[0] = رؤوس الأعمدة
+          data[1..n] = صفوف البيانات
+       ════════════════════════════════════════════════════ */
     var tr = null;
     try {
-      tr = await apiCall('trsearchInTreatmentSheet', { keyword:'', startDate:'', endDate:'' });
+      tr = await apiCall('trsearchInTreatmentSheet', {
+        keyword: '', startDate: '', endDate: ''
+      });
     } catch(e) { dp_log('❌ trsearchInTreatmentSheet: ' + e.message); }
-
+ 
     if (tr && tr.success && Array.isArray(tr.data) && tr.data.length > 1) {
-
-      var headers = tr.data[0]; // الصف الأول هو رؤوس الأعمدة دائماً
-      dp_log('رؤوس أعمدة العلاج (' + headers.length + '): ' + JSON.stringify(headers));
-
-      /* البحث عن كل عمود بالاسم — هذا يضمن العمل مهما تغيرت بنية الشيت */
-      var COL = {
-        /* مدخل البيانات = اسم الطبيب/المدخل */
-        doc:     dp_col(headers, ['مدخل البيانات', 'dataEntry', 'الطبيب', 'data entry']),
-        docUpd:  dp_col(headers, ['مدخل البيانات (التحديث)', 'dataUpdater', 'القائم بالتعديل']),
+ 
+      var headers = tr.data[0];
+      dp_log('رؤوس العلاج: ' + JSON.stringify(headers).substring(0, 300));
+      dp_log('قيمة العمود G (index 6) في رؤوس العلاج: "' + (headers[6] || '') + '"');
+ 
+      /* البحث عن الأعمدة الأخرى بالاسم */
+      var trCOL = {
+        doc:     6,   /* العمود G — ثابت */
         name:    dp_col(headers, ['الاسم الثلاثي', 'الاسم', 'name']),
         phone:   dp_col(headers, ['رقم الهاتف', 'الهاتف', 'phone']),
         region:  dp_col(headers, ['المنطقة', 'region']),
-        disease: dp_col(headers, ['المرض', 'التشخيص', 'disease', 'diagnosis']),
+        disease: dp_col(headers, ['المرض', 'التشخيص', 'disease']),
         amount:  dp_col(headers, ['المبلغ', 'amount']),
         date:    dp_col(headers, ['التاريخ', 'تاريخ الإدخال', 'financialDate', 'date']),
         status:  dp_col(headers, ['الحالة', 'status'])
       };
-
-      dp_log('خريطة الأعمدة: ' + JSON.stringify(COL));
-
-      /* معالجة الصفوف (نبدأ من index 1) */
+      dp_log('خريطة أعمدة العلاج: ' + JSON.stringify(trCOL));
+ 
       tr.data.slice(1).forEach(function(row) {
         if (!Array.isArray(row) || !row.length) return;
-
-        /* اسم الطبيب: نجرب عمود مدخل البيانات أولاً، ثم مدخل التحديث */
-        var doc = '';
-        if (COL.doc >= 0)    doc = dp_v(row, COL.doc);
-        if (!doc && COL.docUpd >= 0) doc = dp_v(row, COL.docUpd);
-
-        /* المرض: قد يكون في عدة أعمدة — نأخذ أول قيمة غير فارغة */
-        var disease = '';
-        if (COL.disease >= 0) disease = dp_v(row, COL.disease);
-        /* إذا كان المرض فارغاً، ابحث في الأعمدة التالية (حالات تشخيص متعددة) */
+ 
+        /* اسم الطبيب مباشرة من العمود G */
+        var doc = dp_v(row, 6);
+ 
+        /* المرض: قد يمتد على عدة أعمدة — نأخذ أول قيمة */
+        var disease = trCOL.disease >= 0 ? dp_v(row, trCOL.disease) : '';
         if (!disease) {
-          var disIdx = COL.disease >= 0 ? COL.disease : 6;
-          for (var di = disIdx; di <= Math.min(disIdx+9, row.length-1); di++) {
+          /* ابحث في الأعمدة 6-20 عن أول قيمة تبدو كمرض */
+          for (var di = 6; di <= Math.min(20, row.length - 1); di++) {
             var dv = dp_v(row, di);
-            if (dv && dv !== '0' && dv !== '-') { disease = dv; break; }
+            if (dv && dv !== '0' && dv !== '-' && dv !== doc) {
+              disease = dv; break;
+            }
           }
         }
-
+ 
         dp_RAW.treat.push({
           doc:     doc,
-          name:    COL.name   >= 0 ? dp_v(row, COL.name)   : '',
-          phone:   COL.phone  >= 0 ? dp_v(row, COL.phone)  : '',
-          region:  COL.region >= 0 ? dp_v(row, COL.region) : '',
-          date:    COL.date   >= 0 ? dp_v(row, COL.date)   : '',
+          name:    trCOL.name   >= 0 ? dp_v(row, trCOL.name)   : '',
+          phone:   trCOL.phone  >= 0 ? dp_v(row, trCOL.phone)  : '',
+          region:  trCOL.region >= 0 ? dp_v(row, trCOL.region) : '',
+          date:    trCOL.date   >= 0 ? dp_v(row, trCOL.date)   : '',
           disease: disease || '—',
-          amount:  COL.amount >= 0 ? dp_v(row, COL.amount) : '',
-          status:  COL.status >= 0 ? dp_v(row, COL.status) : '—'
+          amount:  trCOL.amount >= 0 ? dp_v(row, trCOL.amount) : '',
+          status:  trCOL.status >= 0 ? dp_v(row, trCOL.status) : '—'
         });
       });
-
+ 
       dp_log('✅ علاج: ' + dp_RAW.treat.length + ' سجل');
       if (dp_RAW.treat.length > 0) {
-        dp_log('عينة أول سجل: ' + JSON.stringify(dp_RAW.treat[0]));
+        dp_log('عينة أول سجل علاج: doc="' + dp_RAW.treat[0].doc +
+               '" name="' + dp_RAW.treat[0].name +
+               '" date="' + dp_RAW.treat[0].date + '"');
       }
+ 
     } else {
-      dp_log('⚠️ لا توجد بيانات علاج أو فشل الجلب. success=' +
-             (tr ? tr.success : 'null') + ' rows=' + (tr && tr.data ? tr.data.length : 0));
+      dp_log('⚠️ لا توجد بيانات علاج. success=' + (tr ? tr.success : 'null') +
+             ' rows=' + (tr && tr.data ? tr.data.length : 0));
     }
-
-    /* ────────────────────────────────────────────────────
-       ب) جلب بيانات التحصين
-          searchVaccinationRecords ترجع rows (مصفوفة من المصفوفات)
-       ──────────────────────────────────────────────────── */
+ 
+    /* ════════════════════════════════════════════════════
+       ٣. سجل التحصين — اسم الطبيب في العمود AT (index 45)
+       ════════════════════════════════════════════════════ */
     var vr = null;
     try {
       vr = await apiCall('searchVaccinationRecords', { filters: {} });
     } catch(e) { dp_log('❌ searchVaccinationRecords: ' + e.message); }
-
+ 
     if (vr && vr.success) {
       var vaccRows = vr.rows || vr.data || [];
       dp_log('تحصين: ' + vaccRows.length + ' صف');
-
       if (vaccRows.length > 0) {
-        dp_log('أول صف تحصين: ' + JSON.stringify(vaccRows[0]).substring(0,250));
+        dp_log('قيمة العمود AT (index 45) في أول صف تحصين: "' + dp_v(vaccRows[0], 45) + '"');
+        dp_log('أول صف تحصين كامل: ' + JSON.stringify(vaccRows[0]).substring(0, 300));
       }
-
+ 
       vaccRows.forEach(function(row) {
         if (!Array.isArray(row)) return;
-
-        /* البحث عن اسم مدخل البيانات في آخر الأعمدة
-           (عادةً الأعمدة الأخيرة في شيت التحصين) */
-        var docVal = '';
-        /* نبحث من العمود 20 للأخير عن نص عربي يبدو كاسم */
-        for (var i = row.length - 1; i >= 20; i--) {
-          var v = dp_v(row, i);
-          if (v && v.length > 2 && v.length < 60 && /[\u0600-\u06FF]/.test(v)) {
-            /* تأكد أنه ليس تاريخاً أو رقماً */
-            if (!/^\d/.test(v) && v.indexOf('/') === -1 && v.indexOf('-') === -1) {
-              docVal = v;
-              break;
-            }
-          }
-        }
-
+ 
+        /* اسم الطبيب مباشرة من العمود AT (index 45) */
+        var doc = dp_v(row, 45);
+ 
+        /* إذا كان فارغاً جرب الأعمدة المجاورة AT±1 */
+        if (!doc) doc = dp_v(row, 44) || dp_v(row, 46);
+ 
         var vaccines = [], dosesTotal = 0;
-        var vaccMap = { 6:'التسمم المعوي', 8:'طاعون/جدري', 10:'الحمى القلاعية', 12:'التهاب جلد عقدي', 14:'السعار' };
+        var vaccMap = {
+          6:  'التسمم المعوي',
+          8:  'طاعون/جدري',
+          10: 'الحمى القلاعية',
+          12: 'التهاب جلد عقدي',
+          14: 'السعار'
+        };
         Object.keys(vaccMap).forEach(function(ci) {
           var v  = parseInt(dp_v(row, +ci))   || 0;
           var v2 = parseInt(dp_v(row, +ci+1)) || 0;
           var tot = v + v2;
           if (tot > 0) { vaccines.push(vaccMap[ci]); dosesTotal += tot; }
         });
-
+ 
         dp_RAW.vacc.push({
-          doc:      docVal,
+          doc:      doc,
           name:     dp_v(row, 2),
           phone:    dp_v(row, 1),
           region:   dp_v(row, 4),
@@ -7752,17 +7764,22 @@ async function dp_loadAll() {
       });
       dp_log('✅ تحصين: ' + dp_RAW.vacc.length + ' سجل');
     }
-
-    /* ────────────────────────────────────────────────────
-       ج) جلب بيانات العينات
-       ──────────────────────────────────────────────────── */
+ 
+    /* ════════════════════════════════════════════════════
+       ٤. سجل العينات — اسم الطبيب في العمود S (index 18)
+       ════════════════════════════════════════════════════ */
     var sr = null;
     try {
       sr = await apiCall('fosearchSamplesData', { showAll: true });
     } catch(e) { dp_log('❌ fosearchSamplesData: ' + e.message); }
-
+ 
     if (sr && sr.success && Array.isArray(sr.data)) {
       dp_log('عينات: ' + sr.data.length + ' صف');
+      if (sr.data.length > 0) {
+        /* العينات تُرجع JSON Objects — نتحقق من المفاتيح */
+        dp_log('مفاتيح أول سجل عينات: ' + JSON.stringify(Object.keys(sr.data[0])));
+      }
+ 
       sr.data.forEach(function(r) {
         var tests = [], results = [];
         for (var k = 1; k <= 5; k++) {
@@ -7770,8 +7787,13 @@ async function dp_loadAll() {
           var rv = String(r['result'+k] || '').trim();
           if (t) { tests.push(t); results.push(rv || 'قيد الانتظار'); }
         }
+ 
+        /* اسم الطبيب: fosearchSamplesData ترجع JSON Objects
+           نبحث عن مفتاح dataEntry أو العمود S (index 18) */
+        var doc = String(r.dataEntry || r.dataUpdater || '').trim();
+ 
         dp_RAW.sample.push({
-          doc:        String(r.dataEntry || r.dataUpdater || '').trim(),
+          doc:        doc,
           name:       String(r.name       || ''),
           phone:      String(r.phone      || ''),
           region:     String(r.region     || ''),
@@ -7783,50 +7805,60 @@ async function dp_loadAll() {
       });
       dp_log('✅ عينات: ' + dp_RAW.sample.length + ' سجل');
     }
-
-    /* ────────────────────────────────────────────────────
-       د) بناء قائمة مدخلي البيانات (الأطباء)
-       ──────────────────────────────────────────────────── */
-    var docs = [], seen = {};
-    ['treat','vacc','sample'].forEach(function(key) {
-      dp_RAW[key].forEach(function(r) {
-        var d = String(r.doc || '').trim();
-        if (d && !seen[d]) { seen[d] = true; docs.push(d); }
+ 
+    /* ════════════════════════════════════════════════════
+       ٥. بناء قائمة الأطباء في الفلتر
+          الأولوية: قائمة ورقة "بيانات العيادة" → ثم من السجلات
+       ════════════════════════════════════════════════════ */
+    var finalDocs = [];
+    var seen = {};
+ 
+    if (docsList.length > 0) {
+      /* استخدام القائمة من الشيت */
+      docsList.forEach(function(d) {
+        var name = d.toString().trim();
+        if (name && !seen[name]) { seen[name] = true; finalDocs.push(name); }
       });
-    });
-    docs.sort();
-
-    dp_log('مدخلو البيانات (' + docs.length + '): ' + docs.join('، '));
-
+    } else {
+      /* بناء القائمة من السجلات كبديل */
+      ['treat', 'vacc', 'sample'].forEach(function(key) {
+        dp_RAW[key].forEach(function(r) {
+          var d = String(r.doc || '').trim();
+          if (d && !seen[d]) { seen[d] = true; finalDocs.push(d); }
+        });
+      });
+    }
+    finalDocs.sort();
+    dp_log('قائمة الأطباء النهائية (' + finalDocs.length + '): ' + finalDocs.join('، '));
+ 
     var sel = document.getElementById('dp_docSel');
     if (sel) {
       sel.innerHTML = '<option value="">الكل</option>';
-      docs.forEach(function(d) {
+      finalDocs.forEach(function(d) {
         var o = document.createElement('option');
         o.value = d; o.textContent = d;
         sel.appendChild(o);
       });
     }
-
+ 
     /* ملخص */
     var tot = dp_RAW.treat.length + dp_RAW.vacc.length + dp_RAW.sample.length;
     document.getElementById('dp_status').textContent =
       'علاج: ' + dp_RAW.treat.length +
       ' | تحصين: ' + dp_RAW.vacc.length +
       ' | عينات: ' + dp_RAW.sample.length;
-
+ 
     showToast('✅ تم تحميل ' + tot.toLocaleString('ar-SA') + ' سجل', 'success');
     dp_apply();
-
+ 
   } catch(e) {
     dp_log('❌ خطأ عام: ' + e.message);
     document.getElementById('dp_status').textContent = '❌ ' + e.message;
     showToast('❌ خطأ: ' + e.message, 'error');
   }
-
+ 
   document.getElementById('dp_loader').style.display = 'none';
 }
-
 /* ════════════════════════════════════════════════════════
    ٩. تهيئة — تُستدعى من showPage
    ════════════════════════════════════════════════════════ */
