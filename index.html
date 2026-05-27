@@ -1127,10 +1127,10 @@ function wilayatSetAllUrls(url) {
   window.REMOTE_SYNC_URL    = url;
 }
 
-function wilayatApply() {
+async function wilayatApply() {
   var sel = document.getElementById('wilayatSelect');
   var status = document.getElementById('wilayatStatus');
-  
+
   if (!sel.value) {
     showToast('الرجاء اختيار ولاية أولاً', 'warning');
     return;
@@ -1146,12 +1146,227 @@ function wilayatApply() {
   localStorage.setItem('selected_wilayat_url', url);
   localStorage.setItem('selected_wilayat_name', name);
 
-  // إظهار رسالة نجاح
+  // ===== إظهار شاشة الانتظار =====
+  var loadingOverlay = document.createElement('div');
+  loadingOverlay.id = 'wilayatLoadingOverlay';
+  loadingOverlay.style.cssText = `
+    position:fixed;inset:0;background:rgba(255,255,255,0.97);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:99999;font-family:Tahoma,Arial,sans-serif;direction:rtl;
+  `;
+  loadingOverlay.innerHTML = `
+    <div style="text-align:center;">
+      <div style="width:70px;height:70px;border:7px solid #e0e0e0;
+           border-top:7px solid #00b8d9;border-radius:50%;
+           animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
+      <div style="font-size:20px;font-weight:bold;color:#00b8d9;margin-bottom:10px;">
+        ⏳ جاري تحميل ملفات ولاية ${name}
+      </div>
+      <div id="wilayatLoadingStep" style="font-size:14px;color:#666;margin-bottom:20px;">
+        جاري الاتصال بالخادم...
+      </div>
+      <div style="width:300px;height:10px;background:#e0e0e0;border-radius:20px;overflow:hidden;">
+        <div id="wilayatProgressBar" style="height:100%;width:0%;background:#00b8d9;
+             border-radius:20px;transition:width 0.4s ease;"></div>
+      </div>
+      <div id="wilayatProgressText" style="font-size:13px;color:#00b8d9;
+           margin-top:8px;font-weight:bold;">0%</div>
+    </div>
+  `;
+  document.body.appendChild(loadingOverlay);
+
+  function setStep(msg, percent) {
+    var stepEl = document.getElementById('wilayatLoadingStep');
+    var barEl  = document.getElementById('wilayatProgressBar');
+    var pctEl  = document.getElementById('wilayatProgressText');
+    if (stepEl) stepEl.textContent = msg;
+    if (barEl)  barEl.style.width  = percent + '%';
+    if (pctEl)  pctEl.textContent  = percent + '%';
+  }
+
+  try {
+    // خطوة 1 — أرقام الهاتف
+    setStep('جاري تحميل أرقام الهواتف...', 15);
+    await Promise.allSettled([
+      (async function() {
+        if (typeof trcallApi === 'function') {
+          var r = await trcallApi('trgetPhoneNumbers');
+          if (r.success) {
+            var dl = document.getElementById('tr_phoneList');
+            if (dl) { dl.innerHTML=''; (r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);}); }
+          }
+        }
+      })(),
+      (async function() {
+        if (typeof vaccCallApi === 'function') {
+          var r = await vaccCallApi('getPhoneNumbers');
+          if (r.success) {
+            var dl = document.getElementById('vacc_phoneList');
+            if (dl) { dl.innerHTML=''; (r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);}); }
+          }
+        }
+      })(),
+      (async function() {
+        if (typeof focallApi === 'function') {
+          var r = await focallApi('fogetPhoneNumbers');
+          if (r.success) {
+            var dl = document.getElementById('phoneList');
+            if (dl) { dl.innerHTML=''; (r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);}); }
+          }
+        }
+      })(),
+      (async function() {
+        if (typeof bd_callApi === 'function') {
+          var r = await bd_callApi('bd_getPhoneNumbers');
+          if (r.success) {
+            var dl = document.getElementById('bd_phoneList');
+            if (dl) { dl.innerHTML=''; (r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);}); }
+          }
+        }
+      })()
+    ]);
+
+    // خطوة 2 — مدخلو البيانات
+    setStep('جاري تحميل قوائم مدخلي البيانات...', 35);
+    await Promise.allSettled([
+      (async function() {
+        if (typeof trcallApi === 'function') {
+          var r = await trcallApi('trgetDataEntryOptions');
+          if (r.success) {
+            ['tr_dataEntryList','tr_dataUpdaterList'].forEach(function(id){
+              var dl=document.getElementById(id);
+              if(dl){dl.innerHTML='';(r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);});}
+            });
+          }
+        }
+      })(),
+      (async function() {
+        if (typeof bd_callApi === 'function') {
+          var r = await bd_callApi('bd_getDataEntryOptions');
+          if (r.success) {
+            ['bd_dataEntryList','bd_dataUpdaterList'].forEach(function(id){
+              var dl=document.getElementById(id);
+              if(dl){dl.innerHTML='';(r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);});}
+            });
+          }
+        }
+      })(),
+      (async function() {
+        if (typeof vaccCallApi === 'function') {
+          var r = await vaccCallApi('getDataEntryOptions');
+          if (r.success) {
+            ['vacc_dataEntryList','vacc_dataUpdaterList'].forEach(function(id){
+              var dl=document.getElementById(id);
+              if(dl){dl.innerHTML='';(r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);});}
+            });
+          }
+        }
+      })(),
+      (async function() {
+        if (typeof focallApi === 'function') {
+          var r = await focallApi('fogetDataEntryOptions');
+          if (r.success) {
+            ['dataEntryList','dataUpdaterList'].forEach(function(id){
+              var dl=document.getElementById(id);
+              if(dl){dl.innerHTML='';(r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);});}
+            });
+          }
+        }
+      })()
+    ]);
+
+    // خطوة 3 — الأمراض والأدوية
+    setStep('جاري تحميل قوائم الأمراض والأدوية...', 55);
+    await Promise.allSettled([
+      (async function() {
+        if (typeof trcallApi === 'function') {
+          var r1 = await trcallApi('trgetDiseases');
+          if (r1.success) {
+            var dl=document.getElementById('tr_diseaseList');
+            if(dl){dl.innerHTML='';(r1.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);});}
+          }
+          var r2 = await trcallApi('trgetDrugs');
+          if (r2.success) {
+            var dl2=document.getElementById('tr_drugList');
+            if(dl2){dl2.innerHTML='';(r2.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl2.appendChild(o);});}
+          }
+        }
+      })()
+    ]);
+
+    // خطوة 4 — السجل اليومي للعلاج
+    setStep('جاري تحميل السجل اليومي...', 70);
+    await Promise.allSettled([
+      (async function() {
+        if (typeof trloadData === 'function') await trloadData();
+      })(),
+      (async function() {
+        if (typeof trloadIncompleteCount === 'function') await trloadIncompleteCount();
+      })()
+    ]);
+
+    // خطوة 5 — المناطق
+    setStep('جاري تحميل قوائم المناطق...', 82);
+    await Promise.allSettled([
+      (async function() {
+        if (typeof bd_callApi === 'function') {
+          var r = await bd_callApi('bd_getRegionOptions');
+          if (r.success) {
+            var dl=document.getElementById('bd_regionList');
+            if(dl){dl.innerHTML='';(r.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);});}
+          }
+        }
+      })()
+    ]);
+
+    // خطوة 6 — العينات والفحوصات
+    setStep('جاري تحميل قوائم العينات...', 92);
+    await Promise.allSettled([
+      (async function() {
+        if (typeof focallApi === 'function') {
+          var r1 = await focallApi('fogetTestOptions');
+          if (r1.success) {
+            var dl=document.getElementById('testList');
+            if(dl){dl.innerHTML='';(r1.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl.appendChild(o);});}
+          }
+          var r2 = await focallApi('fogetSampleTypeOptions');
+          if (r2.success) {
+            var dl2=document.getElementById('sampleTypeList');
+            if(dl2){dl2.innerHTML='';(r2.data||[]).sort().forEach(function(v){var o=document.createElement('option');o.value=v;dl2.appendChild(o);});}
+          }
+          var r3 = await focallApi('fogetUniquePhoneCount');
+          if (r3.success || r3.count !== undefined) {
+            var uc=document.getElementById('uniqueCountDisplay');
+            var ls=document.getElementById('lastSampleDisplay');
+            if(uc) uc.textContent = r3.count || 0;
+            if(ls) ls.textContent = r3.lastSample || '—';
+          }
+        }
+      })()
+    ]);
+
+    // اكتمل
+    setStep('✅ تم تحميل جميع البيانات بنجاح!', 100);
+    await new Promise(function(r){ setTimeout(r, 700); });
+
+  } catch(err) {
+    setStep('⚠️ تم التحميل مع بعض الأخطاء', 100);
+    await new Promise(function(r){ setTimeout(r, 800); });
+  }
+
+  // إخفاء شاشة الانتظار
+  loadingOverlay.style.transition = 'opacity 0.4s ease';
+  loadingOverlay.style.opacity = '0';
+  setTimeout(function() {
+    if (loadingOverlay.parentNode) loadingOverlay.remove();
+  }, 400);
+
+  // إظهار رسالة النجاح
   status.style.display = 'block';
   status.style.color = '#2bb673';
-  status.textContent = '✅ تم تطبيق ولاية: ' + name;
+  status.textContent = '✅ الولاية الحالية: ' + name;
 
-  showToast('✅ تم تغيير الولاية إلى: ' + name, 'success');
+  showToast('✅ تم تحميل ولاية ' + name + ' بنجاح', 'success');
 }
 </script>
   <!-- زر المظهر مستقل عن نظام التبويبات -->
