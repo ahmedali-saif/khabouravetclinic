@@ -6947,6 +6947,7 @@ function ani_setDefaultDates() {
 #doctorPerformance .doc-total{font-size:19px;font-weight:bold;color:#00b8d9;margin-right:auto}
 #doctorPerformance .prog-bar{background:#e0e0e0;border-radius:20px;height:6px;overflow:hidden;margin-top:4px}
 #doctorPerformance .prog-fill{height:100%;border-radius:20px;background:#00b8d9;transition:width .5s ease}
+#doctorPerformance .debug-box{background:#fff3cd;border:2px solid #f39c12;border-radius:6px;padding:10px;margin-bottom:10px;font-size:11px;color:#7f4f00;white-space:pre-wrap;max-height:150px;overflow:auto}
 @media(max-width:700px){#doctorPerformance .dp-charts{grid-template-columns:1fr}}
 </style>
 
@@ -6971,6 +6972,9 @@ function ani_setDefaultDates() {
   </div>
 
   <div id="dp2_loading" class="dp-loading" style="display:none">⏳ جاري تحميل البيانات...</div>
+  
+  <!-- صندوق تشخيصي (يُخفى تلقائياً بعد 10 ثوانٍ) -->
+  <div id="dp2_debug" class="debug-box" style="display:none"></div>
 
   <!-- ===== تبويب العلاج ===== -->
   <div id="pane-treat" class="dp-pane active">
@@ -7075,6 +7079,16 @@ var dp2_DEBOUNCE = {};
 
 var DP2_MONTHS = ['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
+/* ── صندوق التشخيص ── */
+function dp2Log(msg) {
+  console.log('[DoctorPerformance]', msg);
+  var box = document.getElementById('dp2_debug');
+  if (!box) return;
+  box.style.display = 'block';
+  box.textContent += msg + '\n';
+  setTimeout(function(){ box.style.display = 'none'; }, 15000);
+}
+
 /* ── التبديل بين التبويبات ── */
 function dpShowTab(tab) {
   dp2_CUR = tab;
@@ -7091,11 +7105,9 @@ function dpShowTab(tab) {
 function dp2ParseDate(s) {
   if (!s) return null;
   s = s.toString().trim();
-  // صيغة YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
     return new Date(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10));
   }
-  // صيغة DD/MM/YYYY
   var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (m) return new Date(+m[3], +m[2]-1, +m[1]);
   var d = new Date(s);
@@ -7108,11 +7120,43 @@ function dp2Mlabel(k) { if(!k) return ''; var p=k.split('-'); return DP2_MONTHS[
 /* ── XSS-safe escape ── */
 function dp2Esc(s) {
   return (s||'').toString()
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ── استخراج قيمة آمنة من أي نوع بيانات ── */
+function dp2Get(row, keyOrIndex, fallback) {
+  if (row == null) return fallback || '';
+  // إذا كان صفاً مصفوفة (Array)
+  if (Array.isArray(row)) {
+    var val = row[keyOrIndex];
+    return val != null ? String(val).trim() : (fallback || '');
+  }
+  // إذا كان صفاً كائن (Object) - نبحث بأسماء الأعمدة المختلفة
+  if (typeof row === 'object') {
+    var keys = [keyOrIndex, String(keyOrIndex).toLowerCase(), String(keyOrIndex).replace(/_/g,'')];
+    for (var i = 0; i < keys.length; i++) {
+      if (row[keys[i]] != null) return String(row[keys[i]]).trim();
+    }
+    // البحث بأسماء شائعة
+    var commonNames = {
+      'doc': ['doc','doctor','الطبيب','مدخل البيانات','dataEntry','dataUpdater','مدخل'],
+      'name': ['name','ownerName','المربي','اسم المربي','owner'],
+      'phone': ['phone','رقم الهاتف','الهاتف','ownerPhone'],
+      'region': ['region','المنطقة','المنطقة'],
+      'date': ['date','financialDate','التاريخ','sampleSentDate','dateSent'],
+      'disease': ['disease','diseases','المرض','التشخيص'],
+      'amount': ['amount','المبلغ','الإيصال','receipt'],
+      'status': ['status','الحالة']
+    };
+    var searchKeys = commonNames[keyOrIndex];
+    if (searchKeys) {
+      for (var j = 0; j < searchKeys.length; j++) {
+        if (row[searchKeys[j]] != null) return String(row[searchKeys[j]]).trim();
+      }
+    }
+  }
+  return fallback || '';
 }
 
 /* ── تطبيق الفلاتر ── */
@@ -7363,7 +7407,7 @@ function dpRenderOverview() {
 }
 
 /* ════════════════════════════════════════
-   تحميل البيانات من API
+   تحميل البيانات من API - نسخة تشخيصية
    ════════════════════════════════════════ */
 async function dpLoadAll() {
   var url = window._activeApiUrl || window.TR_API_URL;
@@ -7375,111 +7419,171 @@ async function dpLoadAll() {
 
   async function call(action, payload) {
     var body = JSON.stringify(Object.assign({action:action}, payload||{}));
+    dp2Log('→ API: ' + action);
     var r = await fetch(url, {method:'POST',mode:'cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:body,redirect:'follow'});
     if (!r.ok) throw new Error('HTTP '+r.status);
-    return await r.json();
+    var json = await r.json();
+    dp2Log('← ' + action + ' success=' + json.success + ' rows=' + (json.data ? json.data.length : (json.rows ? json.rows.length : 0)));
+    return json;
   }
 
   try {
-    var results = await Promise.all([
-      call('trgetAAAData'),
-      call('searchVaccinationRecords', {filters:{}}),
-      call('fosearchSamplesData', {showAll:true})
-    ]);
+    // ── جلب كل API على حدة لمعرفة أي منها يفشل ──
+    var tr, vr, sr;
+    try { tr = await call('trgetAAAData'); } catch(e) { dp2Log('❌ trgetAAAData فشل: ' + e.message); tr = null; }
+    try { vr = await call('searchVaccinationRecords', {filters:{}}); } catch(e) { dp2Log('❌ searchVaccinationRecords فشل: ' + e.message); vr = null; }
+    try { sr = await call('fosearchSamplesData', {showAll:true}); } catch(e) { dp2Log('❌ fosearchSamplesData فشل: ' + e.message); sr = null; }
 
-    /* ── معالجة العلاج ── */
+    // ── معالجة العلاج ──
     try {
-      var tr = results[0];
-      if (tr && tr.success && Array.isArray(tr.data) && tr.data.length > 1) {
-        tr.data.slice(1).forEach(function(row) {
-          if (!Array.isArray(row)) return;
-          var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
-          var diseases = [g(7),g(10),g(13),g(16),g(19)].filter(function(d){return d&&d!=='-'&&d!=='0';});
-          var rawStatus = g(47);
-          var status = rawStatus.indexOf('غير')>-1 ? 'غير مكتملة' : (rawStatus.indexOf('مكتمل')>-1 ? 'مكتمل' : '—');
-          dp2_RAW.treat.push({
-            doc: g(6), name:g(2), phone:g(1), region:g(4),
-            date:g(46), disease:diseases[0]||'—',
-            amount: g(43), status:status
+      if (tr && tr.success) {
+        var treatData = tr.data || [];
+        dp2Log('علاج: نوع البيانات = ' + (Array.isArray(treatData) ? 'Array['+treatData.length+']' : typeof treatData));
+        if (treatData.length > 0) {
+          dp2Log('علاج: أول صف = ' + JSON.stringify(treatData[0]).substring(0,200));
+        }
+        
+        // إذا كانت البيانات Array of Arrays (CSV style)
+        if (Array.isArray(treatData) && treatData.length > 1 && Array.isArray(treatData[1])) {
+          treatData.slice(1).forEach(function(row, idx) {
+            var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
+            var diseases = [g(7),g(10),g(13),g(16),g(19)].filter(function(d){return d&&d!=='-'&&d!=='0';});
+            var rawStatus = g(47);
+            var status = rawStatus.indexOf('غير')>-1 ? 'غير مكتملة' : (rawStatus.indexOf('مكتمل')>-1 ? 'مكتمل' : '—');
+            dp2_RAW.treat.push({
+              doc: g(6), name:g(2), phone:g(1), region:g(4),
+              date:g(46), disease:diseases[0]||'—',
+              amount: g(43), status:status
+            });
           });
-        });
+          dp2Log('✅ علاج: تم تحميل ' + dp2_RAW.treat.length + ' من Array-of-Arrays');
+        }
+        // إذا كانت البيانات Array of Objects (JSON style)
+        else if (Array.isArray(treatData) && treatData.length > 0 && typeof treatData[0] === 'object' && !Array.isArray(treatData[0])) {
+          treatData.forEach(function(row) {
+            var docVal = dp2Get(row, 'doc', '') || dp2Get(row, 'dataEntry', '') || dp2Get(row, 'الطبيب', '');
+            var nameVal = dp2Get(row, 'name', '') || dp2Get(row, 'ownerName', '') || dp2Get(row, 'المربي', '');
+            var phoneVal = dp2Get(row, 'phone', '') || dp2Get(row, 'ownerPhone', '') || dp2Get(row, 'الهاتف', '');
+            var regionVal = dp2Get(row, 'region', '') || dp2Get(row, 'المنطقة', '');
+            var dateVal = dp2Get(row, 'date', '') || dp2Get(row, 'financialDate', '') || dp2Get(row, 'التاريخ', '');
+            var diseaseVal = dp2Get(row, 'disease', '') || dp2Get(row, 'diseases', '') || dp2Get(row, 'التشخيص', '');
+            var amountVal = dp2Get(row, 'amount', '') || dp2Get(row, 'المبلغ', '');
+            var statusVal = dp2Get(row, 'status', '') || dp2Get(row, 'الحالة', '');
+            
+            if (docVal || nameVal) {
+              dp2_RAW.treat.push({
+                doc: docVal, name: nameVal, phone: phoneVal, region: regionVal,
+                date: dateVal, disease: diseaseVal || '—',
+                amount: amountVal, status: statusVal || '—'
+              });
+            }
+          });
+          dp2Log('✅ علاج: تم تحميل ' + dp2_RAW.treat.length + ' من Array-of-Objects');
+        }
+        else {
+          dp2Log('⚠️ علاج: تنسيق غير معروف - first row type: ' + typeof (treatData[0] || 'empty'));
+        }
+      } else {
+        dp2Log('⚠️ علاج: tr.success = ' + (tr ? tr.success : 'null'));
       }
-    } catch(e) { console.error('خطأ في معالجة العلاج:', e); }
+    } catch(e) { dp2Log('❌ خطأ معالجة العلاج: ' + e.message); }
 
-    /* ── معالجة التحصين ── */
+    // ── معالجة التحصين ──
     try {
-      var vr = results[1];
-      if (vr && vr.success && Array.isArray(vr.rows)) {
-        vr.rows.forEach(function(row) {
-          if (!Array.isArray(row)) return;
-          var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
-          var vaccines=[], dosesTotal=0;
-          var vaccMap={6:'التسمم المعوي',8:'طاعون/جدري',10:'الحمى القلاعية',12:'التهاب جلد عقدي',14:'السعار'};
-          Object.keys(vaccMap).forEach(function(ci){
-            var v = parseInt(g(+ci))||0;
-            var v2= parseInt(g(+ci+1))||0;
-            var tot=v+v2;
-            if(tot>0){vaccines.push(vaccMap[ci]); dosesTotal+=tot;}
+      if (vr && vr.success) {
+        var vaccData = vr.rows || vr.data || [];
+        dp2Log('تحصين: نوع البيانات = ' + (Array.isArray(vaccData) ? 'Array['+vaccData.length+']' : typeof vaccData));
+        if (vaccData.length > 0) {
+          dp2Log('تحصين: أول صف = ' + JSON.stringify(vaccData[0]).substring(0,200));
+        }
+        
+        if (Array.isArray(vaccData) && vaccData.length > 0 && Array.isArray(vaccData[0])) {
+          vaccData.forEach(function(row) {
+            var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
+            var vaccines=[], dosesTotal=0;
+            var vaccMap={6:'التسمم المعوي',8:'طاعون/جدري',10:'الحمى القلاعية',12:'التهاب جلد عقدي',14:'السعار'};
+            Object.keys(vaccMap).forEach(function(ci){
+              var v = parseInt(g(+ci))||0;
+              var v2= parseInt(g(+ci+1))||0;
+              var tot=v+v2;
+              if(tot>0){vaccines.push(vaccMap[ci]); dosesTotal+=tot;}
+            });
+            dp2_RAW.vacc.push({
+              doc: g(45), name:g(2), phone:g(1), region:g(4),
+              date:g(26)||g(25), vaccines:vaccines, doses:dosesTotal
+            });
           });
-          dp2_RAW.vacc.push({
-            doc: g(45), name:g(2), phone:g(1), region:g(4),
-            date:g(26)||g(25), vaccines:vaccines, doses:dosesTotal
+          dp2Log('✅ تحصين: تم تحميل ' + dp2_RAW.vacc.length + ' من Array-of-Arrays');
+        }
+        else if (Array.isArray(vaccData) && vaccData.length > 0 && typeof vaccData[0] === 'object') {
+          vaccData.forEach(function(row) {
+            var docVal = dp2Get(row, 'doc', '') || dp2Get(row, 'dataEntry', '') || dp2Get(row, 'dataUpdater', '') || dp2Get(row, 'الطبيب', '');
+            if (docVal) {
+              dp2_RAW.vacc.push({
+                doc: docVal,
+                name: dp2Get(row, 'name', ''),
+                phone: dp2Get(row, 'phone', ''),
+                region: dp2Get(row, 'region', ''),
+                date: dp2Get(row, 'date', '') || dp2Get(row, 'financialDate', ''),
+                vaccines: row.vaccines || [],
+                doses: row.doses || 0
+              });
+            }
           });
-        });
+          dp2Log('✅ تحصين: تم تحميل ' + dp2_RAW.vacc.length + ' من Array-of-Objects');
+        }
+      } else {
+        dp2Log('⚠️ تحصين: vr.success = ' + (vr ? vr.success : 'null'));
       }
-    } catch(e) { console.error('خطأ في معالجة التحصين:', e); }
+    } catch(e) { dp2Log('❌ خطأ معالجة التحصين: ' + e.message); }
 
-    /* ── معالجة العينات ── */
+    // ── معالجة العينات ──
     try {
-      var sr = results[2];
-      if (sr && sr.success && Array.isArray(sr.data)) {
-        sr.data.forEach(function(r) {
-          var tests=[], res=[];
-          for(var k=1;k<=5;k++){
-            var t=String(r['test'+k]||'').trim();
-            var rv=String(r['result'+k]||'').trim();
-            if(t){tests.push(t); res.push(rv||'قيد الانتظار');}
-          }
-          dp2_RAW.sample.push({
-            doc: String(r.dataEntry || r.dataUpdater || '').trim(), name:String(r.name||''),
-            phone:String(r.phone||''), region:String(r.region||''),
-            date:String(r.sampleSentDate||r.samplesentdate||''),
-            sampleType:String(r.sampleType||''), tests:tests, results:res
+      if (sr && sr.success) {
+        var sampleData = sr.data || [];
+        dp2Log('عينات: نوع البيانات = ' + (Array.isArray(sampleData) ? 'Array['+sampleData.length+']' : typeof sampleData));
+        if (sampleData.length > 0) {
+          dp2Log('عينات: أول صف = ' + JSON.stringify(sampleData[0]).substring(0,200));
+        }
+        
+        if (Array.isArray(sampleData)) {
+          sampleData.forEach(function(r) {
+            var tests=[], res=[];
+            for(var k=1;k<=5;k++){
+              var t=String(r['test'+k]||'').trim();
+              var rv=String(r['result'+k]||'').trim();
+              if(t){tests.push(t); res.push(rv||'قيد الانتظار');}
+            }
+            dp2_RAW.sample.push({
+              doc: String(r.dataEntry || r.dataUpdater || '').trim(),
+              name: String(r.name||''),
+              phone: String(r.phone||''), region: String(r.region||''),
+              date: String(r.sampleSentDate||r.samplesentdate||''),
+              sampleType: String(r.sampleType||''), tests:tests, results:res
+            });
           });
-        });
+          dp2Log('✅ عينات: تم تحميل ' + dp2_RAW.sample.length);
+        }
+      } else {
+        dp2Log('⚠️ عينات: sr.success = ' + (sr ? sr.success : 'null'));
       }
-    } catch(e) { console.error('خطأ في معالجة العينات:', e); }
+    } catch(e) { dp2Log('❌ خطأ معالجة العينات: ' + e.message); }
 
-    /* ── قائمة الأطباء ── */
+    // ── قائمة الأطباء ──
     var docs = [];
     var seen = {};
-    try {
-      if (tr && tr.success && Array.isArray(tr.data)) {
-        tr.data.slice(1).forEach(function(row){
-          if (!Array.isArray(row)) return;
-          var d = row[6] != null ? String(row[6]).trim() : '';
-          if(d && !seen[d]){seen[d]=true;docs.push(d);}
-        });
-      }
-    } catch(e) {}
-    try {
-      if (vr && vr.success && Array.isArray(vr.rows)) {
-        vr.rows.forEach(function(row){
-          if (!Array.isArray(row)) return;
-          var d = row[45] != null ? String(row[45]).trim() : '';
-          if(d && !seen[d]){seen[d]=true;docs.push(d);}
-        });
-      }
-    } catch(e) {}
-    try {
-      if (sr && sr.success && Array.isArray(sr.data)) {
-        sr.data.forEach(function(r){
-          var d = String(r.dataEntry || r.dataUpdater || '').trim();
-          if(d && !seen[d]){seen[d]=true;docs.push(d);}
-        });
-      }
-    } catch(e) {}
+    dp2Log('=== جمع الأطباء ===');
+    dp2Log('من العلاج: ' + dp2_RAW.treat.length + ' سجل');
+    dp2_RAW.treat.forEach(function(r){ var d = String(r.doc || '').trim(); if(d && !seen[d]){seen[d]=true;docs.push(d);} });
+    dp2Log('من التحصين: ' + dp2_RAW.vacc.length + ' سجل');
+    dp2_RAW.vacc.forEach(function(r){ var d = String(r.doc || '').trim(); if(d && !seen[d]){seen[d]=true;docs.push(d);} });
+    dp2Log('من العينات: ' + dp2_RAW.sample.length + ' سجل');
+    dp2_RAW.sample.forEach(function(r){ var d = String(r.doc || '').trim(); if(d && !seen[d]){seen[d]=true;docs.push(d);} });
+    
     docs.sort();
+    dp2Log('إجمالي أطباء فريدين: ' + docs.length);
+    if (docs.length === 0) dp2Log('⚠️ لم يتم العثور على أي طبيب! تحقق من أسماء الأعمدة في API.');
+    
     var sel = document.getElementById('dp2_docSel');
     if (sel) {
       sel.innerHTML = '<option value="">الكل</option>';
@@ -7494,20 +7598,15 @@ async function dpLoadAll() {
   } catch(e) {
     document.getElementById('dp2_status').textContent = '❌ '+e.message;
     showToast('❌ خطأ: '+e.message,'error');
+    dp2Log('❌ خطأ عام: ' + e.message);
   }
   document.getElementById('dp2_loading').style.display = 'none';
 }
 
 /* ── Debounce events ── */
-document.getElementById('t_kw').addEventListener('input', function(){
-  dp2Debounce('t_kw', dpRenderTreat, 300);
-});
-document.getElementById('v_kw').addEventListener('input', function(){
-  dp2Debounce('v_kw', dpRenderVacc, 300);
-});
-document.getElementById('s_kw').addEventListener('input', function(){
-  dp2Debounce('s_kw', dpRenderSample, 300);
-});
+document.getElementById('t_kw').addEventListener('input', function(){ dp2Debounce('t_kw', dpRenderTreat, 300); });
+document.getElementById('v_kw').addEventListener('input', function(){ dp2Debounce('v_kw', dpRenderVacc, 300); });
+document.getElementById('s_kw').addEventListener('input', function(){ dp2Debounce('s_kw', dpRenderSample, 300); });
 </script>
 </div>
 <div id="comprehensiveReport" class="page">
