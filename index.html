@@ -6988,7 +6988,7 @@ function ani_setDefaultDates() {
     <div class="dp-tw">
       <div class="dp-th">
         <span id="t_rc">0 سجل</span>
-        <input class="dp-srch" type="text" placeholder="🔍 بحث..." id="t_kw" oninput="dpRenderTreat()">
+        <input class="dp-srch" type="text" placeholder="🔍 بحث..." id="t_kw">
       </div>
       <div class="dp-scroll">
         <table><thead><tr><th>التاريخ</th><th>الطبيب</th><th>المربي</th><th>الهاتف</th><th>المنطقة</th><th>التشخيص</th><th>المبلغ</th><th>الحالة</th></tr></thead>
@@ -7012,7 +7012,7 @@ function ani_setDefaultDates() {
     <div class="dp-tw">
       <div class="dp-th">
         <span id="v_rc">0 سجل</span>
-        <input class="dp-srch" type="text" placeholder="🔍 بحث..." id="v_kw" oninput="dpRenderVacc()">
+        <input class="dp-srch" type="text" placeholder="🔍 بحث..." id="v_kw">
       </div>
       <div class="dp-scroll">
         <table><thead><tr><th>التاريخ</th><th>الطبيب</th><th>المربي</th><th>الهاتف</th><th>المنطقة</th><th>اللقاحات المُعطاة</th><th>الجرعات</th></tr></thead>
@@ -7036,7 +7036,7 @@ function ani_setDefaultDates() {
     <div class="dp-tw">
       <div class="dp-th">
         <span id="s_rc">0 سجل</span>
-        <input class="dp-srch" type="text" placeholder="🔍 بحث..." id="s_kw" oninput="dpRenderSample()">
+        <input class="dp-srch" type="text" placeholder="🔍 بحث..." id="s_kw">
       </div>
       <div class="dp-scroll">
         <table><thead><tr><th>تاريخ الإرسال</th><th>الطبيب</th><th>المربي</th><th>نوع العينة</th><th>الفحص</th><th>النتيجة</th><th>أيام الانتظار</th></tr></thead>
@@ -7071,6 +7071,7 @@ function ani_setDefaultDates() {
 var dp2_RAW   = {treat:[], vacc:[], sample:[]};
 var dp2_CHARTS = {};
 var dp2_CUR   = 'treat';
+var dp2_DEBOUNCE = {};
 
 var DP2_MONTHS = ['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
@@ -7090,17 +7091,29 @@ function dpShowTab(tab) {
 function dp2ParseDate(s) {
   if (!s) return null;
   s = s.toString().trim();
-  var d;
-  if (s.indexOf('/') > -1) {
-    var p = s.split('/');
-    d = (p[0].length === 4) ? new Date(+p[0],+p[1]-1,+p[2]) : new Date(+p[2],+p[1]-1,+p[0]);
-  } else { d = new Date(s); }
+  // صيغة YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    return new Date(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10));
+  }
+  // صيغة DD/MM/YYYY
+  var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  var d = new Date(s);
   return (d && !isNaN(d.getTime())) ? d : null;
 }
 function dp2Fmt(d)  { if(!d) return '—'; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dp2Mkey(d) { return d ? d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0') : null; }
 function dp2Mlabel(k) { if(!k) return ''; var p=k.split('-'); return DP2_MONTHS[+p[1]]+' '+p[0]; }
-function dp2Esc(s)  { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── XSS-safe escape ── */
+function dp2Esc(s) {
+  return (s||'').toString()
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
 
 /* ── تطبيق الفلاتر ── */
 function dp2Filter(rows) {
@@ -7112,8 +7125,9 @@ function dp2Filter(rows) {
     if (doc && rowDoc !== doc) return false;
     var d = dp2ParseDate(r.date);
     if (d) {
-      if (df && dp2Fmt(d) < df) return false;
-      if (dt && dp2Fmt(d) > dt) return false;
+      var fmt = dp2Fmt(d);
+      if (df && fmt < df) return false;
+      if (dt && fmt > dt) return false;
     }
     return true;
   });
@@ -7124,6 +7138,12 @@ function dpApply() {
   else if (dp2_CUR === 'vacc')     dpRenderVacc();
   else if (dp2_CUR === 'sample')   dpRenderSample();
   else if (dp2_CUR === 'overview') dpRenderOverview();
+}
+
+/* ── Debounce helper ── */
+function dp2Debounce(key, fn, ms) {
+  clearTimeout(dp2_DEBOUNCE[key]);
+  dp2_DEBOUNCE[key] = setTimeout(fn, ms);
 }
 
 /* ── الرسوم البيانية ── */
@@ -7188,8 +7208,11 @@ function dpRenderTreat() {
   var top = Object.entries(dc).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
   if (top.length) dp2Bar('t_dc', top.map(function(e){return e[0].substring(0,16);}), top.map(function(e){return e[1];}), '#f39c12');
 
-  var kw = ((document.getElementById('t_kw')||{}).value||'').toLowerCase();
-  var filtered = kw ? rows.filter(function(r){ return JSON.stringify(r).toLowerCase().indexOf(kw)>-1; }) : rows;
+  var kw = ((document.getElementById('t_kw')||{}).value||'').toLowerCase().trim();
+  var filtered = kw ? rows.filter(function(r){
+    return (String(r.doc)+' '+String(r.name)+' '+String(r.phone)+' '+String(r.region)+' '+String(r.disease)+' '+String(r.status))
+      .toLowerCase().indexOf(kw) > -1;
+  }) : rows;
   filtered = filtered.slice().sort(function(a,b){ return (dp2ParseDate(b.date)||0)-(dp2ParseDate(a.date)||0); });
   document.getElementById('t_rc').textContent = filtered.length + ' سجل';
   document.getElementById('t_tb').innerHTML = filtered.length ? filtered.map(function(r){
@@ -7223,8 +7246,11 @@ function dpRenderVacc() {
   var vtop = Object.entries(vc).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
   if (vtop.length) dp2Doughnut('v_dc', vtop.map(function(e){return e[0];}), vtop.map(function(e){return e[1];}));
 
-  var kw = ((document.getElementById('v_kw')||{}).value||'').toLowerCase();
-  var filtered = kw ? rows.filter(function(r){ return JSON.stringify(r).toLowerCase().indexOf(kw)>-1; }) : rows;
+  var kw = ((document.getElementById('v_kw')||{}).value||'').toLowerCase().trim();
+  var filtered = kw ? rows.filter(function(r){
+    return (String(r.doc)+' '+String(r.name)+' '+String(r.phone)+' '+String(r.region)+' '+String((r.vaccines||[]).join(' ')))
+      .toLowerCase().indexOf(kw) > -1;
+  }) : rows;
   filtered = filtered.slice().sort(function(a,b){ return (dp2ParseDate(b.date)||0)-(dp2ParseDate(a.date)||0); });
   document.getElementById('v_rc').textContent = filtered.length + ' سجل';
   document.getElementById('v_tb').innerHTML = filtered.length ? filtered.map(function(r){
@@ -7240,11 +7266,14 @@ function dpRenderSample() {
   var today = new Date(); today.setHours(0,0,0,0);
   var total    = rows.length;
   var positive = rows.filter(function(r){ return (r.results||[]).indexOf('إيجابي')>-1; }).length;
-  var pending  = rows.filter(function(r){ return !(r.results||[]).some(function(x){return x&&x!=='قيد الانتظار';}); }).length;
+  var pending  = rows.filter(function(r){
+    var rs = r.results || [];
+    return rs.length > 0 && rs.every(function(x){ return !x || x === 'قيد الانتظار'; });
+  }).length;
   var overdue  = rows.filter(function(r){
     var d=dp2ParseDate(r.date); if(!d) return false;
     d.setHours(0,0,0,0);
-    return Math.floor((today-d)/86400000)>7 && !(r.results||[]).some(function(x){return x&&x!=='قيد الانتظار';});
+    return Math.floor((today-d)/86400000)>7 && (r.results||[]).every(function(x){return !x || x==='قيد الانتظار';});
   }).length;
 
   document.getElementById('s_total').textContent    = total;
@@ -7266,8 +7295,11 @@ function dpRenderSample() {
   });
   dp2Doughnut('s_dc',['إيجابي','سلبي','تالف','بانتظار'],[pos,neg,dam,pend],['#e65050','#2bb673','#f39c12','#aaa']);
 
-  var kw = ((document.getElementById('s_kw')||{}).value||'').toLowerCase();
-  var filtered = kw ? rows.filter(function(r){ return JSON.stringify(r).toLowerCase().indexOf(kw)>-1; }) : rows;
+  var kw = ((document.getElementById('s_kw')||{}).value||'').toLowerCase().trim();
+  var filtered = kw ? rows.filter(function(r){
+    return (String(r.doc)+' '+String(r.name)+' '+String(r.sampleType)+' '+String((r.tests||[]).join(' '))+' '+String((r.results||[]).join(' ')))
+      .toLowerCase().indexOf(kw) > -1;
+  }) : rows;
   filtered = filtered.slice().sort(function(a,b){ return (dp2ParseDate(b.date)||0)-(dp2ParseDate(a.date)||0); });
   document.getElementById('s_rc').textContent = filtered.length + ' سجل';
   document.getElementById('s_tb').innerHTML = filtered.length ? filtered.map(function(r){
@@ -7356,85 +7388,97 @@ async function dpLoadAll() {
     ]);
 
     /* ── معالجة العلاج ── */
-    var tr = results[0];
-    if (tr && tr.success && tr.data && tr.data.length > 1) {
-      tr.data.slice(1).forEach(function(row) {
-     var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
-    var diseases = [g(7),g(10),g(13),g(16),g(19)].filter(function(d){return d&&d!=='-'&&d!=='0';});
-    var status = g(47).indexOf('غير')>-1 ? 'غير مكتملة' : 'مكتمل';
-    dp2_RAW.treat.push({
-      doc: g(6), name:g(2), phone:g(1), region:g(4),
-      date:g(46), disease:diseases[0]||'—',
-      amount:g(42)||g(43), status:status
-    });
-      });
-    }
+    try {
+      var tr = results[0];
+      if (tr && tr.success && Array.isArray(tr.data) && tr.data.length > 1) {
+        tr.data.slice(1).forEach(function(row) {
+          if (!Array.isArray(row)) return;
+          var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
+          var diseases = [g(7),g(10),g(13),g(16),g(19)].filter(function(d){return d&&d!=='-'&&d!=='0';});
+          var rawStatus = g(47);
+          var status = rawStatus.indexOf('غير')>-1 ? 'غير مكتملة' : (rawStatus.indexOf('مكتمل')>-1 ? 'مكتمل' : '—');
+          dp2_RAW.treat.push({
+            doc: g(6), name:g(2), phone:g(1), region:g(4),
+            date:g(46), disease:diseases[0]||'—',
+            amount: g(43), status:status
+          });
+        });
+      }
+    } catch(e) { console.error('خطأ في معالجة العلاج:', e); }
 
     /* ── معالجة التحصين ── */
-    var vr = results[1];
-    if (vr && vr.success && vr.rows) {
-      vr.rows.forEach(function(row) {
-        var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
-        var vaccines=[], dosesTotal=0;
-        var vaccMap={6:'التسمم المعوي',8:'طاعون/جدري',10:'الحمى القلاعية',12:'التهاب جلد عقدي',14:'السعار'};
-        Object.keys(vaccMap).forEach(function(ci){
-          var v = parseInt(g(+ci))||0;
-          var v2= parseInt(g(+ci+1))||0;
-          var tot=v+v2;
-          if(tot>0){vaccines.push(vaccMap[ci]); dosesTotal+=tot;}
-        });
+    try {
+      var vr = results[1];
+      if (vr && vr.success && Array.isArray(vr.rows)) {
+        vr.rows.forEach(function(row) {
+          if (!Array.isArray(row)) return;
+          var g = function(i){ return row[i] != null ? String(row[i]).trim() : ''; };
+          var vaccines=[], dosesTotal=0;
+          var vaccMap={6:'التسمم المعوي',8:'طاعون/جدري',10:'الحمى القلاعية',12:'التهاب جلد عقدي',14:'السعار'};
+          Object.keys(vaccMap).forEach(function(ci){
+            var v = parseInt(g(+ci))||0;
+            var v2= parseInt(g(+ci+1))||0;
+            var tot=v+v2;
+            if(tot>0){vaccines.push(vaccMap[ci]); dosesTotal+=tot;}
+          });
           dp2_RAW.vacc.push({
-          doc: g(45), name:g(2), phone:g(1), region:g(4),
-          date:g(26)||g(25), vaccines:vaccines, doses:dosesTotal
+            doc: g(45), name:g(2), phone:g(1), region:g(4),
+            date:g(26)||g(25), vaccines:vaccines, doses:dosesTotal
+          });
         });
-      });
-    }
+      }
+    } catch(e) { console.error('خطأ في معالجة التحصين:', e); }
 
     /* ── معالجة العينات ── */
-    var sr = results[2];
-    if (sr && sr.success && sr.data) {
-      sr.data.forEach(function(r) {
-        var tests=[], res=[];
-        for(var k=1;k<=5;k++){
-          var t=(r['test'+k]||'').trim();
-          var rv=(r['result'+k]||'').trim();
-          if(t){tests.push(t); res.push(rv||'قيد الانتظار');}
-        }
-        dp2_RAW.sample.push({
-          doc: String(r.dataEntry || r.dataUpdater || '').trim(), name:r.name||'',
-          phone:r.phone||'', region:r.region||'',
-          date:r.sampleSentDate||r.samplesentdate||'',
-          sampleType:r.sampleType||'', tests:tests, results:res
+    try {
+      var sr = results[2];
+      if (sr && sr.success && Array.isArray(sr.data)) {
+        sr.data.forEach(function(r) {
+          var tests=[], res=[];
+          for(var k=1;k<=5;k++){
+            var t=String(r['test'+k]||'').trim();
+            var rv=String(r['result'+k]||'').trim();
+            if(t){tests.push(t); res.push(rv||'قيد الانتظار');}
+          }
+          dp2_RAW.sample.push({
+            doc: String(r.dataEntry || r.dataUpdater || '').trim(), name:String(r.name||''),
+            phone:String(r.phone||''), region:String(r.region||''),
+            date:String(r.sampleSentDate||r.samplesentdate||''),
+            sampleType:String(r.sampleType||''), tests:tests, results:res
+          });
         });
-      });
-    }
+      }
+    } catch(e) { console.error('خطأ في معالجة العينات:', e); }
 
-    /* ── قائمة الأطباء ── */
     /* ── قائمة الأطباء ── */
     var docs = [];
     var seen = {};
-
-    // من سجل العلاج (العمود G = index 6)
-    if (tr && tr.success && tr.data) {
-      tr.data.slice(1).forEach(function(row){
-        var d = row[6] != null ? String(row[6]).trim() : '';
-        if(d && !seen[d]){seen[d]=true;docs.push(d);}
-      });
-    }
-    // من سجل التحصين (العمود AT = index 45)
-    if (vr && vr.success && vr.rows) {
-      vr.rows.forEach(function(row){
-        var d = row[45] != null ? String(row[45]).trim() : '';
-        if(d && !seen[d]){seen[d]=true;docs.push(d);}
-      });
-    }
-    // من سجل العينات (العمود S عبر dataEntry/dataUpdater)
-    if (sr && sr.success && sr.data) {
-      sr.data.forEach(function(r){
-        var d = String(r.dataEntry || r.dataUpdater || '').trim();
-        if(d && !seen[d]){seen[d]=true;docs.push(d);}
-      });
-    }
+    try {
+      if (tr && tr.success && Array.isArray(tr.data)) {
+        tr.data.slice(1).forEach(function(row){
+          if (!Array.isArray(row)) return;
+          var d = row[6] != null ? String(row[6]).trim() : '';
+          if(d && !seen[d]){seen[d]=true;docs.push(d);}
+        });
+      }
+    } catch(e) {}
+    try {
+      if (vr && vr.success && Array.isArray(vr.rows)) {
+        vr.rows.forEach(function(row){
+          if (!Array.isArray(row)) return;
+          var d = row[45] != null ? String(row[45]).trim() : '';
+          if(d && !seen[d]){seen[d]=true;docs.push(d);}
+        });
+      }
+    } catch(e) {}
+    try {
+      if (sr && sr.success && Array.isArray(sr.data)) {
+        sr.data.forEach(function(r){
+          var d = String(r.dataEntry || r.dataUpdater || '').trim();
+          if(d && !seen[d]){seen[d]=true;docs.push(d);}
+        });
+      }
+    } catch(e) {}
     docs.sort();
     var sel = document.getElementById('dp2_docSel');
     if (sel) {
@@ -7453,6 +7497,17 @@ async function dpLoadAll() {
   }
   document.getElementById('dp2_loading').style.display = 'none';
 }
+
+/* ── Debounce events ── */
+document.getElementById('t_kw').addEventListener('input', function(){
+  dp2Debounce('t_kw', dpRenderTreat, 300);
+});
+document.getElementById('v_kw').addEventListener('input', function(){
+  dp2Debounce('v_kw', dpRenderVacc, 300);
+});
+document.getElementById('s_kw').addEventListener('input', function(){
+  dp2Debounce('s_kw', dpRenderSample, 300);
+});
 </script>
 </div>
 <div id="comprehensiveReport" class="page">
