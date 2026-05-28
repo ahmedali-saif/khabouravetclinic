@@ -5350,9 +5350,9 @@ async function vaccInit() {
 
     <div class="toolbar">
       <label>بحث:</label>
-      <input type="text" id="vr_searchInput" placeholder="رقم الهاتف أو الاسم " style="width:260px">
+      <input type="text" id="vr_searchInput" placeholder="رقم الهاتف أو الاسم " style="width:260px" oninput="if(vr_dataLoaded) vr_render()">
       <label>الحالة:</label>
-      <select id="vr_statusFilter">
+      <select id="vr_statusFilter" onchange="if(vr_dataLoaded) vr_render()">
         <option value="all">الكل</option>
         <option value="vacc">المحصنون فقط</option>
         <option value="not">غير المحصنين فقط</option>
@@ -5517,7 +5517,19 @@ function vr_render() {
       return false;
     });
   }
-
+// أضف هذا مباشرة بعد تعريف دالة vr_render
+(function() {
+  ['vr_searchInput', 'vr_statusFilter', 'vr_sortBy'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+      if (vr_dataLoaded) vr_render();
+    });
+    el.addEventListener('change', function() {
+      if (vr_dataLoaded) vr_render();
+    });
+  });
+})();
   // فلتر الحالة
   if (status === "vacc") rows = rows.filter(function(r) { return r.vaccinated; });
   else if (status === "not") rows = rows.filter(function(r) { return !r.vaccinated; });
