@@ -1894,17 +1894,8 @@ PERM.init(u, m);
   document.getElementById('l_password').addEventListener('keydown', e=>{ if(e.key==='Enter') lDoLogin(); });
 
 document.getElementById('l_logoutBtn').addEventListener('click', ()=>{
-  PERM.revoke();
-  lockNav();
-  showPage('login');
+  PERM.revoke();  // ← هذا السطر فقط
   
-  localStorage.removeItem('selected_wilayat_url');
-  localStorage.removeItem('selected_wilayat_name');
-  
-  setTimeout(function() {
-    window.location.reload();
-  }, 300);
-});
   window._currentUser = null;
   window._userAllowedPages = null;
   lCU=null;
