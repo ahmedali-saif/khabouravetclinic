@@ -5471,6 +5471,9 @@ vr_allData = res.data || [];
     vr_hideMsg();
     document.getElementById("vr_searchResultsTable").style.display = "";
     vr_render();
+    document.getElementById('vr_searchInput').oninput = function() { vr_render(); };
+    document.getElementById('vr_statusFilter').onchange = function() { vr_render(); };
+    document.getElementById('vr_sortBy').onchange = function() { vr_render(); };
   } catch (err) {
     vr_showMsg('خطأ في الاتصال: ' + err.message, true);
   } finally {
