@@ -7162,8 +7162,11 @@ function ani_renderTable(regionMap) {
   var tbody = document.getElementById('ani_searchResultsBody');
   var tfoot = document.getElementById('ani_searchResultsFoot');
   tbody.innerHTML = ''; tfoot.innerHTML = '';
-
-  var regions = Object.keys(regionMap).sort();
+  var regions = Object.keys(regionMap).sort(function(a, b) {
+    var totalA = (regionMap[a].goats + regionMap[a].sheep + regionMap[a].cattle + regionMap[a].camels);
+    var totalB = (regionMap[b].goats + regionMap[b].sheep + regionMap[b].cattle + regionMap[b].camels);
+    return totalB - totalA;
+  });
   var totG = 0, totS = 0, totC = 0, totCa = 0;
 
   regions.forEach(function(region, idx) {
@@ -8410,9 +8413,9 @@ function rpt_buildAll() {
   document.getElementById('rpt_tb3').innerHTML = h;
 
   // المستفيدون
-  document.getElementById('rpt_tb5').innerHTML =
-    '<tr><td style="color:red;font-size:1.6em;font-weight:bold;padding:16px">' + rpt_D.beneficiaries.therapeutic +
-    '</td><td style="color:red;font-size:1.6em;font-weight:bold;padding:16px">' + rpt_D.beneficiaries.vaccination + '</td></tr>';
+document.getElementById('rpt_tb5').innerHTML =
+    '<tr><td style="color:red;font-size:1.6em;font-weight:bold;padding:16px">' + Math.round(rpt_D.beneficiaries.therapeutic) +
+    '</td><td style="color:red;font-size:1.6em;font-weight:bold;padding:16px">' + Math.round(rpt_D.beneficiaries.vaccination) + '</td></tr>';
 
   // الأدوية
   h = '';
