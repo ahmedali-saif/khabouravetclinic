@@ -1079,7 +1079,7 @@ lockNav();
       <option value="https://script.google.com/macros/s/AKfycbyYcOAj-NeT18g_f4TZ4SsZK-7YCFHWDHRu0FZPfoqOKpfawx3jTqiBXTA5Xoq_w_YL/exec">السويق</option>
     </select>
 
-    <button onclick="wilayatApply()"
+    <button id="wilayatApplyBtn" onclick="wilayatApply()"
       style="width:100%;padding:10px;background:#2bb673;color:#fff;border:none;
              border-radius:5px;font-size:14px;font-weight:bold;font-family:inherit;cursor:pointer;">
       ✅ تطبيق الولاية
@@ -8837,7 +8837,7 @@ function foDismissOverdueAlert() {
       { selector: "#reports .print-btn", action: "print" },
     ],
     financialInventory: [
-      { selector: "#financialInventory .print-btn", action: "print" },
+      { id: "wilayatApplyBtn", action: "apply" },
     ],
      home: [
     { selector: "#home .wilayatApply", action: "wilsave" },
