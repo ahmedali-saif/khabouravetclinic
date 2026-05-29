@@ -8073,7 +8073,7 @@ dp_RAW.treat.push({
           phone:   trCOL.phone   >= 0 ? dp_v(row, trCOL.phone)   : dp_v(row, 1),
           region:  trCOL.region  >= 0 ? dp_v(row, trCOL.region)  : dp_v(row, 4),
           date:    dp_v(row, 46),
-          disease: dp_v(row, 31),
+          disease: dp_v(row, 6) || dp_v(row, 9) || dp_v(row, 12) || '—',
           amount:  trCOL.amount  >= 0 ? dp_v(row, trCOL.amount)  : dp_v(row, 42),
           place:   trCOL.place   >= 0 ? dp_v(row, trCOL.place)   : dp_v(row, 31),
           status:  (function() {
