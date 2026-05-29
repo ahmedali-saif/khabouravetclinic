@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"> setTimeout(function() {
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <!-- Favicon -->
@@ -3663,6 +3663,7 @@ async function trloadData() {
     trshowMessage("خطأ في تحميل الجدول: " + err.message, true);
   } finally {
     trunblockButtons();
+    if (typeof trloadIncompleteCount === "function") trloadIncompleteCount();
   }
 }
 
@@ -3695,13 +3696,13 @@ async function trloadDropdowns() {
       fillDL("tr_dataEntryList",   dataEntryRes.data);
       fillDL("tr_dataUpdaterList", dataEntryRes.data);
     }
-  } catch (err) {
-    trshowMessage("خطأ في تحميل القوائم: " + err.message, true);
+ } catch (err) {
+    trshowMessage("خطأ في تحميل الجدول: " + err.message, true);
   } finally {
     trunblockButtons();
+    if (typeof trloadIncompleteCount === "function") trloadIncompleteCount();
   }
 }
-
 
 // ============================================================
 //  البحث المتقدم (Advanced Search)
