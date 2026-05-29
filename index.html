@@ -4947,7 +4947,7 @@ async function vaccSaveData() {
   if (!vaccGetValue('vacc_phoneInput')) { vaccShowMessage('الرجاء إدخال رقم الهاتف', true); return; }
   if (!vaccGetValue('vacc_dataEntryInput')) { vaccShowMessage('الرجاء اختيار مدخل البيانات', true); return; }
   if (vaccGetValue('vacc_copyingdata') !== '') { vaccShowMessage('لا يمكن الحفظ في وضع التحديث', true); return; }
-  if (!vaccAnyDiseaseFilled()) { vaccShowMessage('يجب تعبئة مربع واحد على الأقل', true); return; }
+  if (!vaccAnyDiseaseFilled()) { vaccShowMessage('يجب تعبئة مربع واحد على الأقل من الأمراض الوبائية', true); return; }
 
   vacc_isSaving = true;
   var btn = document.getElementById('vacc_saveBtn'), orig = btn.textContent;
