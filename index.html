@@ -5309,6 +5309,8 @@ function vaccBindEvents() {
       row.style.display = (cellVal.indexOf(phone) !== -1) ? '' : 'none';
     }
   });
+   var tfoot = table.querySelector('tfoot');
+if (tfoot) tfoot.style.display = phone === '' ? '' : 'none';
 }); 
 }
 
