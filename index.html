@@ -4841,20 +4841,7 @@ async function vaccFetchVaccinationDataByPhone(phone, showWarning) {
       html += '</tr>';
     });
     html += '</tbody></table>';
-   html += `<style>
-      #vacc_searchRecordResults table { border-collapse: collapse; }
-      #vacc_searchRecordResults thead tr:first-child th {
-        position: sticky;
-        top: 0;
-        z-index: 4;
-      }
-      #vacc_searchRecordResults thead tr:nth-child(2) th {
-        position: sticky;
-        top: 33px;
-        z-index: 3;
-      }
-      .vaccination-row:hover{background-color:#e6f7ff!important;transition:background-color .2s}
-    </style>`;
+html += '<style>.vaccination-row:hover{background-color:#e6f7ff!important;transition:background-color .2s}</style>';
     container.innerHTML = html;
   } catch(err) { container.innerHTML = '<p style="color:red;text-align:center;">خطأ: ' + err.message + '</p>'; }
 }
@@ -5144,13 +5131,13 @@ async function vaccDoSearchVaccinationRecords() {
     ];
     sub2.forEach(function(s){ html+='<th style="background:'+s.bg+';color:'+s.c+';border:1px solid '+s.bc+';padding:5px 4px;">'+s.t+'</th>'; });
     html += '</tr></thead><tbody>';
-    var colOrder = [
+   var colOrder = [
       {idx:1,bg:''},{idx:2,bg:''},{idx:3,bg:''},{idx:4,bg:''},{idx:5,bg:''},
       {idx:7,bg:'#edf4fb'},{idx:6,bg:'#edf4fb'},{idx:9,bg:'#fef5ef'},{idx:8,bg:'#fef5ef'},
       {idx:11,bg:'#f2f9ec'},{idx:10,bg:'#f2f9ec'},{idx:12,bg:'#f2f9ec'},
       {idx:14,bg:'#faf2fc'},{idx:13,bg:'#faf2fc'},{idx:15,bg:'#faf2fc'},{idx:16,bg:'#faf2fc'},{idx:17,bg:'#faf2fc'},
       {idx:18,bg:'#fef8f4'},{idx:20,bg:'#fef8f4'},{idx:19,bg:'#fef8f4'},{idx:21,bg:'#fef8f4'},
-      {idx:22,bg:''},{idx:23,bg:''},{idx:24,bg:''},{idx:25,bg:''}
+      {idx:22,bg:''},{idx:23,bg:''},{idx:25,bg:''},{idx:26,bg:''}
     ];
     rows.forEach(function(row, index) {
       var caseNum = row[0];
