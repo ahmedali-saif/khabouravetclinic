@@ -4841,8 +4841,27 @@ async function vaccFetchVaccinationDataByPhone(phone, showWarning) {
       html += '</tr>';
     });
     html += '</tbody></table>';
-html += '<style>.vaccination-row:hover{background-color:#e6f7ff!important;transition:background-color .2s}</style>';
-    container.innerHTML = html;
+container.innerHTML = html;
+    // تثبيت الصفين بعد إدراج HTML لمعرفة الارتفاع الفعلي
+    setTimeout(function() {
+      var thead = container.querySelector('thead');
+      if (!thead) return;
+      var rows = thead.querySelectorAll('tr');
+      if (rows.length < 2) return;
+      var firstRowHeight = rows[0].getBoundingClientRect().height;
+      // تثبيت الصف الأول
+      rows[0].querySelectorAll('th').forEach(function(th) {
+        th.style.position = 'sticky';
+        th.style.top = '0px';
+        th.style.zIndex = '4';
+      });
+      // تثبيت الصف الثاني بناءً على ارتفاع الأول الفعلي
+      rows[1].querySelectorAll('th').forEach(function(th) {
+        th.style.position = 'sticky';
+        th.style.top = firstRowHeight + 'px';
+        th.style.zIndex = '3';
+      });
+    }, 50);
   } catch(err) { container.innerHTML = '<p style="color:red;text-align:center;">خطأ: ' + err.message + '</p>'; }
 }
 
