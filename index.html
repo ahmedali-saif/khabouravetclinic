@@ -5104,8 +5104,8 @@ async function vaccDoSearchVaccinationRecords() {
     document.getElementById('vacc_srResultCount').textContent = 'عدد النتائج: ' + rows.length + ' سجل';
     document.getElementById('vacc_srResultCount').textContent = 'عدد النتائج: ' + res.rows.length + ' سجل';
     var html = '<table><thead><tr>';
-   html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;vertical-align:middle;position:sticky;top:0;z-index:10;">م</th>';
-html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;vertical-align:middle;position:sticky;top:0;z-index:10;">رقم الحالة</th>';
+   html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:3px 5px;vertical-align:middle;position:sticky;top:0;z-index:10;">م</th>';
+html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:3px 5px;vertical-align:middle;position:sticky;top:0;z-index:10;">رقم الحالة</th>';
 html += '<th colspan="5" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;position:sticky;top:0;z-index:10;">بيانات المربي</th>';
 html += '<th colspan="2" style="background:#2e75b6;color:#fff;border:1px solid #1f5289;padding:7px 5px;position:sticky;top:0;z-index:10;">التسمم المعوي</th>';
 html += '<th colspan="2" style="background:#c55a11;color:#fff;border:1px solid #8c3d09;padding:7px 5px;position:sticky;top:0;z-index:10;">طاعون / جدري</th>';
@@ -5129,7 +5129,7 @@ html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #
       {t:'أبقار',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'},{t:'ماعز',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'},
       {t:'أغنام',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'},{t:'جمال',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'}
     ];
-    sub2.forEach(function(s){ html+='<th style="background:'+s.bg+';color:'+s.c+';border:1px solid '+s.bc+';padding:5px 4px;position:sticky;top:37px;z-index:9;">'+s.t+'</th>'; });
+    sub2.forEach(function(s){ html+='<th style="background:'+s.bg+';color:'+s.c+';border:1px solid '+s.bc+';padding:5px 4px;position:sticky;top:25px;z-index:9;">'+s.t+'</th>'; });
     html += '</tr></thead><tbody>';
    var colOrder = [
       {idx:1,bg:''},{idx:2,bg:''},{idx:3,bg:''},{idx:4,bg:''},{idx:5,bg:''},
