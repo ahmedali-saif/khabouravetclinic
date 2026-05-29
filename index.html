@@ -4841,27 +4841,8 @@ async function vaccFetchVaccinationDataByPhone(phone, showWarning) {
       html += '</tr>';
     });
     html += '</tbody></table>';
-container.innerHTML = html;
-    // تثبيت الصفين بعد إدراج HTML لمعرفة الارتفاع الفعلي
-    setTimeout(function() {
-      var thead = container.querySelector('thead');
-      if (!thead) return;
-      var rows = thead.querySelectorAll('tr');
-      if (rows.length < 2) return;
-      var firstRowHeight = rows[0].getBoundingClientRect().height;
-      // تثبيت الصف الأول
-      rows[0].querySelectorAll('th').forEach(function(th) {
-        th.style.position = 'sticky';
-        th.style.top = '0px';
-        th.style.zIndex = '4';
-      });
-      // تثبيت الصف الثاني بناءً على ارتفاع الأول الفعلي
-      rows[1].querySelectorAll('th').forEach(function(th) {
-        th.style.position = 'sticky';
-        th.style.top = firstRowHeight + 'px';
-        th.style.zIndex = '3';
-      });
-    }, 50);
+html += '<style>.vaccination-row:hover{background-color:#e6f7ff!important;transition:background-color .2s}</style>';
+    container.innerHTML = html;
   } catch(err) { container.innerHTML = '<p style="color:red;text-align:center;">خطأ: ' + err.message + '</p>'; }
 }
 
@@ -5123,19 +5104,19 @@ async function vaccDoSearchVaccinationRecords() {
     document.getElementById('vacc_srResultCount').textContent = 'عدد النتائج: ' + rows.length + ' سجل';
     document.getElementById('vacc_srResultCount').textContent = 'عدد النتائج: ' + res.rows.length + ' سجل';
     var html = '<table><thead><tr>';
-    html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;vertical-align:middle;">م</th>';
-    html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;vertical-align:middle;">رقم الحالة</th>';
-    html += '<th colspan="5" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;">بيانات المربي</th>';
-    html += '<th colspan="2" style="background:#2e75b6;color:#fff;border:1px solid #1f5289;padding:7px 5px;">التسمم المعوي</th>';
-    html += '<th colspan="2" style="background:#c55a11;color:#fff;border:1px solid #8c3d09;padding:7px 5px;">طاعون / جدري</th>';
-    html += '<th colspan="3" style="background:#538135;color:#fff;border:1px solid #375521;padding:7px 5px;">الحمى القلاعية</th>';
-    html += '<th colspan="5" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;">السعار</th>';
-    html += '<th colspan="4" style="background:#833c00;color:#fff;border:1px solid #5c2900;padding:7px 5px;">التهاب الجلد العقدي</th>';
-    html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;">الملاحظات</th>';
-    html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;font-size:10px;">القائم بالتعديل</th>';
-    html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;font-size:10px;">مدخل البيانات</th>';
-    html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;font-size:10px;">تاريخ الإدخال</th>';
-    html += '</tr><tr>';
+   html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;vertical-align:middle;position:sticky;top:0;z-index:10;">م</th>';
+html += '<th rowspan="2" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;vertical-align:middle;position:sticky;top:0;z-index:10;">رقم الحالة</th>';
+html += '<th colspan="5" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;position:sticky;top:0;z-index:10;">بيانات المربي</th>';
+html += '<th colspan="2" style="background:#2e75b6;color:#fff;border:1px solid #1f5289;padding:7px 5px;position:sticky;top:0;z-index:10;">التسمم المعوي</th>';
+html += '<th colspan="2" style="background:#c55a11;color:#fff;border:1px solid #8c3d09;padding:7px 5px;position:sticky;top:0;z-index:10;">طاعون / جدري</th>';
+html += '<th colspan="3" style="background:#538135;color:#fff;border:1px solid #375521;padding:7px 5px;position:sticky;top:0;z-index:10;">الحمى القلاعية</th>';
+html += '<th colspan="5" style="background:#7b2d8b;color:#fff;border:1px solid #5a1f68;padding:7px 5px;position:sticky;top:0;z-index:10;">السعار</th>';
+html += '<th colspan="4" style="background:#833c00;color:#fff;border:1px solid #5c2900;padding:7px 5px;position:sticky;top:0;z-index:10;">التهاب الجلد العقدي</th>';
+html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;position:sticky;top:0;z-index:10;">الملاحظات</th>';
+html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;font-size:10px;position:sticky;top:0;z-index:10;">القائم بالتعديل</th>';
+html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;font-size:10px;position:sticky;top:0;z-index:10;">مدخل البيانات</th>';
+html += '<th rowspan="2" style="background:#4472c4;color:#fff;border:1px solid #2f528f;padding:7px 4px;vertical-align:middle;font-size:10px;position:sticky;top:0;z-index:10;">تاريخ الإدخال</th>';
+    html += '</tr><tr style="top: 37px;">';
     var sub2 = [
       {t:'رقم الهاتف',bg:'#d9b3e8',c:'#3b0056',bc:'#b380cc'},{t:'اسم المربي',bg:'#d9b3e8',c:'#3b0056',bc:'#b380cc'},
       {t:'الحيازة',bg:'#d9b3e8',c:'#3b0056',bc:'#b380cc'},{t:'المنطقة',bg:'#d9b3e8',c:'#3b0056',bc:'#b380cc'},
@@ -5148,7 +5129,7 @@ async function vaccDoSearchVaccinationRecords() {
       {t:'أبقار',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'},{t:'ماعز',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'},
       {t:'أغنام',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'},{t:'جمال',bg:'#fce4d6',c:'#833c00',bc:'#e8b899'}
     ];
-    sub2.forEach(function(s){ html+='<th style="background:'+s.bg+';color:'+s.c+';border:1px solid '+s.bc+';padding:5px 4px;">'+s.t+'</th>'; });
+    sub2.forEach(function(s){ html+='<th style="background:'+s.bg+';color:'+s.c+';border:1px solid '+s.bc+';padding:5px 4px;position:sticky;top:37px;z-index:9;">'+s.t+'</th>'; });
     html += '</tr></thead><tbody>';
    var colOrder = [
       {idx:1,bg:''},{idx:2,bg:''},{idx:3,bg:''},{idx:4,bg:''},{idx:5,bg:''},
