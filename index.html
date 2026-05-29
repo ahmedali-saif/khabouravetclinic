@@ -5515,7 +5515,24 @@ function vr_formatDate(val) {
 
   return s; // إرجاع كما هو إن لم يُتعرَّف عليه
 }
-
+function vr_parseDate(val) {
+  if (!val) return 0;
+  var s = val.toString().trim();
+  // صيغة yyyy-MM-dd أو yyyy/MM/dd
+  var m1 = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if (m1) {
+    return new Date(+m1[1], +m1[2] - 1, +m1[3]).getTime();
+  }
+  // صيغة dd/MM/yyyy
+  var m2 = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if (m2) {
+    return new Date(+m2[3], +m2[2] - 1, +m2[1]).getTime();
+  }
+  // محاولة كـ Date مباشرة
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) return d.getTime();
+  return 0;
+}
 function vr_render() {
   var q      = (document.getElementById("vr_searchInput").value || '').trim();
   var status = document.getElementById("vr_statusFilter").value;
@@ -5543,7 +5560,12 @@ function vr_render() {
   rows.sort(function(a, b) {
     if (sortBy === "phone")  return (a.phone  || "").localeCompare(b.phone  || "");
     if (sortBy === "status") return (b.vaccinated ? 1 : 0) - (a.vaccinated ? 1 : 0);
-    if (sortBy === "date")   return (a.entryDate || "").localeCompare(b.entryDate || "");
+    // ✅ الجديد (مقارنة زمنية رقمية)
+if (sortBy === "date") {
+  var da = vr_parseDate(a.entryDate);
+  var db = vr_parseDate(b.entryDate);
+  return da - db;  // من الأقدم إلى الأحدث
+}
     if (sortBy === "area")   return (a.area   || "").localeCompare(b.area   || "", "ar");
     return (a.name || "").localeCompare(b.name || "", "ar");
   });
