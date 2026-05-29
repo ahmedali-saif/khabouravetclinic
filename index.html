@@ -5145,8 +5145,19 @@ async function vaccDoSearchVaccinationRecords() {
       html += '<tr style="'+rowBg+' cursor:pointer;" onclick="vaccSelectCaseFromSearch(\''+caseNum+'\')" title="انقر لتحميل هذه الحالة">';
       html += '<td style="border:1px solid #ddd;padding:5px;text-align:center;">'+(index+1)+'</td>';
       html += '<td style="border:1px solid #ddd;padding:5px;text-align:center;cursor:pointer;color:#9b59b6;font-weight:bold;text-decoration:underline;" onclick="vaccSelectCaseFromSearch(\''+caseNum+'\')">'+caseNum+'</td>';
-      colOrder.forEach(function(col){
+colOrder.forEach(function(col){
         var val = (row[col.idx]!==null&&row[col.idx]!==undefined&&row[col.idx]!=='') ? row[col.idx] : '-';
+        // تنسيق التاريخ إذا كان بصيغة ISO
+        if (col.idx === 26 && val && val !== '-') {
+          try {
+            var d = new Date(val);
+            if (!isNaN(d.getTime())) {
+              val = String(d.getDate()).padStart(2,'0') + '/' +
+                    String(d.getMonth()+1).padStart(2,'0') + '/' +
+                    d.getFullYear();
+            }
+          } catch(e) {}
+        }
         var bg = col.bg ? 'background:'+col.bg+';' : '';
         html += '<td style="border:1px solid #ddd;padding:5px;text-align:center;'+bg+'">'+val+'</td>';
       });
