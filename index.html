@@ -4841,7 +4841,20 @@ async function vaccFetchVaccinationDataByPhone(phone, showWarning) {
       html += '</tr>';
     });
     html += '</tbody></table>';
-    html += '<style>.vaccination-row:hover{background-color:#e6f7ff!important;transition:background-color .2s}</style>';
+   html += `<style>
+      #vacc_searchRecordResults table { border-collapse: collapse; }
+      #vacc_searchRecordResults thead tr:first-child th {
+        position: sticky;
+        top: 0;
+        z-index: 4;
+      }
+      #vacc_searchRecordResults thead tr:nth-child(2) th {
+        position: sticky;
+        top: 33px;
+        z-index: 3;
+      }
+      .vaccination-row:hover{background-color:#e6f7ff!important;transition:background-color .2s}
+    </style>`;
     container.innerHTML = html;
   } catch(err) { container.innerHTML = '<p style="color:red;text-align:center;">خطأ: ' + err.message + '</p>'; }
 }
