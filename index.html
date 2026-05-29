@@ -8067,22 +8067,24 @@ async function dp_loadAll() {
         var doc = dp_v(row, docIdx);
         if (!doc) return; /* تخطي الصفوف بدون مدخل بيانات */
 
-  dp_RAW.treat.push({
-  doc:     doc,
-  name:    trCOL.name    >= 0 ? dp_v(row, trCOL.name)    : dp_v(row, 2),
-  phone:   trCOL.phone   >= 0 ? dp_v(row, trCOL.phone)   : dp_v(row, 1),
-  region:  trCOL.region  >= 0 ? dp_v(row, trCOL.region)  : dp_v(row, 4),
-  date:    dp_v(row, 46),
-  disease: dp_v(row, 6) || dp_v(row, 9) || dp_v(row, 12) || '—',
-  amount:  trCOL.amount  >= 0 ? dp_v(row, trCOL.amount)  : dp_v(row, 42),
-  place:   trCOL.place   >= 0 ? dp_v(row, trCOL.place)   : dp_v(row, 31),
-  status:  (function() {
-    for (var ci = 21; ci <= 30; ci++) {
-      if (dp_v(row, ci) !== '') return 'مكتملة';
-    }
-    return 'غير مكتملة';
-  })()
-});
+dp_RAW.treat.push({
+          doc:     doc,
+          name:    trCOL.name    >= 0 ? dp_v(row, trCOL.name)    : dp_v(row, 2),
+          phone:   trCOL.phone   >= 0 ? dp_v(row, trCOL.phone)   : dp_v(row, 1),
+          region:  trCOL.region  >= 0 ? dp_v(row, trCOL.region)  : dp_v(row, 4),
+          date:    dp_v(row, 46),
+          disease: dp_v(row, 6) || dp_v(row, 9) || dp_v(row, 12) || '—',
+          amount:  trCOL.amount  >= 0 ? dp_v(row, trCOL.amount)  : dp_v(row, 42),
+          place:   trCOL.place   >= 0 ? dp_v(row, trCOL.place)   : dp_v(row, 31),
+          status:  (function() {
+            for (var ci = 21; ci <= 30; ci++) {
+              if (dp_v(row, ci) !== '') return 'مكتملة';
+            }
+            return 'غير مكتملة';
+          })()
+        });
+      });
+
       dp_log('✅ علاج: ' + dp_RAW.treat.length + ' سجل');
       if (dp_RAW.treat.length > 0) {
         dp_log('عينة: doc="' + dp_RAW.treat[0].doc +
