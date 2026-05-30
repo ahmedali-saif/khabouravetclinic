@@ -42,14 +42,82 @@ body {
 /* ============================================================
    ٣. NAV
    ============================================================ */
-nav { background: #333; padding: 10px; }
-nav button {
-  margin: 5px; padding: 10px;
-  color: white; background: #555;
-  border: none; cursor: pointer; font-family: inherit;
+nav {
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+  background: #0a1628;
 }
-nav button:hover { background: #008cba; }
 
+nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0a1628, #0d2b45, #0a3d5c, #0d2b45, #0a1628);
+  background-size: 400% 400%;
+  animation: navWave 8s ease infinite;
+  z-index: 0;
+}
+
+nav::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120px 40px at 20% 80%, rgba(0,184,217,0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 80px 30px at 60% 20%, rgba(0,119,168,0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 100px 35px at 85% 60%, rgba(0,184,217,0.15) 0%, transparent 70%);
+  animation: navBubbles 6s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+nav button {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes navWave {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes navBubbles {
+  0%   { opacity: 0.6; transform: translateX(0px) translateY(0px); }
+  33%  { opacity: 1;   transform: translateX(15px) translateY(-5px); }
+  66%  { opacity: 0.7; transform: translateX(-10px) translateY(5px); }
+  100% { opacity: 0.9; transform: translateX(20px) translateY(-8px); }
+}
+  nav button {
+  margin: 5px;
+  padding: 10px;
+  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(0,184,217,0.3);
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+nav button:hover {
+  background: rgba(0,184,217,0.35);
+  border-color: rgba(0,184,217,0.8);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,184,217,0.4);
+}
+
+nav button.nav-active {
+  background: rgba(0,229,255,0.25) !important;
+  color: #00e5ff !important;
+  font-weight: bold;
+  border-color: #00e5ff !important;
+  box-shadow: 0 0 12px rgba(0,229,255,0.5);
+}
 /* ============================================================
    ٤. PAGES SYSTEM
    ============================================================ */
