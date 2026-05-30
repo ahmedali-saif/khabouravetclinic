@@ -7423,10 +7423,11 @@ function ani_setDefaultDates() {
   <select id="dp_docSel" onchange="dp_apply()">
     <option value="">الكل</option>
   </select>
-  <label>من:</label>
-  <input type="date" id="dp_df" onchange="dp_apply()">
-  <label>إلى:</label>
-  <input type="date" id="dp_dt" onchange="dp_apply()">
+<label>من:</label>
+<input type="date" id="dp_df" onchange="dp_checkDates()">
+<label>إلى:</label>
+<input type="date" id="dp_dt" onchange="dp_checkDates()">
+<button class="dp_btn dp_btn-gray" onclick="dp_clearDates()">🗑️ مسح التاريخ</button>
   <button class="dp_btn dp_btn-blue" onclick="dp_loadAll()">🔄 تحميل / تحديث</button>
   <button class="dp_btn dp_btn-gray" onclick="dp_toggleDebug()">🔍 تشخيص</button>
   <span id="dp_status"></span>
@@ -7951,7 +7952,23 @@ function dp_apply() {
   else if (dp_CUR==='sample')   dp_renderSample();
   else if (dp_CUR==='overview') dp_renderOverview();
 }
+function dp_checkDates() {
+  var df = (document.getElementById('dp_df') || {}).value || '';
+  var dt = (document.getElementById('dp_dt') || {}).value || '';
+  if (!df || !dt) return;
+  if (dt < df) {
+    showToast('⚠️ تاريخ النهاية يجب أن يكون أكبر من تاريخ البداية', 'warning');
+    document.getElementById('dp_dt').value = '';
+    return;
+  }
+  dp_apply();
+}
 
+function dp_clearDates() {
+  document.getElementById('dp_df').value = '';
+  document.getElementById('dp_dt').value = '';
+  dp_apply();
+}
 /* ════════════════════════════════════════════════════════
    ٨. تحميل البيانات — القلب الجديد
    ════════════════════════════════════════════════════════ */
