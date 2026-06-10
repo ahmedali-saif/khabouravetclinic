@@ -1005,6 +1005,7 @@ window.showToast = function(message, type) {
   <button onclick="showPage('samples')">نموذج العينات</button>
   <button onclick="showPage('dashboard')">طباعة نماذج العينات</button>
   <button onclick="showPage('settings')">طباعة شهادة التحصين</button>
+  <button onclick="showPage('aiAnalysis')">📊 تحليل البيانات AI</button>
   <button onclick="showPage('reports')">الأدوية المصروفة</button>
   <button onclick="showPage('financialInventory')">الجرد المالي</button>
   <button onclick="showPage('diseaseTracking')">تتبع المرض</button>
@@ -1609,7 +1610,495 @@ async function wilayatApply() {
   })();
   </script>
 </div>
+<!-- ===== صفحة تحليل البيانات بالذكاء الاصطناعي ===== -->
+<div id="aiAnalysis" class="page">
+<style>
+#aiAnalysis .ana-wrap {
+  max-width: 900px; margin: 0 auto;
+  display: flex; flex-direction: column;
+  height: calc(100vh - 130px); min-height: 500px;
+}
+#aiAnalysis .ana-hdr {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: #fff; padding: 14px 20px;
+  border-radius: 10px 10px 0 0;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+#aiAnalysis .ana-hdr-icon { font-size: 26px; margin-top: 2px; }
+#aiAnalysis .ana-hdr-title { font-size: 15px; font-weight: bold; }
+#aiAnalysis .ana-hdr-sub { font-size: 11px; opacity: .7; margin-top: 3px; line-height: 1.5; }
+#aiAnalysis .ana-keybar {
+  background: #fff; border: 2px solid #334155;
+  border-top: none; padding: 9px 14px;
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+#aiAnalysis .ana-keybar input {
+  flex: 1; min-width: 160px; padding: 7px 10px;
+  border: 1.5px solid #cbd5e1; border-radius: 7px;
+  font-size: 12px; font-family: monospace; direction: ltr;
+}
+#aiAnalysis .ana-keybar input:focus { outline: none; border-color: #6366f1; }
+#aiAnalysis .ana-keybar select {
+  padding: 7px 8px; border: 1.5px solid #cbd5e1;
+  border-radius: 7px; font-size: 12px; font-family: inherit;
+  background: #f8fafc; cursor: pointer;
+}
+#aiAnalysis .ana-keybar select:focus { outline: none; border-color: #6366f1; }
+#aiAnalysis .ana-btn-save {
+  background: #6366f1; color: #fff; border: none;
+  border-radius: 7px; padding: 7px 14px; font-size: 12px;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+#aiAnalysis .ana-btn-save:hover { background: #4f46e5; }
+#aiAnalysis .ana-key-ok { font-size: 11px; color: #16a34a; white-space: nowrap; }
+#aiAnalysis .ana-chips {
+  background: #f1f5f9; border: 2px solid #334155;
+  border-top: none; padding: 10px 14px;
+  display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+}
+#aiAnalysis .ana-chip {
+  background: #fff; border: 1.5px solid #475569;
+  color: #1e293b; border-radius: 20px;
+  padding: 4px 13px; font-size: 12px;
+  cursor: pointer; font-family: inherit; transition: all .2s;
+  white-space: nowrap;
+}
+#aiAnalysis .ana-chip:hover { background: #1e293b; color: #fff; }
+#aiAnalysis .ana-fetch-status {
+  font-size: 11px; color: #6366f1; white-space: nowrap;
+}
+#aiAnalysis .ana-clear {
+  background: #e2e8f0; color: #475569;
+  border: none; border-radius: 6px;
+  padding: 4px 12px; font-size: 12px;
+  cursor: pointer; font-family: inherit;
+  margin-right: auto;
+}
+#aiAnalysis .ana-clear:hover { background: #cbd5e1; }
+#aiAnalysis .ana-msgs {
+  flex: 1; overflow-y: auto; padding: 16px;
+  background: #f8fafc;
+  border: 2px solid #334155; border-top: none;
+  display: flex; flex-direction: column; gap: 14px;
+}
+#aiAnalysis .ana-msg {
+  display: flex; gap: 8px; align-items: flex-end; max-width: 92%;
+}
+#aiAnalysis .ana-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+#aiAnalysis .ana-msg.bot  { align-self: flex-start; }
+#aiAnalysis .ana-av {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+#aiAnalysis .ana-msg.user .ana-av { background: #6366f1; }
+#aiAnalysis .ana-msg.bot  .ana-av { background: #1e293b; }
+#aiAnalysis .ana-bbl {
+  padding: 10px 14px; border-radius: 14px;
+  font-size: 13.5px; line-height: 1.75;
+  white-space: pre-wrap; word-break: break-word;
+}
+#aiAnalysis .ana-msg.user .ana-bbl {
+  background: #6366f1; color: #fff;
+  border-radius: 14px 2px 14px 14px;
+}
+#aiAnalysis .ana-msg.bot .ana-bbl {
+  background: #fff; color: #1e293b;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 2px 14px 14px 14px;
+}
+#aiAnalysis .ana-typing .ana-bbl {
+  color: #94a3b8; font-style: italic;
+}
+#aiAnalysis .ana-inbar {
+  display: flex; gap: 8px; padding: 12px;
+  background: #fff;
+  border: 2px solid #334155; border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+#aiAnalysis #ana_input {
+  flex: 1; padding: 9px 12px;
+  border: 1.5px solid #cbd5e1; border-radius: 9px;
+  font-size: 14px; font-family: inherit;
+  resize: none; height: 44px; max-height: 120px;
+}
+#aiAnalysis #ana_input:focus { outline: none; border-color: #6366f1; }
+#aiAnalysis #ana_sendBtn {
+  background: #1e293b; color: #fff;
+  border: none; border-radius: 9px;
+  width: 46px; font-size: 18px; cursor: pointer;
+}
+#aiAnalysis #ana_sendBtn:hover:not(:disabled) { background: #334155; }
+#aiAnalysis #ana_sendBtn:disabled { opacity: .4; cursor: default; }
+</style>
 
+<div class="ana-wrap">
+
+  <!-- Header -->
+  <div class="ana-hdr">
+    <div class="ana-hdr-icon">📊</div>
+    <div>
+      <div class="ana-hdr-title">محلل البيانات الذكي — بيانات حقيقية من قاعدة البيانات</div>
+      <div class="ana-hdr-sub">
+        يجلب البيانات الفعلية من Google Sheets ويحللها بالذكاء الاصطناعي عبر OpenRouter
+      </div>
+    </div>
+  </div>
+
+  <!-- Key bar -->
+  <div class="ana-keybar">
+    <input type="password" id="ana_keyInp" placeholder="OpenRouter API Key: sk-or-v1-..." />
+    <select id="ana_modelSel">
+      <option value="deepseek/deepseek-r1:free">DeepSeek R1 ⭐ (مجاني)</option>
+      <option value="deepseek/deepseek-chat-v3-0324:free">DeepSeek V3 (مجاني)</option>
+      <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (مجاني)</option>
+      <option value="qwen/qwen3-235b-a22b:free">Qwen3 235B (مجاني)</option>
+      <option value="openrouter/auto">Auto — أفضل متاح</option>
+    </select>
+    <button class="ana-btn-save" onclick="ana_saveKey()">💾 حفظ</button>
+    <span class="ana-key-ok" id="ana_keyOk"></span>
+  </div>
+
+  <!-- أسئلة سريعة -->
+  <div class="ana-chips">
+    <button class="ana-chip" onclick="ana_quick('كم عدد سجلات العلاج الموجودة؟ وما آخر الحالات المسجلة؟')">📋 إجمالي سجلات العلاج</button>
+    <button class="ana-chip" onclick="ana_quick('حلل بيانات التحصين: ما أكثر اللقاحات استخداماً؟')">💉 تحليل التحصين</button>
+    <button class="ana-chip" onclick="ana_quick('كم عدد المربين المسجلين؟ ما توزيعهم على المناطق؟')">👥 إحصاء المربين</button>
+    <button class="ana-chip" onclick="ana_quick('حلل بيانات العينات المخبرية: ما الفحوصات الأكثر طلباً؟')">🧪 تحليل العينات</button>
+    <button class="ana-chip" onclick="ana_quick('ما الأدوية الأكثر صرفاً حسب بيانات الجرد؟')">💊 الأدوية الأكثر صرفاً</button>
+    <button class="ana-chip" onclick="ana_quick('قدم تقريراً شاملاً عن حالة العيادة من كل البيانات المتاحة')">📈 تقرير شامل</button>
+    <button class="ana-chip" onclick="ana_quick('ما الأمراض الأكثر تسجيلاً في سجل العلاج؟')">🦠 أكثر الأمراض</button>
+    <button class="ana-chip" onclick="ana_quick('حلل الجرد المالي وأجمالي المبالغ المحصلة')">💰 التحليل المالي</button>
+    <span class="ana-fetch-status" id="ana_fetchStatus"></span>
+    <button class="ana-clear" onclick="ana_clearChat()">🗑️ مسح</button>
+  </div>
+
+  <!-- Messages -->
+  <div class="ana-msgs" id="ana_msgs">
+    <div class="ana-msg bot">
+      <div class="ana-av">📊</div>
+      <div class="ana-bbl">مرحباً! أنا محلل البيانات الذكي.
+
+أقوم بـ:
+١. جلب البيانات الحقيقية من قاعدة بيانات العيادة (Google Sheets)
+٢. إرسالها مع سؤالك إلى الذكاء الاصطناعي
+٣. تحليل البيانات والإجابة بناءً على الأرقام الفعلية
+
+⚠️ تأكد من:
+- إدخال مفتاح OpenRouter API وحفظه
+- اختيار ولاية في صفحة الإعدادات أولاً</div>
+    </div>
+  </div>
+
+  <!-- Input bar -->
+  <div class="ana-inbar">
+    <textarea id="ana_input"
+      placeholder="اسأل عن بياناتك الحقيقية... (Enter للإرسال)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ana_send();}">
+    </textarea>
+    <button id="ana_sendBtn" onclick="ana_send()">➤</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+var ana_hist = [];
+var ana_key  = localStorage.getItem('ana_or_key')   || '';
+var ana_mdl  = localStorage.getItem('ana_or_model') || 'deepseek/deepseek-r1:free';
+
+// استعادة الإعدادات
+if (ana_key) {
+  document.getElementById('ana_keyInp').value = ana_key;
+  document.getElementById('ana_keyOk').textContent = '✅ محفوظ';
+}
+var mSel = document.getElementById('ana_modelSel');
+if ([...mSel.options].some(o => o.value === ana_mdl)) mSel.value = ana_mdl;
+
+mSel.onchange = function() {
+  ana_mdl = this.value;
+  localStorage.setItem('ana_or_model', ana_mdl);
+};
+
+window.ana_saveKey = function() {
+  ana_key = document.getElementById('ana_keyInp').value.trim();
+  ana_mdl = mSel.value;
+  if (!ana_key) { showToast('المفتاح فارغ', 'warning'); return; }
+  localStorage.setItem('ana_or_key',   ana_key);
+  localStorage.setItem('ana_or_model', ana_mdl);
+  document.getElementById('ana_keyOk').textContent = '✅ تم';
+};
+
+window.ana_clearChat = function() {
+  ana_hist = [];
+  document.getElementById('ana_msgs').innerHTML = `
+    <div class="ana-msg bot">
+      <div class="ana-av">📊</div>
+      <div class="ana-bbl">تم المسح. اسأل سؤالاً جديداً.</div>
+    </div>`;
+};
+
+window.ana_quick = function(q) { ana_processMsg(q); };
+window.ana_send  = function() {
+  var inp = document.getElementById('ana_input');
+  var txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = ''; inp.style.height = '44px';
+  ana_processMsg(txt);
+};
+
+// ─── جلب البيانات من كل جداول التطبيق ───────────────────
+async function ana_fetchAllData() {
+  var status = document.getElementById('ana_fetchStatus');
+  status.textContent = '⏳ جاري جلب البيانات...';
+
+  var report = {};
+  var errors = [];
+
+  // ١. سجلات العلاج
+  try {
+    if (typeof trcallApi === 'function') {
+      var r = await trcallApi('trsearchInTreatmentSheet', { keyword: '' });
+      if (r && r.rows) {
+        report.treatment = {
+          total: r.rows.length,
+          sample: r.rows.slice(0, 30).map(function(row) {
+            return {
+              phone:   row[1]  || '',
+              name:    row[2]  || '',
+              region:  row[4]  || '',
+              disease: [row[6], row[9], row[12]].filter(Boolean).join('، '),
+              amount:  row[42] || '',
+              date:    row[46] || ''
+            };
+          })
+        };
+      }
+    }
+  } catch(e) { errors.push('العلاج: ' + e.message); }
+
+  // ٢. سجلات المربين
+  try {
+    if (typeof bd_callApi === 'function') {
+      var r2 = await bd_callApi('bd_getAllBreeders');
+      if (r2 && r2.data) {
+        var rows2 = r2.data.slice(1);
+        report.breeders = {
+          total: rows2.length,
+          regions: ana_countBy(rows2, 3),
+          sample: rows2.slice(0, 20).map(function(row) {
+            return {
+              phone:  row[0] || '',
+              name:   row[1] || '',
+              region: row[3] || '',
+              civil:  row[4] || ''
+            };
+          })
+        };
+      }
+    }
+  } catch(e) { errors.push('المربون: ' + e.message); }
+
+  // ٣. سجلات التحصين
+  try {
+    if (typeof vaccCallApi === 'function') {
+      var r3 = await vaccCallApi('getAllTotalVaccinatedAnimals', {});
+      if (r3) report.vaccination = r3;
+    }
+  } catch(e) { errors.push('التحصين: ' + e.message); }
+
+  // ٤. العينات
+  try {
+    if (typeof focallApi === 'function') {
+      var r4a = await focallApi('fogetUniquePhoneCount');
+      var r4b = await focallApi('fosearchSamplesData', { keyword: '' });
+      report.samples = {
+        uniqueBreeders: r4a.count || 0,
+        lastSample:     r4a.lastSample || '',
+        total:          r4b && r4b.rows ? r4b.rows.length : 0,
+        sample:         r4b && r4b.rows ? r4b.rows.slice(0, 20).map(function(row) {
+          return {
+            phone:      row[1]  || '',
+            animalType: row[7]  || '',
+            sampleType: row[10] || '',
+            disease:    row[20] || '',
+            dateSent:   row[18] || '',
+            result:     [row[22], row[24], row[26]].filter(Boolean).join('، ')
+          };
+        }) : []
+      };
+    }
+  } catch(e) { errors.push('العينات: ' + e.message); }
+
+  // ٥. الجرد المالي
+  try {
+    if (typeof fin_callApi === 'function') {
+      var today = new Date().toISOString().slice(0,10);
+      var yr    = today.slice(0,4) + '-01-01';
+      var r5 = await fin_callApi('getFinancialData', { dateFrom: yr, dateTo: today });
+      if (r5 && r5.filteredData) {
+        var total = r5.filteredData.reduce(function(s, x) {
+          return s + (parseFloat(x.amount) || 0);
+        }, 0);
+        report.financial = {
+          total:       Math.round(total) + ' ريال',
+          recordCount: r5.filteredData.length,
+          sample:      r5.filteredData.slice(0, 15)
+        };
+      }
+    }
+  } catch(e) { errors.push('المالي: ' + e.message); }
+
+  // ٦. الجرد الدوائي
+  try {
+    if (typeof dim_callApi === 'function') {
+      var today2 = new Date().toISOString().slice(0,10);
+      var yr2    = today2.slice(0,4) + '-01-01';
+      var r6 = await dim_callApi('getFinancialInventory', { dateFrom: yr2, dateTo: today2 });
+      if (r6 && r6.data) {
+        report.inventory = {
+          items: r6.data.slice(0, 30)
+        };
+      }
+    }
+  } catch(e) { errors.push('الجرد: ' + e.message); }
+
+  // ٧. تتبع المرض
+  try {
+    if (typeof dtr_callApi === 'function') {
+      var r7 = await dtr_callApi('getDiseaseMonthlyData', { disease: '', dateFrom: '', dateTo: '', clinic: '' });
+      if (r7 && r7.rawRows) {
+        report.diseases = { rowCount: r7.rawRows.length };
+      }
+    }
+  } catch(e) { errors.push('الأمراض: ' + e.message); }
+
+  if (errors.length) report._errors = errors;
+
+  status.textContent = '✅ تم جلب البيانات';
+  setTimeout(function() { status.textContent = ''; }, 3000);
+
+  return report;
+}
+
+// ─── مساعد: إحصاء التكرار ────────────────────────────────
+function ana_countBy(rows, idx) {
+  var map = {};
+  rows.forEach(function(r) {
+    var v = r[idx] || 'غير محدد';
+    map[v] = (map[v] || 0) + 1;
+  });
+  return map;
+}
+
+// ─── المعالجة الرئيسية ────────────────────────────────────
+async function ana_processMsg(question) {
+  if (!ana_key) { showToast('أدخل مفتاح OpenRouter أولاً', 'warning'); return; }
+
+  var box = document.getElementById('ana_msgs');
+  var btn = document.getElementById('ana_sendBtn');
+
+  // رسالة المستخدم
+  box.innerHTML += `
+    <div class="ana-msg user">
+      <div class="ana-av">👤</div>
+      <div class="ana-bbl">${ana_esc(question)}</div>
+    </div>`;
+
+  // مؤشر الكتابة
+  var tid = 'ana_t' + Date.now();
+  box.innerHTML += `
+    <div class="ana-msg bot ana-typing" id="${tid}">
+      <div class="ana-av">📊</div>
+      <div class="ana-bbl">⏳ جاري جلب البيانات وتحليلها...</div>
+    </div>`;
+  box.scrollTop = 9e9;
+  btn.disabled = true;
+
+  // جلب البيانات الحقيقية
+  var data = {};
+  try { data = await ana_fetchAllData(); } catch(e) { data = { _fetchError: e.message }; }
+
+  // بناء الرسالة للنموذج
+  var wilayat = localStorage.getItem('selected_wilayat_name') || 'غير محددة';
+  var dataStr = JSON.stringify(data, null, 1);
+  // تقليص إذا كانت كبيرة جداً (حد 12000 حرف)
+  if (dataStr.length > 12000) dataStr = dataStr.slice(0, 12000) + '\n... [البيانات مختصرة]';
+
+  var systemMsg = `أنت محلل بيانات متخصص لعيادة الثروة الحيوانية في سلطنة عُمان — ولاية: ${wilayat}.
+البيانات التالية مُستخرجة مباشرة من قاعدة البيانات الحقيقية (Google Sheets).
+حلّل البيانات بدقة، قدّم أرقاماً واضحة، واستخدم العربية في إجاباتك.
+إذا كانت البيانات ناقصة أو فارغة، اذكر ذلك بوضوح.`;
+
+  var userContent = `سؤالي: ${question}
+
+=== البيانات الحقيقية من قاعدة البيانات ===
+${dataStr}`;
+
+  // إضافة للتاريخ وإرسال
+  var messages = [{ role: 'user', content: userContent }];
+  // إضافة سياق المحادثة السابقة (بدون البيانات الثقيلة)
+  if (ana_hist.length > 0) {
+    messages = ana_hist.concat([{ role: 'user', content: userContent }]);
+  }
+
+  try {
+    var r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': 'Bearer ' + ana_key,
+        'HTTP-Referer':  location.href,
+        'X-Title':       'Vet Clinic Data Analyzer'
+      },
+      body: JSON.stringify({
+        model:    ana_mdl,
+        messages: [{ role: 'system', content: systemMsg }].concat(messages),
+        max_tokens: 2000
+      })
+    });
+
+    var d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+
+    var reply = d.choices?.[0]?.message?.content || 'لا يوجد رد';
+
+    // حفظ في التاريخ (بدون البيانات الثقيلة)
+    ana_hist.push({ role: 'user',      content: question });
+    ana_hist.push({ role: 'assistant', content: reply    });
+    if (ana_hist.length > 12) ana_hist = ana_hist.slice(-12);
+
+    var el = document.getElementById(tid);
+    if (el) {
+      el.classList.remove('ana-typing');
+      el.querySelector('.ana-bbl').textContent = reply;
+    }
+
+  } catch(e) {
+    var el = document.getElementById(tid);
+    if (el) {
+      el.classList.remove('ana-typing');
+      el.querySelector('.ana-bbl').textContent = '❌ ' + e.message;
+    }
+  }
+
+  btn.disabled = false;
+  box.scrollTop = 9e9;
+}
+
+function ana_esc(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.getElementById('ana_input').addEventListener('input', function() {
+  this.style.height = '44px';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+})();
+</script>
+</div>
 <div id="login" class="page active">
 <style>
 #login { padding: 0 !important; }
