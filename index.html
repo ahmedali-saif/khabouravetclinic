@@ -1610,962 +1610,1108 @@ async function wilayatApply() {
   })();
   </script>
 </div>
-<!-- ===== صفحة تحليل البيانات بالذكاء الاصطناعي ===== -->
+<!-- ===== صفحة تحليل البيانات الذكي — الإصدار 2 (IndexedDB + RAG محلي) ===== -->
 <div id="aiAnalysis" class="page">
 <style>
-/* ─── CSS الأساسي للصفحة ─── */
-#aiAnalysis .ana-wrap {
-  max-width: 900px;
+/* ═══ CSS الأساسي ═══ */
+#aiAnalysis .ai2-wrap {
+  max-width: 960px;
   margin: 0 auto;
   padding: 20px;
   font-family: Tahoma, Arial, 'Noto Naskh Arabic', sans-serif;
+  direction: rtl;
 }
 
-#aiAnalysis .ana-hdr {
+#aiAnalysis .ai2-hdr {
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 20px;
-  padding: 15px;
-  background: linear-gradient(135deg, #00b8d9 0%, #00838f 100%);
-  border-radius: 12px;
+  margin-bottom: 18px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  border-radius: 14px;
   color: #fff;
+  box-shadow: 0 4px 15px rgba(15,118,110,0.25);
 }
 
-#aiAnalysis .ana-hdr-icon {
-  font-size: 40px;
-}
+#aiAnalysis .ai2-hdr-icon { font-size: 42px; }
+#aiAnalysis .ai2-hdr-title { font-size: 19px; font-weight: bold; margin-bottom: 4px; }
+#aiAnalysis .ai2-hdr-sub { font-size: 13px; opacity: 0.9; }
 
-#aiAnalysis .ana-hdr-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-#aiAnalysis .ana-hdr-sub {
-  font-size: 13px;
-  opacity: 0.9;
-}
-
-/* ─── شريط المفتاح ─── */
-#aiAnalysis .ana-keybar {
-  display: flex;
+/* ═══ شريط الإعدادات ═══ */
+#aiAnalysis .ai2-cfg {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
   gap: 10px;
   align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 15px;
-  padding: 12px;
-  background: #f0f9ff;
-  border: 2px solid #00b8d9;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: #f0fdfa;
+  border: 2px solid #0d9488;
+  border-radius: 10px;
+}
+
+#aiAnalysis .ai2-cfg input,
+#aiAnalysis .ai2-cfg select {
+  padding: 9px 12px;
+  border: 2px solid #cbd5e1;
   border-radius: 8px;
-}
-
-#aiAnalysis .ana-keybar input {
-  flex: 1;
-  min-width: 200px;
-  padding: 8px 12px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 13px;
-}
-
-#aiAnalysis .ana-keybar select {
-  padding: 8px 12px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
   font-family: inherit;
   font-size: 13px;
   background: #fff;
 }
 
-#aiAnalysis .ana-btn-save {
-  background: #2bb673;
-  color: #fff;
+#aiAnalysis .ai2-cfg input:focus,
+#aiAnalysis .ai2-cfg select:focus {
+  outline: none;
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13,148,136,0.15);
+}
+
+#aiAnalysis .ai2-btn {
+  padding: 9px 18px;
   border: none;
-  padding: 8px 20px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: bold;
-  cursor: pointer;
   font-family: inherit;
-}
-
-#aiAnalysis .ana-key-ok {
-  color: #2bb673;
-  font-weight: bold;
   font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
-/* ─── شريط الكاش ─── */
-#aiAnalysis .ana-cache-bar {
-  background: #f0fdf4;
-  border: 2px solid #334155;
-  border-top: none;
-  padding: 8px 14px;
+#aiAnalysis .ai2-btn-green { background: #059669; color: #fff; }
+#aiAnalysis .ai2-btn-green:hover { background: #047857; }
+#aiAnalysis .ai2-btn-blue { background: #0284c7; color: #fff; }
+#aiAnalysis .ai2-btn-blue:hover { background: #0369a1; }
+#aiAnalysis .ai2-btn-red { background: #dc2626; color: #fff; }
+#aiAnalysis .ai2-btn-red:hover { background: #b91c1c; }
+#aiAnalysis .ai2-btn:disabled { opacity: 0.5; cursor: default; }
+
+#aiAnalysis .ai2-key-ok { color: #059669; font-weight: bold; font-size: 13px; }
+
+/* ═══ شريط الكاش / البحث ═══ */
+#aiAnalysis .ai2-bar {
   display: flex;
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 15px;
-  border-radius: 0 0 8px 8px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 2px solid #334155;
+  border-radius: 10px;
 }
 
-#aiAnalysis .ana-cache-info {
+#aiAnalysis .ai2-stat {
   flex: 1;
-  font-size: 11.5px;
-}
-
-#aiAnalysis .ana-cache-info.empty { color: #94a3b8; }
-#aiAnalysis .ana-cache-info.loading { color: #6366f1; }
-#aiAnalysis .ana-cache-info.error { color: #dc2626; }
-#aiAnalysis .ana-cache-info.ok { color: #16a34a; }
-
-#aiAnalysis .ana-btn-refresh {
-  background: #16a34a;
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  padding: 6px 14px;
   font-size: 12px;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  color: #475569;
+  min-width: 220px;
 }
 
-#aiAnalysis .ana-btn-refresh:hover { background: #15803d; }
-#aiAnalysis .ana-btn-refresh:disabled { background: #86efac; cursor: default; }
+#aiAnalysis .ai2-stat strong { color: #0f172a; }
 
-#aiAnalysis .ana-cache-modules {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
+#aiAnalysis .ai2-badges { display: flex; gap: 6px; flex-wrap: wrap; }
 
-#aiAnalysis .ana-mod-badge {
-  font-size: 10.5px;
-  padding: 2px 8px;
-  border-radius: 12px;
+#aiAnalysis .ai2-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
   border: 1px solid;
+  font-weight: 600;
 }
 
-#aiAnalysis .ana-mod-badge.ok { background: #dcfce7; color: #15803d; border-color: #86efac; }
-#aiAnalysis .ana-mod-badge.fail { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
-#aiAnalysis .ana-mod-badge.empty { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+#aiAnalysis .ai2-badge.ok { background: #dcfce7; color: #166534; border-color: #86efac; }
+#aiAnalysis .ai2-badge.fail { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+#aiAnalysis .ai2-badge.empty { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
 
-/* ─── أسئلة سريعة ─── */
-#aiAnalysis .ana-chips {
+/* ═══ أسئلة سريعة ═══ */
+#aiAnalysis .ai2-chips {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 15px;
+  margin-bottom: 14px;
 }
 
-#aiAnalysis .ana-chip {
+#aiAnalysis .ai2-chip {
   padding: 7px 14px;
-  border: 2px solid #00b8d9;
-  border-radius: 20px;
+  border: 2px solid #0d9488;
+  border-radius: 24px;
   background: #fff;
-  color: #00b8d9;
-  font-weight: bold;
+  color: #0f766e;
+  font-weight: 700;
   cursor: pointer;
   font-size: 12px;
   font-family: inherit;
   transition: all 0.2s;
 }
 
-#aiAnalysis .ana-chip:hover {
-  background: #00b8d9;
-  color: #fff;
-}
+#aiAnalysis .ai2-chip:hover { background: #0d9488; color: #fff; }
 
-#aiAnalysis .ana-clear {
+#aiAnalysis .ai2-chip-clear {
   padding: 7px 14px;
-  border: 2px solid #e65050;
-  border-radius: 20px;
+  border: 2px solid #ef4444;
+  border-radius: 24px;
   background: #fff;
-  color: #e65050;
-  font-weight: bold;
+  color: #dc2626;
+  font-weight: 700;
   cursor: pointer;
   font-size: 12px;
   font-family: inherit;
 }
 
-#aiAnalysis .ana-clear:hover {
-  background: #e65050;
-  color: #fff;
-}
+#aiAnalysis .ai2-chip-clear:hover { background: #ef4444; color: #fff; }
 
-/* ─── منطقة الرسائل ─── */
-#aiAnalysis .ana-msgs {
-  max-height: 60vh;
+/* ═══ منطقة المحادثة ═══ */
+#aiAnalysis .ai2-chat {
+  max-height: 58vh;
   overflow-y: auto;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
   background: #fafafa;
+  scroll-behavior: smooth;
 }
 
-#aiAnalysis .ana-msg {
+#aiAnalysis .ai2-msg {
   display: flex;
   gap: 12px;
-  margin-bottom: 15px;
-  animation: fadeIn 0.3s ease;
+  margin-bottom: 14px;
+  animation: ai2FadeIn 0.35s ease;
 }
 
-#aiAnalysis .ana-msg.user {
-  flex-direction: row-reverse;
-}
+#aiAnalysis .ai2-msg.user { flex-direction: row-reverse; }
 
-#aiAnalysis .ana-av {
-  width: 36px;
-  height: 36px;
+#aiAnalysis .ai2-av {
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   flex-shrink: 0;
-  background: #e0e0e0;
+  background: #e2e8f0;
 }
 
-#aiAnalysis .ana-msg.bot .ana-av { background: #e6f7ff; }
-#aiAnalysis .ana-msg.user .ana-av { background: #00b8d9; color: #fff; }
+#aiAnalysis .ai2-msg.bot .ai2-av { background: #ccfbf1; }
+#aiAnalysis .ai2-msg.user .ai2-av { background: #0d9488; color: #fff; }
 
-#aiAnalysis .ana-bbl {
-  max-width: 80%;
+#aiAnalysis .ai2-bbl {
+  max-width: 82%;
   padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.6;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.7;
   background: #fff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e2e8f0;
   word-wrap: break-word;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
-#aiAnalysis .ana-msg.bot .ana-bbl {
+#aiAnalysis .ai2-msg.bot .ai2-bbl { border-bottom-right-radius: 4px; }
+#aiAnalysis .ai2-msg.user .ai2-bbl {
   border-bottom-left-radius: 4px;
-}
-
-#aiAnalysis .ana-msg.user .ana-bbl {
-  border-bottom-right-radius: 4px;
-  background: #00b8d9;
+  background: #0d9488;
   color: #fff;
-  border-color: #00b8d9;
+  border-color: #0d9488;
 }
 
-#aiAnalysis .ana-typing .ana-bbl {
-  background: #f0f0f0;
-  color: #666;
+#aiAnalysis .ai2-typing .ai2-bbl {
+  background: #f1f5f9;
+  color: #64748b;
+  font-style: italic;
 }
 
-/* ─── شريط الإدخال ─── */
-#aiAnalysis .ana-inbar {
+#aiAnalysis .ai2-stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 4px 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#aiAnalysis .ai2-stop:hover { background: #fecaca; }
+
+/* ═══ تنسيق الجداول والردود ═══ */
+#aiAnalysis .ai2-bbl table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+#aiAnalysis .ai2-bbl th {
+  background: #0f766e;
+  color: #fff;
+  font-weight: bold;
+  padding: 9px 10px;
+  text-align: center;
+  border: 1px solid #0d9488;
+}
+
+#aiAnalysis .ai2-bbl td {
+  padding: 7px 10px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+#aiAnalysis .ai2-bbl tr:nth-child(even) td { background: #f8fafc; }
+#aiAnalysis .ai2-bbl tr:hover td { background: #f0fdfa; }
+#aiAnalysis .ai2-bbl td strong { color: #0f766e; }
+#aiAnalysis .ai2-bbl h3 { color: #0f766e; margin: 12px 0 6px 0; font-size: 15px; border-bottom: 2px solid #0d9488; padding-bottom: 3px; display: inline-block; }
+#aiAnalysis .ai2-bbl p { margin: 5px 0; line-height: 1.7; color: #334155; }
+#aiAnalysis .ai2-bbl code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #0f766e; }
+#aiAnalysis .ai2-bbl pre { background: #f8fafc; padding: 10px; border-radius: 8px; overflow-x: auto; border: 1px solid #e2e8f0; font-size: 12px; }
+
+/* ═══ شريط الإدخال ═══ */
+#aiAnalysis .ai2-inbar {
   display: flex;
   gap: 10px;
   align-items: flex-end;
 }
 
-#aiAnalysis .ana-inbar textarea {
+#aiAnalysis .ai2-inbar textarea {
   flex: 1;
-  padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 13px;
-  resize: none;
-  min-height: 44px;
-  max-height: 120px;
-}
-
-#aiAnalysis .ana-inbar textarea:focus {
-  outline: none;
-  border-color: #00b8d9;
-}
-
-#aiAnalysis .ana-inbar button {
-  padding: 12px 24px;
-  background: #00b8d9;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
+  padding: 12px 14px;
+  border: 2px solid #cbd5e1;
+  border-radius: 10px;
   font-family: inherit;
   font-size: 14px;
-}
-
-#aiAnalysis .ana-inbar button:hover { background: #0097a7; }
-#aiAnalysis .ana-inbar button:disabled { background: #b0bec5; cursor: default; }
-
-/* ─── تنسيق الجداول في ردود الذكاء الاصطناعي ─── */
-#aiAnalysis .ana-bbl table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 12px 0;
-  font-size: 13px;
+  resize: none;
+  min-height: 48px;
+  max-height: 140px;
   background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 
-#aiAnalysis .ana-bbl th {
-  background: #00b8d9;
-  color: #fff;
-  font-weight: bold;
-  padding: 10px 12px;
-  text-align: center;
-  border: 1px solid #00a0c0;
-}
+#aiAnalysis .ai2-inbar textarea:focus { outline: none; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,0.12); }
 
-#aiAnalysis .ana-bbl td {
-  padding: 8px 12px;
-  text-align: center;
-  border: 1px solid #e8e8e8;
-  color: #333;
-}
+#aiAnalysis .ai2-inbar button { padding: 12px 26px; background: #0d9488; color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; }
+#aiAnalysis .ai2-inbar button:hover { background: #0f766e; }
+#aiAnalysis .ai2-inbar button:disabled { background: #94a3b8; cursor: default; }
 
-#aiAnalysis .ana-bbl tr:nth-child(even) td {
-  background: #f8fbff;
-}
-
-#aiAnalysis .ana-bbl tr:hover td {
-  background: #e6f7ff;
-}
-
-#aiAnalysis .ana-bbl td strong {
-  color: #00b8d9;
-}
-
-#aiAnalysis .ana-bbl h3 {
-  color: #00b8d9;
-  margin: 14px 0 8px 0;
-  font-size: 15px;
-  border-bottom: 2px solid #00b8d9;
-  padding-bottom: 4px;
-  display: inline-block;
-}
-
-#aiAnalysis .ana-bbl p {
-  margin: 6px 0;
-  line-height: 1.7;
-  color: #444;
-}
-
-/* ─── Animations ─── */
-@keyframes fadeIn {
+/* ═══ Animations ═══ */
+@keyframes ai2FadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes ai2Pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+#aiAnalysis .ai2-pulse { animation: ai2Pulse 1.5s infinite; }
 </style>
 
-<div class="ana-wrap">
+<div class="ai2-wrap">
 
   <!-- Header -->
-  <div class="ana-hdr">
-    <div class="ana-hdr-icon">📊</div>
+  <div class="ai2-hdr">
+    <div class="ai2-hdr-icon">🧠</div>
     <div>
-      <div class="ana-hdr-title">محلل البيانات الذكي — بيانات حقيقية من قاعدة البيانات</div>
-      <div class="ana-hdr-sub">
-        يجلب البيانات مرة واحدة ويخزنها • كل سؤال يُرسل مباشرة للذكاء الاصطناعي
+      <div class="ai2-hdr-title">المحلل الذكي v2 — بحث محلي + تحليل AI</div>
+      <div class="ai2-hdr-sub">
+        يخزّن البيانات في المتصفح (IndexedDB) • يبحث محلياً • يرسل للـ AI فقط ما يحتاجه
       </div>
     </div>
   </div>
 
-  <!-- Key bar -->
-  <div class="ana-keybar">
-    <input type="password" id="ana_keyInp" placeholder="OpenRouter API Key: sk-or-v1-..." />
-    <select id="ana_modelSel">
+  <!-- إعدادات -->
+  <div class="ai2-cfg">
+    <input type="password" id="ai2_keyInp" placeholder="OpenRouter API Key: sk-or-v1-..." />
+    <select id="ai2_modelSel">
       <option value="deepseek/deepseek-r1:free">DeepSeek R1 ⭐ (مجاني)</option>
       <option value="deepseek/deepseek-chat-v3-0324:free">DeepSeek V3 (مجاني)</option>
       <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (مجاني)</option>
       <option value="qwen/qwen3-235b-a22b:free">Qwen3 235B (مجاني)</option>
       <option value="openrouter/auto">Auto — أفضل متاح</option>
     </select>
-    <button class="ana-btn-save" onclick="ana_saveKey()">💾 حفظ</button>
-    <span class="ana-key-ok" id="ana_keyOk"></span>
+    <button class="ai2-btn ai2-btn-green" onclick="ai2_saveKey()">💾 حفظ</button>
+    <span class="ai2-key-ok" id="ai2_keyOk"></span>
   </div>
 
-  <!-- ✅ شريط الكاش الجديد -->
-  <div class="ana-cache-bar">
-    <button class="ana-btn-refresh" id="ana_refreshBtn" onclick="ana_loadCache()">
-      🔄 تحديث البيانات
+  <!-- شريط الكاش -->
+  <div class="ai2-bar">
+    <button class="ai2-btn ai2-btn-blue" id="ai2_refreshBtn" onclick="ai2_loadAll()">
+      🔄 تحديث البيانات من الشيت
     </button>
-    <div>
-      <div class="ana-cache-info empty" id="ana_cacheInfo">لم يتم جلب البيانات بعد — اضغط "تحديث البيانات"</div>
-      <div class="ana-cache-modules" id="ana_cacheModules"></div>
+    <div class="ai2-stat" id="ai2_stat">
+      لم يتم جلب البيانات بعد — اضغط "تحديث البيانات"
     </div>
+    <div class="ai2-badges" id="ai2_badges"></div>
   </div>
 
   <!-- أسئلة سريعة -->
-  <div class="ana-chips">
-    <button class="ana-chip" onclick="ana_quick('كم عدد سجلات العلاج الموجودة؟ وما آخر الحالات المسجلة؟')">📋 إجمالي سجلات العلاج</button>
-    <button class="ana-chip" onclick="ana_quick('حلل بيانات التحصين: ما أكثر اللقاحات استخداماً؟')">💉 تحليل التحصين</button>
-    <button class="ana-chip" onclick="ana_quick('كم عدد المربين المسجلين؟ ما توزيعهم على المناطق؟')">👥 إحصاء المربين</button>
-    <button class="ana-chip" onclick="ana_quick('حلل بيانات العينات المخبرية: ما الفحوصات الأكثر طلباً؟')">🧪 تحليل العينات</button>
-    <button class="ana-chip" onclick="ana_quick('ما الأدوية الأكثر صرفاً حسب بيانات الجرد؟')">💊 الأدوية الأكثر صرفاً</button>
-    <button class="ana-chip" onclick="ana_quick('قدم تقريراً شاملاً عن حالة العيادة من كل البيانات المتاحة')">📈 تقرير شامل</button>
-    <button class="ana-chip" onclick="ana_quick('ما الأمراض الأكثر تسجيلاً في سجل العلاج؟')">🦠 أكثر الأمراض</button>
-    <button class="ana-chip" onclick="ana_quick('حلل الجرد المالي وأجمالي المبالغ المحصلة')">💰 التحليل المالي</button>
-    <button class="ana-clear" onclick="ana_clearChat()">🗑️ مسح</button>
+  <div class="ai2-chips">
+    <button class="ai2-chip" onclick="ai2_quick('كم عدد المربين المسجلين وما توزيعهم على المناطق؟')">👥 إحصاء المربين</button>
+    <button class="ai2-chip" onclick="ai2_quick('ابحث عن رقم 92123456 واعطني تفاصيله الكاملة')">📱 بحث برقم</button>
+    <button class="ai2-chip" onclick="ai2_quick('ما أكثر الأمراض تسجيلاً في سجل العلاج؟')">🦠 أكثر الأمراض</button>
+    <button class="ai2-chip" onclick="ai2_quick('حلّل بيانات التحصين: أكثر اللقاحات وأكثر المناطق')">💉 تحليل التحصين</button>
+    <button class="ai2-chip" onclick="ai2_quick('ابحث عن اسم أحمد في كل السجلات')">🔍 بحث باسم</button>
+    <button class="ai2-chip" onclick="ai2_quick('قدم تقريراً شاملاً عن حالة العيادة')">📈 تقرير شامل</button>
+    <button class="ai2-chip-clear" onclick="ai2_clearChat()">🗑️ مسح المحادثة</button>
   </div>
 
-  <!-- Messages -->
-  <div class="ana-msgs" id="ana_msgs">
-    <div class="ana-msg bot">
-      <div class="ana-av">📊</div>
-      <div class="ana-bbl">مرحباً! أنا محلل البيانات الذكي.
-
-⚡ الجديد: نظام الكاش
-- اضغط "تحديث البيانات" مرة واحدة
-- ثم اسأل أي عدد من الأسئلة بدون انتظار جلب
-- البيانات تُخزَّن في المتصفح وتُرسَل مباشرة للذكاء الاصطناعي
-
-⚠️ تأكد من:
-- إدخال مفتاح OpenRouter API وحفظه
-- اختيار ولاية في الإعدادات أولاً</div>
+  <!-- المحادثة -->
+  <div class="ai2-chat" id="ai2_chat">
+    <div class="ai2-msg bot">
+      <div class="ai2-av">🧠</div>
+      <div class="ai2-bbl">
+        <strong>مرحباً!</strong> أنا المحلل الذكي v2.
+        <br><br>
+        ⚡ <strong>الجديد:</strong>
+        <ul style="margin:8px 0;padding-right:18px;">
+          <li>البيانات تُخزّن في <strong>IndexedDB</strong> (لا تُحذف بإغلاق التبويب)</li>
+          <li><strong>بحث ذكي محلي</strong> — يفهم الأرقام والأسماء والمناطق والتواريخ</li>
+          <li>الأسئلة الإحصائية البسيطة تُجاب <strong>محلياً فوراً</strong> بدون AI</li>
+          <li>الأسئلة التحليلية ترسل للـ AI مع <strong>سجلات مُصفّاة فقط</strong></li>
+          <li>دعم <strong>Streaming</strong> — الرد يظهر كلمة كلمة</li>
+        </ul>
+        ⚠️ اضغط "تحديث البيانات" أولاً، ثم اسأل ما تشاء.
+      </div>
     </div>
   </div>
 
-  <!-- Input bar -->
-  <div class="ana-inbar">
-    <textarea id="ana_input"
+  <!-- إدخال -->
+  <div class="ai2-inbar">
+    <textarea id="ai2_input"
       placeholder="اسأل عن بياناتك... (يجب تحديث البيانات أولاً)"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ana_send();}">
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ai2_send();}">
     </textarea>
-    <button id="ana_sendBtn" onclick="ana_send()">➤</button>
+    <button id="ai2_sendBtn" onclick="ai2_send()">➤ إرسال</button>
   </div>
 
 </div>
 
 <script>
 (function(){
+  "use strict";
 
-var ana_hist = [];
-var ana_key  = localStorage.getItem('ana_or_key')   || '';
-var ana_mdl  = localStorage.getItem('ana_or_model') || 'deepseek/deepseek-r1:free';
+  // ═══════════════════════════════════════════════════════
+  // 1. IndexedDB — قاعدة بيانات محلية دائمة
+  // ═══════════════════════════════════════════════════════
+  var DB_NAME = 'VetClinicDB';
+  var DB_VER  = 1;
+  var db = null;
 
-// ─── مفتاح الكاش في sessionStorage ──────────────────────
-var ANA_CACHE_KEY   = 'ana_data_cache';
-var ANA_CACHE_TIME  = 'ana_data_time';
-var ANA_CACHE_MODS  = 'ana_data_modules';
-
-// استعادة الإعدادات
-if (ana_key) {
-  document.getElementById('ana_keyInp').value = ana_key;
-  document.getElementById('ana_keyOk').textContent = '✅ محفوظ';
-}
-var mSel = document.getElementById('ana_modelSel');
-if ([...mSel.options].some(o => o.value === ana_mdl)) mSel.value = ana_mdl;
-mSel.onchange = function() {
-  ana_mdl = this.value;
-  localStorage.setItem('ana_or_model', ana_mdl);
-};
-
-window.ana_saveKey = function() {
-  ana_key = document.getElementById('ana_keyInp').value.trim();
-  ana_mdl = mSel.value;
-  if (!ana_key) { showToast('المفتاح فارغ', 'warning'); return; }
-  localStorage.setItem('ana_or_key',   ana_key);
-  localStorage.setItem('ana_or_model', ana_mdl);
-  document.getElementById('ana_keyOk').textContent = '✅ تم';
-};
-
-// ─── تحديث شريط معلومات الكاش ────────────────────────────
-function ana_updateCacheUI() {
-  var info   = document.getElementById('ana_cacheInfo');
-  var mods   = document.getElementById('ana_cacheModules');
-  var cached = sessionStorage.getItem(ANA_CACHE_KEY);
-  var t      = sessionStorage.getItem(ANA_CACHE_TIME);
-  var modsRaw= sessionStorage.getItem(ANA_CACHE_MODS);
-
-  if (!cached) {
-    info.className = 'ana-cache-info empty';
-    info.textContent = 'لم يتم جلب البيانات بعد — اضغط "تحديث البيانات"';
-    mods.innerHTML = '';
-    return;
+  function ai2_openDB() {
+    return new Promise(function(resolve, reject) {
+      var req = indexedDB.open(DB_NAME, DB_VER);
+      req.onerror = function() { reject(req.error); };
+      req.onsuccess = function() { db = req.result; resolve(db); };
+      req.onupgradeneeded = function(e) {
+        var d = e.target.result;
+        if (!d.objectStoreNames.contains('breeders'))     d.createObjectStore('breeders',     { keyPath: 'phone' });
+        if (!d.objectStoreNames.contains('treatment'))    d.createObjectStore('treatment',    { keyPath: '_id', autoIncrement: true });
+        if (!d.objectStoreNames.contains('vaccination'))  d.createObjectStore('vaccination',  { keyPath: '_id', autoIncrement: true });
+        if (!d.objectStoreNames.contains('vaccRequests')) d.createObjectStore('vaccRequests', { keyPath: '_id', autoIncrement: true });
+        if (!d.objectStoreNames.contains('samples'))      d.createObjectStore('samples',      { keyPath: '_id', autoIncrement: true });
+        if (!d.objectStoreNames.contains('meta'))         d.createObjectStore('meta',         { keyPath: 'key' });
+      };
+    });
   }
 
-  var age = t ? Math.round((Date.now() - parseInt(t)) / 60000) : '؟';
-  info.className = 'ana-cache-info ok';
-  info.textContent = 'بيانات محفوظة ✅ — آخر تحديث منذ ' + age + ' دقيقة';
-
-  if (modsRaw) {
-    var modsList = JSON.parse(modsRaw);
-    mods.innerHTML = modsList.map(function(m) {
-      return '<span class="ana-mod-badge ' + m.status + '">' + m.label + '</span>';
-    }).join('');
-  }
-}
-
-// ─── دالة مساعدة للاتصال بالـ API ────────────────────────────
-async function ana_callApi(action, payload) {
-  var url = window._activeApiUrl || window.TR_API_URL || '';
-  if (!url) throw new Error('لم يتم تحديد رابط الولاية');
-  
-  var body = JSON.stringify(Object.assign({ action: action }, payload || {}));
-  var r = await fetch(url, {
-    method: 'POST',
-    mode: 'cors',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: body,
-    redirect: 'follow'
-  });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return await r.json();
-}
-
-// ─── جلب البيانات مباشرة من الشيت عبر API واحد ─────────────────────
-window.ana_loadCache = async function() {
-  var btn  = document.getElementById('ana_refreshBtn');
-  var info = document.getElementById('ana_cacheInfo');
-  var mods = document.getElementById('ana_cacheModules');
-
-  btn.disabled    = true;
-  btn.textContent = '⏳ جاري الجلب...';
-  info.className  = 'ana-cache-info loading';
-  mods.innerHTML  = '';
-
-  var report   = {};
-  var modsList = [];
-
-  try {
-    // ✅ استدعاء API واحد يجلب كل البيانات من الشيت
-    info.textContent = 'جلب جميع البيانات من الشيت...';
-    var allData = await ana_callApi('getAllDataForCache', {});
-
-    if (!allData || !allData.success) {
-      throw new Error(allData.message || 'فشل جلب البيانات');
-    }
-
-    // ─── 1. بيانات المربين ───
-    if (allData.breeders && !allData.breeders.error) {
-      var breeders = allData.breeders;
-      report.breeders = {
-        total:   breeders.length,
-        regions: ana_countBy(breeders, 'region'),
-        sample:  breeders.slice(0, 30).map(function(r) {
-          return {
-            phone:  r.phone  || '',
-            name:   r.name   || '',
-            region: r.region || '',
-            civil:  r.civil  || '',
-            camel:  r.camel  || '',
-            goat:   r.goat   || '',
-            sheep:  r.sheep  || '',
-            cow:    r.cow    || ''
-          };
-        })
-      };
-      modsList.push({ label: 'مربون (' + breeders.length + ')', status: 'ok' });
-    } else {
-      modsList.push({ label: 'مربون (0)', status: 'empty' });
-    }
-
-    // ─── 2. بيانات العلاج ───
-    if (allData.treatment && !allData.treatment.error) {
-      var treatment = allData.treatment;
-      report.treatment = {
-        total: treatment.length,
-        sample: treatment.slice(0, 50).map(function(r) {
-          return {
-            phone:    r.phone    || '',
-            name:     r.name     || '',
-            region:   r.region   || '',
-            disease:  [r.disease1, r.disease2, r.disease3, r.disease4, r.disease5].filter(Boolean).join('، '),
-            drug:     [r.drug1, r.drug2, r.drug3, r.drug4, r.drug5].filter(Boolean).join('، '),
-            receipt:  r.receipt  || '',
-            amount:   r.amount   || '',
-            date:     r.financialDate || '',
-            status:   r.disease1 || r.drug1 ? 'مكتملة' : 'غير مكتملة'
-          };
-        })
-      };
-      modsList.push({ label: 'علاج (' + treatment.length + ')', status: 'ok' });
-    } else {
-      modsList.push({ label: 'علاج (0)', status: 'empty' });
-    }
-
-    // ─── 3. بيانات التحصين ───
-    if (allData.vaccination && !allData.vaccination.error) {
-      var vacc = allData.vaccination;
-      report.vaccination = {
-        total: vacc.length,
-        sample: vacc.slice(0, 40).map(function(r) {
-          return {
-            phone:     r.phone     || '',
-            name:      r.name      || '',
-            region:    r.region    || '',
-            fmdCow:    r.fmdCow    || '',
-            fmdGoat:   r.fmdGoat   || '',
-            fmdSheep:  r.fmdSheep  || '',
-            lumpyCow:  r.lumpyCow  || '',
-            rabies:    [r.rabiesSheep, r.rabiesGoat, r.rabiesCow, r.rabiesCamel, r.rabiesHorse].filter(Boolean).join('، ')
-          };
-        })
-      };
-      modsList.push({ label: 'تحصين (' + vacc.length + ')', status: 'ok' });
-    } else {
-      modsList.push({ label: 'تحصين (0)', status: 'empty' });
-    }
-
-    // ─── 4. طلبات التحصين ───
-    if (allData.vaccRequests && !allData.vaccRequests.error) {
-      var req = allData.vaccRequests;
-      report.vaccRequests = {
-        total:      req.length,
-        sample:     req.slice(0, 40).map(function(r) {
-          return {
-            phone:      r.phone      || '',
-            name:       r.name       || '',
-            area:       r.region     || '',
-            entryDate:  r.entryDate  || '',
-            vaccinated: r.dataUpdater ? 'محصن' : 'غير محصن',
-            summary:    'ماعز: ' + (r.goat || 0) + '، أغنام: ' + (r.sheep || 0) + '، أبقار: ' + (r.cow || 0)
-          };
-        })
-      };
-      modsList.push({ label: 'طلبات تحصين (' + req.length + ')', status: 'ok' });
-    } else {
-      modsList.push({ label: 'طلبات تحصين (0)', status: 'empty' });
-    }
-
-    // ─── 5. بيانات العينات ───
-    if (allData.samples && !allData.samples.error) {
-      var samples = allData.samples;
-      report.samples = {
-        total: samples.length,
-        sample: samples.slice(0, 40).map(function(r) {
-          return {
-            caseNumber: r.caseNumber || '',
-            phone:      r.phone      || '',
-            name:       r.name       || '',
-            animalType: r.animalType || '',
-            sampleType: r.sampleType || '',
-            test1:      r.test1      || '',
-            result1:    r.result1    || ''
-          };
-        })
-      };
-      modsList.push({ label: 'عينات (' + samples.length + ')', status: 'ok' });
-    } else {
-      modsList.push({ label: 'عينات (0)', status: 'empty' });
-    }
-
-  } catch(err) {
-    info.className = 'ana-cache-info error';
-    info.textContent = '⚠️ خطأ: ' + err.message;
-    modsList.push({ label: 'فشل الجلب ✗', status: 'fail' });
-    console.error('Cache error:', err);
+  function ai2_putMany(storeName, rows) {
+    return new Promise(function(resolve, reject) {
+      if (!db) { reject(new Error('DB غير مفتوح')); return; }
+      var tx = db.transaction(storeName, 'readwrite');
+      var store = tx.objectStore(storeName);
+      var count = 0;
+      rows.forEach(function(r) { store.put(r); count++; });
+      tx.oncomplete = function() { resolve(count); };
+      tx.onerror = function() { reject(tx.error); };
+    });
   }
 
-  // ─── حفظ في sessionStorage ───────────────────────────
-  try {
-    var dataStr = JSON.stringify(report);
-    sessionStorage.setItem(ANA_CACHE_KEY,  dataStr);
-    sessionStorage.setItem(ANA_CACHE_TIME, Date.now().toString());
-    sessionStorage.setItem(ANA_CACHE_MODS, JSON.stringify(modsList));
-  } catch(storageErr) {
+  function ai2_clearStore(storeName) {
+    return new Promise(function(resolve, reject) {
+      if (!db) { reject(new Error('DB غير مفتوح')); return; }
+      var tx = db.transaction(storeName, 'readwrite');
+      var store = tx.objectStore(storeName);
+      store.clear();
+      tx.oncomplete = function() { resolve(); };
+      tx.onerror = function() { reject(tx.error); };
+    });
+  }
+
+  function ai2_getAll(storeName) {
+    return new Promise(function(resolve, reject) {
+      if (!db) { reject(new Error('DB غير مفتوح')); return; }
+      var tx = db.transaction(storeName, 'readonly');
+      var store = tx.objectStore(storeName);
+      var req = store.getAll();
+      req.onsuccess = function() { resolve(req.result || []); };
+      req.onerror = function() { reject(req.error); };
+    });
+  }
+
+  function ai2_setMeta(key, value) {
+    return new Promise(function(resolve, reject) {
+      if (!db) { reject(new Error('DB غير مفتوح')); return; }
+      var tx = db.transaction('meta', 'readwrite');
+      var store = tx.objectStore('meta');
+      store.put({ key: key, value: value, time: Date.now() });
+      tx.oncomplete = function() { resolve(); };
+      tx.onerror = function() { reject(tx.error); };
+    });
+  }
+
+  function ai2_getMeta(key) {
+    return new Promise(function(resolve, reject) {
+      if (!db) { reject(new Error('DB غير مفتوح')); return; }
+      var tx = db.transaction('meta', 'readonly');
+      var store = tx.objectStore('meta');
+      var req = store.get(key);
+      req.onsuccess = function() { resolve(req.result ? req.result.value : null); };
+      req.onerror = function() { reject(req.error); };
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 2. الإعدادات والمتغيرات
+  // ═══════════════════════════════════════════════════════
+  var ana_key = localStorage.getItem('ana_or_key')   || '';
+  var ana_mdl = localStorage.getItem('ana_or_model') || 'deepseek/deepseek-r1:free';
+  var ana_hist = [];
+  var abortCtrl = null;
+
+  var keyInp = document.getElementById('ai2_keyInp');
+  var keyOk  = document.getElementById('ai2_keyOk');
+  var mSel   = document.getElementById('ai2_modelSel');
+
+  if (ana_key) { keyInp.value = ana_key; keyOk.textContent = '✅ محفوظ'; }
+  if ([...mSel.options].some(function(o){ return o.value === ana_mdl; })) mSel.value = ana_mdl;
+  mSel.onchange = function() { ana_mdl = this.value; localStorage.setItem('ana_or_model', ana_mdl); };
+
+  window.ai2_saveKey = function() {
+    ana_key = keyInp.value.trim();
+    if (!ana_key) { showToast('المفتاح فارغ', 'warning'); return; }
+    localStorage.setItem('ana_or_key', ana_key);
+    localStorage.setItem('ana_or_model', mSel.value);
+    keyOk.textContent = '✅ تم الحفظ';
+    showToast('تم حفظ المفتاح', 'success');
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 3. الاتصال بـ GAS API
+  // ═══════════════════════════════════════════════════════
+  async function ai2_callApi(action, payload) {
+    var url = window._activeApiUrl || window.TR_API_URL || '';
+    if (!url) throw new Error('لم يتم تحديد رابط الولاية');
+    var body = JSON.stringify(Object.assign({ action: action }, payload || {}));
+    var r = await fetch(url, {
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: body, redirect: 'follow'
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 4. جلب البيانات وتخزينها في IndexedDB
+  // ═══════════════════════════════════════════════════════
+  window.ai2_loadAll = async function() {
+    var btn  = document.getElementById('ai2_refreshBtn');
+    var stat = document.getElementById('ai2_stat');
+    var badges = document.getElementById('ai2_badges');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ جاري الجلب...';
+    stat.innerHTML = '<span class="ai2-pulse">جلب البيانات من Google Sheets...</span>';
+    badges.innerHTML = '';
+
     try {
-      var slim = JSON.parse(JSON.stringify(report));
-      if (slim.treatment)    slim.treatment.sample    = slim.treatment.sample.slice(0, 15);
-      if (slim.breeders)     slim.breeders.sample     = slim.breeders.sample.slice(0, 15);
-      if (slim.vaccination)  slim.vaccination.sample  = slim.vaccination.sample.slice(0, 15);
-      if (slim.vaccRequests) slim.vaccRequests.sample = slim.vaccRequests.sample.slice(0, 15);
-      if (slim.samples)      slim.samples.sample      = slim.samples.sample.slice(0, 15);
-      sessionStorage.setItem(ANA_CACHE_KEY,  JSON.stringify(slim));
-      sessionStorage.setItem(ANA_CACHE_TIME, Date.now().toString());
-      sessionStorage.setItem(ANA_CACHE_MODS, JSON.stringify(modsList));
-    } catch(e2) { console.warn('sessionStorage ممتلئ'); }
+      if (!db) await ai2_openDB();
+
+      // مسح القديم
+      await Promise.all([
+        ai2_clearStore('breeders'), ai2_clearStore('treatment'),
+        ai2_clearStore('vaccination'), ai2_clearStore('vaccRequests'),
+        ai2_clearStore('samples')
+      ]);
+
+      var allData = await ai2_callApi('getAllDataForCache', {});
+      if (!allData || !allData.success) throw new Error(allData.message || 'فشل الجلب');
+
+      var badgeList = [];
+      var counts = {};
+
+      // ── بيانات المربين ──
+      if (allData.breeders && Array.isArray(allData.breeders)) {
+        await ai2_putMany('breeders', allData.breeders);
+        counts.breeders = allData.breeders.length;
+        badgeList.push({ label: 'مربون (' + counts.breeders + ')', status: 'ok' });
+      } else { badgeList.push({ label: 'مربون (0)', status: 'empty' }); }
+
+      // ── بيانات العلاج ──
+      if (allData.treatment && Array.isArray(allData.treatment)) {
+        await ai2_putMany('treatment', allData.treatment);
+        counts.treatment = allData.treatment.length;
+        badgeList.push({ label: 'علاج (' + counts.treatment + ')', status: 'ok' });
+      } else { badgeList.push({ label: 'علاج (0)', status: 'empty' }); }
+
+      // ── بيانات التحصين ──
+      if (allData.vaccination && Array.isArray(allData.vaccination)) {
+        await ai2_putMany('vaccination', allData.vaccination);
+        counts.vaccination = allData.vaccination.length;
+        badgeList.push({ label: 'تحصين (' + counts.vaccination + ')', status: 'ok' });
+      } else { badgeList.push({ label: 'تحصين (0)', status: 'empty' }); }
+
+      // ── طلبات التحصين ──
+      if (allData.vaccRequests && Array.isArray(allData.vaccRequests)) {
+        await ai2_putMany('vaccRequests', allData.vaccRequests);
+        counts.vaccRequests = allData.vaccRequests.length;
+        badgeList.push({ label: 'طلبات (' + counts.vaccRequests + ')', status: 'ok' });
+      } else { badgeList.push({ label: 'طلبات (0)', status: 'empty' }); }
+
+      // ── بيانات العينات ──
+      if (allData.samples && Array.isArray(allData.samples)) {
+        await ai2_putMany('samples', allData.samples);
+        counts.samples = allData.samples.length;
+        badgeList.push({ label: 'عينات (' + counts.samples + ')', status: 'ok' });
+      } else { badgeList.push({ label: 'عينات (0)', status: 'empty' }); }
+
+      // حفظ الميتا
+      await ai2_setMeta('lastUpdate', Date.now());
+      await ai2_setMeta('counts', JSON.stringify(counts));
+
+      // تحديث UI
+      var okCount = badgeList.filter(function(b){ return b.status === 'ok'; }).length;
+      stat.innerHTML = '<strong>✅ تم التحديث:</strong> ' + okCount + '/5 أوراق — ' + new Date().toLocaleString('ar-OM');
+      badges.innerHTML = badgeList.map(function(b){
+        return '<span class="ai2-badge ' + b.status + '">' + b.label + '</span>';
+      }).join('');
+
+      showToast('تم تحديث البيانات: ' + okCount + '/5 ✅', 'success');
+
+    } catch(err) {
+      stat.innerHTML = '<span style="color:#dc2626;">⚠️ خطأ: ' + ai2_esc(err.message) + '</span>';
+      badges.innerHTML = '<span class="ai2-badge fail">فشل الجلب ✗</span>';
+      console.error('Load error:', err);
+      showToast('فشل التحديث: ' + err.message, 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🔄 تحديث البيانات من الشيت';
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 5. محرك البحث الذكي المحلي (Fuzzy + Filter)
+  // ═══════════════════════════════════════════════════════
+
+  var STAT_KEYWORDS = ['كم', 'عدد', 'إجمالي', 'مجموع', 'متوسط', 'أكثر', 'أقل', 'نسبة', 'توزيع', 'count', 'total', 'how many', 'average', 'sum'];
+  var SEARCH_KEYWORDS = ['ابحث', 'بحث', 'اعطني', 'تفاصيل', 'سجل', 'find', 'search', 'details', 'رقم', 'اسم', 'منطقة', 'phone', 'name', 'region'];
+
+  function ai2_isStatQuestion(q) {
+    q = q.toLowerCase();
+    return STAT_KEYWORDS.some(function(k){ return q.includes(k.toLowerCase()); });
+  }
+  function ai2_isSearchQuestion(q) {
+    q = q.toLowerCase();
+    return SEARCH_KEYWORDS.some(function(k){ return q.includes(k.toLowerCase()); });
   }
 
-  btn.disabled    = false;
-  btn.textContent = '🔄 تحديث البيانات';
-  ana_updateCacheUI();
+  function ai2_fuzzyMatch(text, query) {
+    if (!text || !query) return false;
+    text = String(text).toLowerCase().trim();
+    query = query.toLowerCase().trim();
+    if (text === query) return true;
+    if (text.includes(query)) return true;
+    var idx = 0;
+    for (var i = 0; i < text.length && idx < query.length; i++) {
+      if (text[i] === query[idx]) idx++;
+    }
+    return idx === query.length;
+  }
 
-  var okCount = modsList.filter(function(m){ return m.status === 'ok'; }).length;
-  showToast('تم تحديث الكاش: ' + okCount + '/5 ✅', 'success');
-};
+  function ai2_extractPhone(q) {
+    var m = q.match(/9\d{7}/);
+    return m ? m[0] : null;
+  }
 
-// ─── مساعد ───────────────────────────────────────────────
-function ana_countBy(rows, key) {
-  var map = {};
-  rows.forEach(function(r) {
-    var v = r[key] || 'غير محدد';
-    map[v] = (map[v] || 0) + 1;
-  });
-  return map;
-}
+  function ai2_extractName(q) {
+    var patterns = [
+      /بحث عن اسم\s+(.+?)(?:\?|$)/i,
+      /ابحث عن\s+(.+?)(?:\?|$)/i,
+      /اسم\s+(.+?)(?:\?|$)/i,
+      /find\s+(.+?)(?:\?|$)/i
+    ];
+    for (var i = 0; i < patterns.length; i++) {
+      var m = q.match(patterns[i]);
+      if (m && m[1]) return m[1].trim();
+    }
+    return null;
+  }
 
-window.ana_clearChat = function() {
-  ana_hist = [];
-  document.getElementById('ana_msgs').innerHTML = `
-    <div class="ana-msg bot">
-      <div class="ana-av">📊</div>
-      <div class="ana-bbl">تم المسح. اسأل سؤالاً جديداً.</div>
-    </div>`;
-};
+  async function ai2_localSearch(query) {
+    if (!db) await ai2_openDB();
+    var results = { breeders: [], treatment: [], vaccination: [], vaccRequests: [], samples: [] };
+    var phone = ai2_extractPhone(query);
+    var name  = ai2_extractName(query);
+    var qLow  = query.toLowerCase();
 
-window.ana_quick = function(q) { ana_processMsg(q); };
-window.ana_send  = function() {
-  var inp = document.getElementById('ana_input');
-  var txt = inp.value.trim();
-  if (!txt) return;
-  inp.value = ''; inp.style.height = '44px';
-  ana_processMsg(txt);
-};
+    // ── المربين ──
+    var breeders = await ai2_getAll('breeders');
+    breeders.forEach(function(r){
+      if (phone && r.phone && r.phone.includes(phone)) { results.breeders.push(r); return; }
+      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.breeders.push(r); return; }
+      if (r.region && ai2_fuzzyMatch(r.region, query)) { results.breeders.push(r); return; }
+      if (r.civil && r.civil.includes(query)) { results.breeders.push(r); return; }
+      var allText = [r.phone, r.name, r.region, r.civil, r.camel, r.goat, r.sheep, r.cow].filter(Boolean).join(' ').toLowerCase();
+      if (allText.includes(qLow)) results.breeders.push(r);
+    });
 
-// ─── تنسيق رد الذكاء الاصطناعي إلى HTML جميل ───────────────────
-function ana_formatReply(text) {
-  if (!text) return '';
-  
-  var lines = text.split('\n');
-  var html = [];
-  var inTable = false;
-  var tableRows = [];
-  
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i].trim();
-    
-    // جدول Markdown
-    if (line.startsWith('|') && line.endsWith('|')) {
-      if (!inTable) {
-        inTable = true;
-        tableRows = [];
+    // ── العلاج ──
+    var treatment = await ai2_getAll('treatment');
+    treatment.forEach(function(r){
+      if (phone && r.phone && r.phone.includes(phone)) { results.treatment.push(r); return; }
+      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.treatment.push(r); return; }
+      if (r.region && ai2_fuzzyMatch(r.region, query)) { results.treatment.push(r); return; }
+      var diseases = [r.disease1, r.disease2, r.disease3, r.disease4, r.disease5].filter(Boolean).join(' ').toLowerCase();
+      if (diseases.includes(qLow)) { results.treatment.push(r); return; }
+      var drugs = [r.drug1, r.drug2, r.drug3, r.drug4, r.drug5].filter(Boolean).join(' ').toLowerCase();
+      if (drugs.includes(qLow)) { results.treatment.push(r); return; }
+      var allText = [r.phone, r.name, r.region, r.receipt, r.amount].filter(Boolean).join(' ').toLowerCase();
+      if (allText.includes(qLow)) results.treatment.push(r);
+    });
+
+    // ── التحصين ──
+    var vaccination = await ai2_getAll('vaccination');
+    vaccination.forEach(function(r){
+      if (phone && r.phone && r.phone.includes(phone)) { results.vaccination.push(r); return; }
+      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.vaccination.push(r); return; }
+      if (r.region && ai2_fuzzyMatch(r.region, query)) { results.vaccination.push(r); return; }
+      var allText = [r.phone, r.name, r.region, r.fmdCow, r.fmdGoat, r.fmdSheep, r.lumpyCow, r.rabiesSheep, r.rabiesGoat, r.rabiesCow, r.rabiesCamel, r.rabiesHorse].filter(Boolean).join(' ').toLowerCase();
+      if (allText.includes(qLow)) results.vaccination.push(r);
+    });
+
+    // ── طلبات التحصين ──
+    var vaccRequests = await ai2_getAll('vaccRequests');
+    vaccRequests.forEach(function(r){
+      if (phone && r.phone && r.phone.includes(phone)) { results.vaccRequests.push(r); return; }
+      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.vaccRequests.push(r); return; }
+      if (r.region && ai2_fuzzyMatch(r.region, query)) { results.vaccRequests.push(r); return; }
+      var allText = [r.phone, r.name, r.region, r.entryDate, r.dataUpdater].filter(Boolean).join(' ').toLowerCase();
+      if (allText.includes(qLow)) results.vaccRequests.push(r);
+    });
+
+    // ── العينات ──
+    var samples = await ai2_getAll('samples');
+    samples.forEach(function(r){
+      if (phone && r.phone && r.phone.includes(phone)) { results.samples.push(r); return; }
+      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.samples.push(r); return; }
+      if (r.caseNumber && r.caseNumber.includes(query)) { results.samples.push(r); return; }
+      if (r.animalType && ai2_fuzzyMatch(r.animalType, query)) { results.samples.push(r); return; }
+      if (r.sampleType && ai2_fuzzyMatch(r.sampleType, query)) { results.samples.push(r); return; }
+      var allText = [r.phone, r.name, r.animalType, r.sampleType, r.test1, r.result1].filter(Boolean).join(' ').toLowerCase();
+      if (allText.includes(qLow)) results.samples.push(r);
+    });
+
+    return results;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 6. حساب إحصائيات محلية
+  // ═══════════════════════════════════════════════════════
+  async function ai2_localStats(query) {
+    if (!db) await ai2_openDB();
+    var counts = {};
+    var countsMeta = await ai2_getMeta('counts');
+    if (countsMeta) counts = JSON.parse(countsMeta);
+
+    var stats = {
+      breeders: { total: counts.breeders || 0, regions: {} },
+      treatment: { total: counts.treatment || 0, diseases: {}, drugs: {} },
+      vaccination: { total: counts.vaccination || 0 },
+      vaccRequests: { total: counts.vaccRequests || 0 },
+      samples: { total: counts.samples || 0 }
+    };
+
+    // توزيع المناطق — المربين
+    var breeders = await ai2_getAll('breeders');
+    breeders.forEach(function(r){
+      var reg = r.region || 'غير محدد';
+      stats.breeders.regions[reg] = (stats.breeders.regions[reg] || 0) + 1;
+    });
+
+    // أكثر الأمراض والأدوية — العلاج
+    var treatment = await ai2_getAll('treatment');
+    treatment.forEach(function(r){
+      [r.disease1, r.disease2, r.disease3, r.disease4, r.disease5].forEach(function(d){
+        if (d) { stats.treatment.diseases[d] = (stats.treatment.diseases[d] || 0) + 1; }
+      });
+      [r.drug1, r.drug2, r.drug3, r.drug4, r.drug5].forEach(function(d){
+        if (d) { stats.treatment.drugs[d] = (stats.treatment.drugs[d] || 0) + 1; }
+      });
+    });
+
+    return stats;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 7. معالجة السؤال + إرسال للـ AI
+  // ═══════════════════════════════════════════════════════
+  window.ai2_send = function() { ai2_process(document.getElementById('ai2_input').value.trim()); };
+  window.ai2_quick = function(q) { ai2_process(q); };
+
+  async function ai2_process(question) {
+    if (!question) return;
+    if (!ana_key) { showToast('أدخل مفتاح OpenRouter أولاً', 'warning'); return; }
+
+    var chat = document.getElementById('ai2_chat');
+    var btn  = document.getElementById('ai2_sendBtn');
+
+    // إضافة سؤال المستخدم
+    chat.innerHTML += '<div class="ai2-msg user"><div class="ai2-av">👤</div><div class="ai2-bbl">' + ai2_esc(question) + '</div></div>';
+
+    // التحقق من وجود بيانات
+    if (!db) {
+      try { await ai2_openDB(); } catch(e) {}
+    }
+    var lastUpdate = await ai2_getMeta('lastUpdate');
+    if (!lastUpdate) {
+      chat.innerHTML += '<div class="ai2-msg bot"><div class="ai2-av">🧠</div><div class="ai2-bbl" style="color:#dc2626;">⚠️ لا توجد بيانات محلية. اضغط "تحديث البيانات" أولاً.</div></div>';
+      chat.scrollTop = 9e9; return;
+    }
+
+    var tid = 'ai2_t' + Date.now();
+    chat.innerHTML += '<div class="ai2-msg bot ai2-typing" id="' + tid + '"><div class="ai2-av">🧠</div><div class="ai2-bbl">⚡ تحليل السؤال...</div></div>';
+    chat.scrollTop = 9e9;
+    btn.disabled = true;
+
+    // ── التصنيف ──
+    var isStat = ai2_isStatQuestion(question);
+    var isSearch = ai2_isSearchQuestion(question);
+    var isGeneral = !isStat && !isSearch;
+
+    var contextData = '';
+    var modeLabel = '';
+
+    try {
+      if (isStat) {
+        modeLabel = '📊 إحصاء محلي';
+        var stats = await ai2_localStats(question);
+        contextData = JSON.stringify(stats, null, 1);
+        // إذا كان السؤال بسيط جداً (كم عدد المربين فقط) نجاب محلياً
+        if (/كم عدد المربين|عدد المربين|total breeders/i.test(question)) {
+          var localReply = '**إجمالي المربين:** ' + stats.breeders.total + '\n\n**التوزيع حسب المناطق:**\n';
+          var sortedRegions = Object.entries(stats.breeders.regions).sort(function(a,b){ return b[1]-a[1]; });
+          sortedRegions.forEach(function(kv){ localReply += '- ' + kv[0] + ': **' + kv[1] + '**\n'; });
+          ai2_showReply(tid, localReply);
+          btn.disabled = false; chat.scrollTop = 9e9; return;
+        }
+      } else if (isSearch) {
+        modeLabel = '🔍 بحث ذكي';
+        var searchResults = await ai2_localSearch(question);
+        var allMatches = [];
+        ['breeders', 'treatment', 'vaccination', 'vaccRequests', 'samples'].forEach(function(tbl){
+          if (searchResults[tbl] && searchResults[tbl].length > 0) {
+            allMatches.push('=== ' + tbl + ' (' + searchResults[tbl].length + ' سجل) ===');
+            searchResults[tbl].slice(0, 25).forEach(function(r){
+              allMatches.push(JSON.stringify(r));
+            });
+          }
+        });
+        contextData = allMatches.join('\n');
+        if (contextData.length > 10000) contextData = contextData.slice(0, 10000) + '\n... [مختصر]';
+      } else {
+        modeLabel = '📈 تحليل عام';
+        var stats = await ai2_localStats(question);
+        var searchResults = await ai2_localSearch(question);
+        var summary = [];
+        summary.push('=== إحصائيات سريعة ===');
+        summary.push('مربين: ' + stats.breeders.total);
+        summary.push('علاج: ' + stats.treatment.total);
+        summary.push('تحصين: ' + stats.vaccination.total);
+        summary.push('طلبات: ' + stats.vaccRequests.total);
+        summary.push('عينات: ' + stats.samples.total);
+        var breeders = await ai2_getAll('breeders');
+        var treatment = await ai2_getAll('treatment');
+        if (breeders.length > 0) summary.push('\n=== عينة مربين (5) ===\n' + JSON.stringify(breeders.slice(0, 5)));
+        if (treatment.length > 0) summary.push('\n=== عينة علاج (5) ===\n' + JSON.stringify(treatment.slice(0, 5)));
+        contextData = summary.join('\n');
       }
-      tableRows.push(line);
-      continue;
+
+      // ── تحديث واجهة الكتابة ──
+      var el = document.getElementById(tid);
+      if (el) el.querySelector('.ai2-bbl').innerHTML = '⚡ ' + modeLabel + ' — جارٍ الاتصال بالذكاء الاصطناعي... <span class="ai2-stop" onclick="ai2_stop()">⏹️ إيقاف</span>';
+
+      // ── إعداد الرسائل ──
+      var wilayat = localStorage.getItem('selected_wilayat_name') || 'غير محددة';
+      var systemMsg = 'أنت محلل بيانات متخصص لعيادة الثروة الحيوانية في ولاية ' + wilayat + '، سلطنة عُمان.\n\n' +
+        '📋 قواعد الرد:\n' +
+        '1. استخدم جداول Markdown للمقارنات والإحصائيات\n' +
+        '2. استخدم ✅ للموجود و ❌ للغير موجود\n' +
+        '3. استخدم **غامق** للأرقام المهمة\n' +
+        '4. ابدأ بملخص رقمي مختصر\n' +
+        '5. إذا كان السؤال عن وجود أرقام: استخدم | الرقم | الحالة | السجل | الاسم | المنطقة |\n' +
+        '6. إذا كان إحصائيات: استخدم | البيان | القيمة | النسبة |\n' +
+        '7. لا تستخدم [data] أو [1] — استخدم نص واضح\n' +
+        '8. اكتب بالعربية الفصحى';
+
+      var userMsg = 'السؤال: ' + question + '\n\n' +
+        'وضع التحليل: ' + modeLabel + '\n' +
+        'البيانات المستخرجة محلياً من قاعدة البيانات:\n' + contextData;
+
+      // ── إرسال مع Streaming ──
+      abortCtrl = new AbortController();
+      var r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        signal: abortCtrl.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + ana_key,
+          'HTTP-Referer': location.href,
+          'X-Title': 'Vet Clinic AI Analyzer v2'
+        },
+        body: JSON.stringify({
+          model: ana_mdl,
+          stream: true,
+          messages: [
+            { role: 'system', content: systemMsg },
+            { role: 'user', content: userMsg }
+          ],
+          max_tokens: 2500
+        })
+      });
+
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.body) throw new Error('لا يوجد دعم للـ Streaming');
+
+      var reader = r.body.getReader();
+      var decoder = new TextDecoder();
+      var fullText = '';
+      var el2 = document.getElementById(tid);
+      if (el2) { el2.classList.remove('ai2-typing'); el2.querySelector('.ai2-bbl').innerHTML = ''; }
+
+      while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        var text = decoder.decode(chunk.value, { stream: true });
+        var lines = text.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          if (!line || !line.startsWith('data:')) continue;
+          var jsonStr = line.replace('data:', '').trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            var obj = JSON.parse(jsonStr);
+            var delta = obj.choices && obj.choices[0] && obj.choices[0].delta && obj.choices[0].delta.content;
+            if (delta) {
+              fullText += delta;
+              if (el2) el2.querySelector('.ai2-bbl').innerHTML = ai2_formatReply(fullText);
+              chat.scrollTop = 9e9;
+            }
+          } catch(e) {}
+        }
+      }
+
+      // حفظ في السجل
+      ana_hist.push({ role: 'user', content: question });
+      ana_hist.push({ role: 'assistant', content: fullText });
+      if (ana_hist.length > 14) ana_hist = ana_hist.slice(-14);
+
+      // تنسيق نهائي
+      if (el2) el2.querySelector('.ai2-bbl').innerHTML = ai2_formatReply(fullText);
+
+    } catch(err) {
+      if (err.name === 'AbortError') {
+        var el3 = document.getElementById(tid);
+        if (el3) { el3.classList.remove('ai2-typing'); el3.querySelector('.ai2-bbl').innerHTML = '⏹️ تم إيقاف الرد.'; }
+      } else {
+        var el4 = document.getElementById(tid);
+        if (el4) { el4.classList.remove('ai2-typing'); el4.querySelector('.ai2-bbl').innerHTML = '❌ خطأ: ' + ai2_esc(err.message); }
+      }
     }
-    
-    // إنهاء الجدول
-    if (inTable && !line.startsWith('|')) {
-      html.push(ana_renderTable(tableRows));
-      inTable = false;
-      tableRows = [];
+
+    btn.disabled = false;
+    chat.scrollTop = 9e9;
+  }
+
+  window.ai2_stop = function() {
+    if (abortCtrl) { abortCtrl.abort(); abortCtrl = null; }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 8. تنسيق الرد إلى HTML
+  // ═══════════════════════════════════════════════════════
+  function ai2_formatReply(text) {
+    if (!text) return '';
+    text = text.replace(/\[data\]/g, '').replace(/\[\d+\]/g, '').replace(/\n{3,}/g, '\n\n').trim();
+
+    var lines = text.split('\n');
+    var html = [];
+    var inTable = false;
+    var tableRows = [];
+    var inList = false;
+    var inCode = false;
+    var codeLines = [];
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var trimmed = line.trim();
+
+      // كود بلوك
+      if (trimmed.startsWith('```')) {
+        if (inCode) {
+          html.push('<pre><code>' + ai2_esc(codeLines.join('\n')) + '</code></pre>');
+          codeLines = [];
+          inCode = false;
+        } else {
+          inCode = true;
+        }
+        continue;
+      }
+      if (inCode) { codeLines.push(line); continue; }
+
+      // جدول Markdown
+      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+        if (!inTable) { inTable = true; tableRows = []; }
+        tableRows.push(trimmed);
+        continue;
+      }
+      if (inTable && !trimmed.startsWith('|')) {
+        html.push(ai2_renderTable(tableRows));
+        inTable = false; tableRows = [];
+      }
+
+      // قائمة
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        if (!inList) { inList = true; html.push('<ul style="margin:6px 0;padding-right:20px;">'); }
+        html.push('<li style="margin:4px 0;">' + ai2_esc(trimmed.replace(/^[-*]\s+/, '')) + '</li>');
+        continue;
+      }
+      if (inList && !trimmed.startsWith('- ') && !trimmed.startsWith('* ')) {
+        html.push('</ul>'); inList = false;
+      }
+
+      // عنوان
+      if (trimmed.startsWith('### ')) {
+        html.push('<h3>' + ai2_esc(trimmed.replace('### ', '')) + '</h3>');
+        continue;
+      }
+      if (trimmed.startsWith('## ')) {
+        html.push('<h2>' + ai2_esc(trimmed.replace('## ', '')) + '</h2>');
+        continue;
+      }
+      if (trimmed.startsWith('# ')) {
+        html.push('<h2>' + ai2_esc(trimmed.replace('# ', '')) + '</h2>');
+        continue;
+      }
+
+      // سطر فارغ
+      if (trimmed === '') { html.push('<br>'); continue; }
+
+      // نص عادي مع تنسيق inline
+      var formatted = ai2_esc(trimmed)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code>$1</code>');
+      html.push('<p>' + formatted + '</p>');
     }
-    
-    // عنوان
-    if (line.startsWith('### ')) {
-      html.push('<h3 style="color:#00b8d9;margin:12px 0 6px 0;font-size:15px;">' + ana_esc(line.replace('### ', '')) + '</h3>');
-      continue;
+
+    if (inTable && tableRows.length > 0) html.push(ai2_renderTable(tableRows));
+    if (inList) html.push('</ul>');
+    if (inCode) html.push('<pre><code>' + ai2_esc(codeLines.join('\n')) + '</code></pre>');
+
+    return html.join('\n');
+  }
+
+  function ai2_renderTable(rows) {
+    if (rows.length < 2) return '';
+    var html = '<table>';
+    for (var i = 0; i < rows.length; i++) {
+      var cells = rows[i].split('|').map(function(c){ return c.trim(); }).filter(function(c){ return c !== ''; });
+      if (cells.every(function(c){ return /^[-:]+$/.test(c); })) continue;
+      var tag = (i === 0) ? 'th' : 'td';
+      html += '<tr>';
+      cells.forEach(function(cell){
+        var content = cell
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/✅/g, '<span style="color:#059669;font-size:16px;">✅</span>')
+          .replace(/❌/g, '<span style="color:#dc2626;font-size:16px;">❌</span>');
+        html += '<' + tag + '>' + content + '</' + tag + '>';
+      });
+      html += '</tr>';
     }
-    if (line.startsWith('## ')) {
-      html.push('<h2 style="color:#004e66;margin:14px 0 8px 0;font-size:16px;">' + ana_esc(line.replace('## ', '')) + '</h2>');
-      continue;
-    }
-    
-    // قائمة
-    if (line.startsWith('- ')) {
-      html.push('<li style="margin:4px 0 4px 20px;">' + ana_esc(line.replace('- ', '')) + '</li>');
-      continue;
-    }
-    
-    // سطر فارغ
-    if (line === '') {
-      html.push('<br>');
-      continue;
-    }
-    
-    // نص عادي
-    html.push('<p style="margin:6px 0;line-height:1.6;">' + ana_esc(line) + '</p>');
-  }
-  
-  // إنهاء الجدول الأخير
-  if (inTable && tableRows.length > 0) {
-    html.push(ana_renderTable(tableRows));
-  }
-  
-  return html.join('\n');
-}
-
-// ─── تحويل جدول Markdown إلى HTML ─────────────────────────────
-function ana_renderTable(rows) {
-  if (rows.length < 2) return '';
-  
-  var html = '<table style="width:100%;border-collapse:collapse;margin:10px 0;font-size:13px;background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
-  
-  for (var i = 0; i < rows.length; i++) {
-    var cells = rows[i].split('|').map(function(c) { return c.trim(); }).filter(function(c) { return c !== ''; });
-    
-    // سطر الفاصل (| :--- | :--- |) — نتجاهله
-    if (cells.every(function(c) { return c.match(/^[-:]+$/); })) continue;
-    
-    var tag = (i === 0) ? 'th' : 'td';
-    var bg = (i === 0) ? 'background:#00b8d9;color:#fff;font-weight:bold;' : '';
-    var border = 'border:1px solid #e0e0e0;padding:8px 12px;text-align:center;';
-    
-    // تلوين الصفوف بالتناوب
-    if (i > 0 && i % 2 === 0) bg += 'background:#f8f9fa;';
-    
-    html += '<tr>';
-    cells.forEach(function(cell) {
-      var content = cell
-        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#00b8d9;">$1</strong>')
-        .replace(/✅/g, '<span style="color:#2bb673;font-size:16px;">✅</span>')
-        .replace(/❌/g, '<span style="color:#e65050;font-size:16px;">❌</span>');
-      html += '<' + tag + ' style="' + border + bg + '">' + content + '</' + tag + '>';
-    });
-    html += '</tr>';
-  }
-  
-  html += '</table>';
-  return html;
-}
-
-// ─── المعالجة: من الكاش مباشرة ──────────────────────────
-async function ana_processMsg(question) {
-  if (!ana_key) { showToast('أدخل مفتاح OpenRouter أولاً', 'warning'); return; }
-
-  // ✅ جلب من الكاش فقط
-  var cached = sessionStorage.getItem(ANA_CACHE_KEY);
-  if (!cached) {
-    showToast('يرجى تحديث البيانات أولاً 🔄', 'warning');
-    document.getElementById('ana_refreshBtn').style.animation = 'none';
-    setTimeout(function(){
-      document.getElementById('ana_refreshBtn').style.background = '#dc2626';
-      setTimeout(function(){ document.getElementById('ana_refreshBtn').style.background = ''; }, 1500);
-    }, 10);
-    return;
+    html += '</table>';
+    return html;
   }
 
-  var box = document.getElementById('ana_msgs');
-  var btn = document.getElementById('ana_sendBtn');
-
-  box.innerHTML += `
-    <div class="ana-msg user">
-      <div class="ana-av">👤</div>
-      <div class="ana-bbl">${ana_esc(question)}</div>
-    </div>`;
-
-  var tid = 'ana_t' + Date.now();
-  box.innerHTML += `
-    <div class="ana-msg bot ana-typing" id="${tid}">
-      <div class="ana-av">📊</div>
-      <div class="ana-bbl">⚡ إرسال للذكاء الاصطناعي...</div>
-    </div>`;
-  box.scrollTop = 9e9;
-  btn.disabled = true;
-
-  var wilayat = localStorage.getItem('selected_wilayat_name') || 'غير محددة';
-  var dataObj = JSON.parse(cached);
-  
-  // بناء ملخص مضغوط للبيانات
-  var summary = [];
-  
-  if (dataObj.breeders) {
-    summary.push('=== المربين ===');
-    summary.push('العدد: ' + (dataObj.breeders.total || 0));
-    summary.push('المناطق: ' + JSON.stringify(dataObj.breeders.regions || {}));
-    summary.push('عينة: ' + JSON.stringify(dataObj.breeders.sample || []));
-  }
-  
-  if (dataObj.treatment) {
-    summary.push('\n=== العلاج ===');
-    summary.push('العدد: ' + (dataObj.treatment.total || 0));
-    summary.push('عينة: ' + JSON.stringify(dataObj.treatment.sample || []));
-  }
-  
-  if (dataObj.vaccination) {
-    summary.push('\n=== التحصين ===');
-    summary.push('العدد: ' + (dataObj.vaccination.total || 0));
-  }
-  
-  if (dataObj.vaccRequests) {
-    summary.push('\n=== طلبات التحصين ===');
-    summary.push('العدد: ' + (dataObj.vaccRequests.total || 0));
-  }
-  
-  if (dataObj.samples) {
-    summary.push('\n=== العينات ===');
-    summary.push('العدد: ' + (dataObj.samples.total || 0));
+  function ai2_esc(t) {
+    return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  var dataStr = summary.join('\n');
-  if (dataStr.length > 12000) dataStr = dataStr.slice(0, 12000) + '\n... [مختصرة]';
-
-  var systemMsg = `أنت محلل بيانات متخصص لعيادة الثروة الحيوانية في سلطنة عُمان — ولاية: ${wilayat}.
-
-📋 قواعد الرد الإلزامية:
-1. استخدم جداول Markdown لعرض أي بيانات مقارنة أو إحصائيات
-2. استخدم تنسيق: | العمود 1 | العمود 2 | العمود 3 |
-3. استخدم ✅ للموجود و ❌ للغير موجود
-4. استخدم **غامق** للأرقام المهمة
-5. ابدأ كل رد بملخص رقمي مختصر
-6. إذا كان السؤال عن وجود أرقام، استخدم هذا التنسيق:
-   | الرقم | الحالة | السجل | الاسم | المنطقة | ملاحظات |
-7. إذا كان السؤال إحصائيات، استخدم:
-   | البيان | القيمة | النسبة/الملاحظة |
-8. لا تستخدم [data] أو [1] في الرد — استخدم سطور منفصلة
-
-البيانات التالية مُستخرجة مباشرة من قاعدة البيانات الحقيقية (Google Sheets).
-حلّل البيانات بدقة، قدّم أرقاماً واضحة، واستخدم العربية.`;
-
-  var userContent = `سؤالي: ${question}\n\n=== بيانات قاعدة البيانات ===\n${dataStr}`;
-
-  var messages = ana_hist.length > 0
-    ? ana_hist.concat([{ role: 'user', content: userContent }])
-    : [{ role: 'user', content: userContent }];
-
-  try {
-    var r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'Authorization': 'Bearer ' + ana_key,
-        'HTTP-Referer':  location.href,
-        'X-Title':       'Vet Clinic Data Analyzer'
-      },
-      body: JSON.stringify({
-        model:    ana_mdl,
-        messages: [{ role: 'system', content: systemMsg }].concat(messages),
-        max_tokens: 2000
-      })
-    });
-    var d = await r.json();
-    if (d.error) throw new Error(d.error.message);
-    var reply = d.choices?.[0]?.message?.content || 'لا يوجد رد';
-
-    // ✅ تنظيف الرد من أي تنسيقات غير مرغوبة
-    reply = reply
-      .replace(/\[data\]/g, '\n')
-      .replace(/\[\d+\]/g, '\n')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-
-    ana_hist.push({ role: 'user',      content: question });
-    ana_hist.push({ role: 'assistant', content: reply    });
-    if (ana_hist.length > 12) ana_hist = ana_hist.slice(-12);
-
+  function ai2_showReply(tid, text) {
     var el = document.getElementById(tid);
-    if (el) { 
-      el.classList.remove('ana-typing'); 
-      var formattedReply = ana_formatReply(reply);
-      el.querySelector('.ana-bbl').innerHTML = formattedReply;
+    if (el) {
+      el.classList.remove('ai2-typing');
+      el.querySelector('.ai2-bbl').innerHTML = ai2_formatReply(text);
     }
-  } catch(e) {
-    var el = document.getElementById(tid);
-    if (el) { el.classList.remove('ana-typing'); el.querySelector('.ana-bbl').textContent = '❌ ' + e.message; }
   }
 
-  btn.disabled = false;
-  box.scrollTop = 9e9;
-}
+  // ═══════════════════════════════════════════════════════
+  // 9. مساعدة وتحكم
+  // ═══════════════════════════════════════════════════════
+  window.ai2_clearChat = function() {
+    ana_hist = [];
+    document.getElementById('ai2_chat').innerHTML = `
+      <div class="ai2-msg bot">
+        <div class="ai2-av">🧠</div>
+        <div class="ai2-bbl">تم مسح المحادثة. اسأل سؤالاً جديداً.</div>
+      </div>`;
+  };
 
-function ana_esc(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+  document.getElementById('ai2_input').addEventListener('input', function() {
+    this.style.height = '48px';
+    this.style.height = Math.min(this.scrollHeight, 140) + 'px';
+  });
 
-document.getElementById('ana_input').addEventListener('input', function() {
-  this.style.height = '44px';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-});
+  // ═══════════════════════════════════════════════════════
+  // 10. تهيئة عند فتح الصفحة
+  // ═══════════════════════════════════════════════════════
+  (async function init() {
+    try {
+      await ai2_openDB();
+      var lastUpdate = await ai2_getMeta('lastUpdate');
+      var countsMeta = await ai2_getMeta('counts');
+      var stat = document.getElementById('ai2_stat');
+      var badges = document.getElementById('ai2_badges');
 
-// تحديث UI الكاش عند فتح الصفحة
-ana_updateCacheUI();
+      if (lastUpdate && countsMeta) {
+        var counts = JSON.parse(countsMeta);
+        var age = Math.round((Date.now() - lastUpdate) / 60000);
+        var ageText = age < 1 ? 'الآن' : age + ' دقيقة';
+        stat.innerHTML = '<strong>✅ بيانات محلية:</strong> آخر تحديث منذ ' + ageText + ' — ' + new Date(lastUpdate).toLocaleString('ar-OM');
+
+        var badgeList = [];
+        if (counts.breeders) badgeList.push({ label: 'مربون (' + counts.breeders + ')', status: 'ok' });
+        if (counts.treatment) badgeList.push({ label: 'علاج (' + counts.treatment + ')', status: 'ok' });
+        if (counts.vaccination) badgeList.push({ label: 'تحصين (' + counts.vaccination + ')', status: 'ok' });
+        if (counts.vaccRequests) badgeList.push({ label: 'طلبات (' + counts.vaccRequests + ')', status: 'ok' });
+        if (counts.samples) badgeList.push({ label: 'عينات (' + counts.samples + ')', status: 'ok' });
+        badges.innerHTML = badgeList.map(function(b){ return '<span class="ai2-badge ' + b.status + '">' + b.label + '</span>'; }).join('');
+      }
+    } catch(e) {
+      console.log('IndexedDB init error:', e);
+    }
+  })();
 
 })();
 </script>
