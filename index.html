@@ -1610,65 +1610,48 @@ async function wilayatApply() {
   })();
   </script>
 </div>
-<!-- ===== صفحة تحليل البيانات الذكي — الإصدار 2 (IndexedDB + RAG محلي) ===== -->
+<!-- ===== صفحة تحليل البيانات الذكي — الإصدار 3 (100% محلي بدون AI) ===== -->
 <div id="aiAnalysis" class="page">
 <style>
 /* ═══ CSS الأساسي ═══ */
-#aiAnalysis .ai2-wrap {
-  max-width: 960px;
+#aiAnalysis .ai3-wrap {
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   font-family: Tahoma, Arial, 'Noto Naskh Arabic', sans-serif;
   direction: rtl;
 }
 
-#aiAnalysis .ai2-hdr {
+#aiAnalysis .ai3-hdr {
   display: flex;
   align-items: center;
   gap: 15px;
   margin-bottom: 18px;
-  padding: 16px 20px;
-  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
   border-radius: 14px;
   color: #fff;
-  box-shadow: 0 4px 15px rgba(15,118,110,0.25);
+  box-shadow: 0 4px 20px rgba(15,23,42,0.3);
 }
 
-#aiAnalysis .ai2-hdr-icon { font-size: 42px; }
-#aiAnalysis .ai2-hdr-title { font-size: 19px; font-weight: bold; margin-bottom: 4px; }
-#aiAnalysis .ai2-hdr-sub { font-size: 13px; opacity: 0.9; }
+#aiAnalysis .ai3-hdr-icon { font-size: 44px; }
+#aiAnalysis .ai3-hdr-title { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+#aiAnalysis .ai3-hdr-sub { font-size: 13px; opacity: 0.85; }
 
-/* ═══ شريط الإعدادات ═══ */
-#aiAnalysis .ai2-cfg {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto auto;
+/* ═══ شريط التحكم ═══ */
+#aiAnalysis .ai3-bar {
+  display: flex;
   gap: 10px;
   align-items: center;
-  margin-bottom: 14px;
-  padding: 12px 14px;
-  background: #f0fdfa;
-  border: 2px solid #0d9488;
-  border-radius: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 2px solid #334155;
+  border-radius: 12px;
 }
 
-#aiAnalysis .ai2-cfg input,
-#aiAnalysis .ai2-cfg select {
-  padding: 9px 12px;
-  border: 2px solid #cbd5e1;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 13px;
-  background: #fff;
-}
-
-#aiAnalysis .ai2-cfg input:focus,
-#aiAnalysis .ai2-cfg select:focus {
-  outline: none;
-  border-color: #0d9488;
-  box-shadow: 0 0 0 3px rgba(13,148,136,0.15);
-}
-
-#aiAnalysis .ai2-btn {
+#aiAnalysis .ai3-btn {
   padding: 9px 18px;
   border: none;
   border-radius: 8px;
@@ -1678,323 +1661,291 @@ async function wilayatApply() {
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
-}
-
-#aiAnalysis .ai2-btn-green { background: #059669; color: #fff; }
-#aiAnalysis .ai2-btn-green:hover { background: #047857; }
-#aiAnalysis .ai2-btn-blue { background: #0284c7; color: #fff; }
-#aiAnalysis .ai2-btn-blue:hover { background: #0369a1; }
-#aiAnalysis .ai2-btn-red { background: #dc2626; color: #fff; }
-#aiAnalysis .ai2-btn-red:hover { background: #b91c1c; }
-#aiAnalysis .ai2-btn:disabled { opacity: 0.5; cursor: default; }
-
-#aiAnalysis .ai2-key-ok { color: #059669; font-weight: bold; font-size: 13px; }
-
-/* ═══ شريط الكاش / البحث ═══ */
-#aiAnalysis .ai2-bar {
-  display: flex;
-  gap: 10px;
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border: 2px solid #334155;
-  border-radius: 10px;
+  gap: 6px;
 }
 
-#aiAnalysis .ai2-stat {
+#aiAnalysis .ai3-btn-blue { background: #0284c7; color: #fff; }
+#aiAnalysis .ai3-btn-blue:hover { background: #0369a1; }
+#aiAnalysis .ai3-btn-green { background: #059669; color: #fff; }
+#aiAnalysis .ai3-btn-green:hover { background: #047857; }
+#aiAnalysis .ai3-btn-purple { background: #7c3aed; color: #fff; }
+#aiAnalysis .ai3-btn-purple:hover { background: #6d28d9; }
+#aiAnalysis .ai3-btn-orange { background: #ea580c; color: #fff; }
+#aiAnalysis .ai3-btn-orange:hover { background: #c2410c; }
+#aiAnalysis .ai3-btn:disabled { opacity: 0.5; cursor: default; }
+
+#aiAnalysis .ai3-stat {
   flex: 1;
   font-size: 12px;
   color: #475569;
   min-width: 220px;
 }
+#aiAnalysis .ai3-stat strong { color: #0f172a; }
 
-#aiAnalysis .ai2-stat strong { color: #0f172a; }
+#aiAnalysis .ai3-badges { display: flex; gap: 6px; flex-wrap: wrap; }
 
-#aiAnalysis .ai2-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-
-#aiAnalysis .ai2-badge {
+#aiAnalysis .ai3-badge {
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 20px;
   border: 1px solid;
   font-weight: 600;
 }
+#aiAnalysis .ai3-badge.ok { background: #dcfce7; color: #166534; border-color: #86efac; }
+#aiAnalysis .ai3-badge.fail { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+#aiAnalysis .ai3-badge.empty { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
 
-#aiAnalysis .ai2-badge.ok { background: #dcfce7; color: #166534; border-color: #86efac; }
-#aiAnalysis .ai2-badge.fail { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
-#aiAnalysis .ai2-badge.empty { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
-
-/* ═══ أسئلة سريعة ═══ */
-#aiAnalysis .ai2-chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-
-#aiAnalysis .ai2-chip {
-  padding: 7px 14px;
-  border: 2px solid #0d9488;
-  border-radius: 24px;
-  background: #fff;
-  color: #0f766e;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-#aiAnalysis .ai2-chip:hover { background: #0d9488; color: #fff; }
-
-#aiAnalysis .ai2-chip-clear {
-  padding: 7px 14px;
-  border: 2px solid #ef4444;
-  border-radius: 24px;
-  background: #fff;
-  color: #dc2626;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
-}
-
-#aiAnalysis .ai2-chip-clear:hover { background: #ef4444; color: #fff; }
-
-/* ═══ منطقة المحادثة ═══ */
-#aiAnalysis .ai2-chat {
-  max-height: 58vh;
-  overflow-y: auto;
-  border: 2px solid #e2e8f0;
+/* ═══ البحث والفلاتر ═══ */
+#aiAnalysis .ai3-search-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px;
+  background: #f0f9ff;
+  border: 2px solid #0ea5e9;
   border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 14px;
-  background: #fafafa;
-  scroll-behavior: smooth;
 }
 
-#aiAnalysis .ai2-msg {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 14px;
-  animation: ai2FadeIn 0.35s ease;
-}
-
-#aiAnalysis .ai2-msg.user { flex-direction: row-reverse; }
-
-#aiAnalysis .ai2-av {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-  background: #e2e8f0;
-}
-
-#aiAnalysis .ai2-msg.bot .ai2-av { background: #ccfbf1; }
-#aiAnalysis .ai2-msg.user .ai2-av { background: #0d9488; color: #fff; }
-
-#aiAnalysis .ai2-bbl {
-  max-width: 82%;
-  padding: 12px 16px;
-  border-radius: 14px;
-  font-size: 13.5px;
-  line-height: 1.7;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  word-wrap: break-word;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-}
-
-#aiAnalysis .ai2-msg.bot .ai2-bbl { border-bottom-right-radius: 4px; }
-#aiAnalysis .ai2-msg.user .ai2-bbl {
-  border-bottom-left-radius: 4px;
-  background: #0d9488;
-  color: #fff;
-  border-color: #0d9488;
-}
-
-#aiAnalysis .ai2-typing .ai2-bbl {
-  background: #f1f5f9;
-  color: #64748b;
-  font-style: italic;
-}
-
-#aiAnalysis .ai2-stop {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-  padding: 4px 10px;
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fca5a5;
-  border-radius: 6px;
-  font-size: 11px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-#aiAnalysis .ai2-stop:hover { background: #fecaca; }
-
-/* ═══ تنسيق الجداول والردود ═══ */
-#aiAnalysis .ai2-bbl table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0;
+#aiAnalysis .ai3-search-panel input,
+#aiAnalysis .ai3-search-panel select {
+  padding: 10px 12px;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  font-family: inherit;
   font-size: 13px;
   background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
 }
 
-#aiAnalysis .ai2-bbl th {
-  background: #0f766e;
+#aiAnalysis .ai3-search-panel input:focus,
+#aiAnalysis .ai3-search-panel select:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+}
+
+#aiAnalysis .ai3-search-full {
+  grid-column: 1 / -1;
+  font-size: 14px;
+}
+
+/* ═══ البطاقات الإحصائية ═══ */
+#aiAnalysis .ai3-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+#aiAnalysis .ai3-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#aiAnalysis .ai3-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+#aiAnalysis .ai3-card-icon { font-size: 32px; margin-bottom: 6px; }
+#aiAnalysis .ai3-card-num { font-size: 28px; font-weight: bold; color: #1e3a5f; margin-bottom: 4px; }
+#aiAnalysis .ai3-card-label { font-size: 13px; color: #64748b; }
+#aiAnalysis .ai3-card-sub { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+/* ═══ الرسوم البيانية ═══ */
+#aiAnalysis .ai3-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+#aiAnalysis .ai3-chart-box {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+#aiAnalysis .ai3-chart-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: #1e3a5f;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+#aiAnalysis .ai3-chart-canvas {
+  width: 100%;
+  height: 260px;
+}
+
+/* ═══ الجداول ═══ */
+#aiAnalysis .ai3-table-wrap {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+#aiAnalysis .ai3-table-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+#aiAnalysis .ai3-table-hdr-title { font-size: 15px; font-weight: bold; color: #1e3a5f; }
+
+#aiAnalysis .ai3-table-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+#aiAnalysis .ai3-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+#aiAnalysis .ai3-table th {
+  background: #1e3a5f;
   color: #fff;
   font-weight: bold;
-  padding: 9px 10px;
+  padding: 10px 12px;
   text-align: center;
-  border: 1px solid #0d9488;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
-#aiAnalysis .ai2-bbl td {
-  padding: 7px 10px;
+#aiAnalysis .ai3-table td {
+  padding: 8px 12px;
   text-align: center;
-  border: 1px solid #e2e8f0;
+  border-bottom: 1px solid #f1f5f9;
   color: #334155;
 }
 
-#aiAnalysis .ai2-bbl tr:nth-child(even) td { background: #f8fafc; }
-#aiAnalysis .ai2-bbl tr:hover td { background: #f0fdfa; }
-#aiAnalysis .ai2-bbl td strong { color: #0f766e; }
-#aiAnalysis .ai2-bbl h3 { color: #0f766e; margin: 12px 0 6px 0; font-size: 15px; border-bottom: 2px solid #0d9488; padding-bottom: 3px; display: inline-block; }
-#aiAnalysis .ai2-bbl p { margin: 5px 0; line-height: 1.7; color: #334155; }
-#aiAnalysis .ai2-bbl code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #0f766e; }
-#aiAnalysis .ai2-bbl pre { background: #f8fafc; padding: 10px; border-radius: 8px; overflow-x: auto; border: 1px solid #e2e8f0; font-size: 12px; }
+#aiAnalysis .ai3-table tr:nth-child(even) { background: #f8fafc; }
+#aiAnalysis .ai3-table tr:hover { background: #f0f9ff; }
+#aiAnalysis .ai3-table td strong { color: #1e3a5f; }
 
-/* ═══ شريط الإدخال ═══ */
-#aiAnalysis .ai2-inbar {
+/* ═══ التبويبات ═══ */
+#aiAnalysis .ai3-tabs {
   display: flex;
-  gap: 10px;
-  align-items: flex-end;
+  gap: 4px;
+  margin-bottom: 0;
+  border-bottom: 2px solid #e2e8f0;
 }
 
-#aiAnalysis .ai2-inbar textarea {
-  flex: 1;
-  padding: 12px 14px;
-  border: 2px solid #cbd5e1;
-  border-radius: 10px;
+#aiAnalysis .ai3-tab {
+  padding: 10px 20px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px 8px 0 0;
   font-family: inherit;
-  font-size: 14px;
-  resize: none;
-  min-height: 48px;
-  max-height: 140px;
-  background: #fff;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
 }
 
-#aiAnalysis .ai2-inbar textarea:focus { outline: none; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,0.12); }
+#aiAnalysis .ai3-tab:hover { background: #e2e8f0; color: #334155; }
+#aiAnalysis .ai3-tab.active { background: #1e3a5f; color: #fff; }
 
-#aiAnalysis .ai2-inbar button { padding: 12px 26px; background: #0d9488; color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 14px; }
-#aiAnalysis .ai2-inbar button:hover { background: #0f766e; }
-#aiAnalysis .ai2-inbar button:disabled { background: #94a3b8; cursor: default; }
+#aiAnalysis .ai3-tab-panel { display: none; padding-top: 16px; }
+#aiAnalysis .ai3-tab-panel.active { display: block; }
 
 /* ═══ Animations ═══ */
-@keyframes ai2FadeIn {
+@keyframes ai3FadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+#aiAnalysis .ai3-fade { animation: ai3FadeIn 0.4s ease; }
 
-@keyframes ai2Pulse {
+@keyframes ai3Pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
-
-#aiAnalysis .ai2-pulse { animation: ai2Pulse 1.5s infinite; }
+#aiAnalysis .ai3-pulse { animation: ai3Pulse 1.5s infinite; }
 </style>
 
-<div class="ai2-wrap">
+<div class="ai3-wrap">
 
   <!-- Header -->
-  <div class="ai2-hdr">
-    <div class="ai2-hdr-icon">🧠</div>
+  <div class="ai3-hdr">
+    <div class="ai3-hdr-icon">📊</div>
     <div>
-      <div class="ai2-hdr-title">المحلل الذكي v2 — بحث محلي + تحليل AI</div>
-      <div class="ai2-hdr-sub">
-        يخزّن البيانات في المتصفح (IndexedDB) • يبحث محلياً • يرسل للـ AI فقط ما يحتاجه
+      <div class="ai3-hdr-title">مركز تحليل البيانات — 100% محلي</div>
+      <div class="ai3-hdr-sub">
+        بحث ذكي • إحصائيات فورية • رسوم بيانية • تصدير — بدون اتصال بـ AI
       </div>
     </div>
   </div>
 
-  <!-- إعدادات -->
-  <div class="ai2-cfg">
-    <input type="password" id="ai2_keyInp" placeholder="OpenRouter API Key: sk-or-v1-..." />
-    <select id="ai2_modelSel">
-      <option value="deepseek/deepseek-r1:free">DeepSeek R1 ⭐ (مجاني)</option>
-      <option value="deepseek/deepseek-chat-v3-0324:free">DeepSeek V3 (مجاني)</option>
-      <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (مجاني)</option>
-      <option value="qwen/qwen3-235b-a22b:free">Qwen3 235B (مجاني)</option>
-      <option value="openrouter/auto">Auto — أفضل متاح</option>
-    </select>
-    <button class="ai2-btn ai2-btn-green" onclick="ai2_saveKey()">💾 حفظ</button>
-    <span class="ai2-key-ok" id="ai2_keyOk"></span>
-  </div>
-
-  <!-- شريط الكاش -->
-  <div class="ai2-bar">
-    <button class="ai2-btn ai2-btn-blue" id="ai2_refreshBtn" onclick="ai2_loadAll()">
-      🔄 تحديث البيانات من الشيت
+  <!-- شريط التحكم -->
+  <div class="ai3-bar">
+    <button class="ai3-btn ai3-btn-blue" id="ai3_refreshBtn" onclick="ai3_loadAll()">
+      🔄 تحديث البيانات
     </button>
-    <div class="ai2-stat" id="ai2_stat">
+    <button class="ai3-btn ai3-btn-green" onclick="ai3_exportJSON()">
+      📥 تصدير JSON
+    </button>
+    <button class="ai3-btn ai3-btn-purple" onclick="ai3_exportCSV()">
+      📄 تصدير CSV
+    </button>
+    <div class="ai3-stat" id="ai3_stat">
       لم يتم جلب البيانات بعد — اضغط "تحديث البيانات"
     </div>
-    <div class="ai2-badges" id="ai2_badges"></div>
+    <div class="ai3-badges" id="ai3_badges"></div>
   </div>
 
-  <!-- أسئلة سريعة -->
-  <div class="ai2-chips">
-    <button class="ai2-chip" onclick="ai2_quick('كم عدد المربين المسجلين وما توزيعهم على المناطق؟')">👥 إحصاء المربين</button>
-    <button class="ai2-chip" onclick="ai2_quick('ابحث عن رقم 92123456 واعطني تفاصيله الكاملة')">📱 بحث برقم</button>
-    <button class="ai2-chip" onclick="ai2_quick('ما أكثر الأمراض تسجيلاً في سجل العلاج؟')">🦠 أكثر الأمراض</button>
-    <button class="ai2-chip" onclick="ai2_quick('حلّل بيانات التحصين: أكثر اللقاحات وأكثر المناطق')">💉 تحليل التحصين</button>
-    <button class="ai2-chip" onclick="ai2_quick('ابحث عن اسم أحمد في كل السجلات')">🔍 بحث باسم</button>
-    <button class="ai2-chip" onclick="ai2_quick('قدم تقريراً شاملاً عن حالة العيادة')">📈 تقرير شامل</button>
-    <button class="ai2-chip-clear" onclick="ai2_clearChat()">🗑️ مسح المحادثة</button>
+  <!-- البحث والفلاتر -->
+  <div class="ai3-search-panel">
+    <input type="text" class="ai3-search-full" id="ai3_search" placeholder="🔍 ابحث في كل البيانات: رقم هاتف، اسم، منطقة، مرض، دواء، نوع حيوان..." oninput="ai3_debouncedSearch()" />
+    <select id="ai3_filter_table" onchange="ai3_debouncedSearch()">
+      <option value="all">🔎 كل الجداول</option>
+      <option value="breeders">👥 المربين</option>
+      <option value="treatment">💊 العلاج</option>
+      <option value="vaccination">💉 التحصين</option>
+      <option value="vaccRequests">📋 طلبات التحصين</option>
+      <option value="samples">🧪 العينات</option>
+    </select>
+    <select id="ai3_filter_region" onchange="ai3_debouncedSearch()">
+      <option value="">📍 كل المناطق</option>
+    </select>
+    <select id="ai3_filter_date" onchange="ai3_debouncedSearch()">
+      <option value="">📅 كل التواريخ</option>
+      <option value="today">اليوم</option>
+      <option value="week">آخر أسبوع</option>
+      <option value="month">آخر شهر</option>
+      <option value="year">آخر سنة</option>
+    </select>
   </div>
 
-  <!-- المحادثة -->
-  <div class="ai2-chat" id="ai2_chat">
-    <div class="ai2-msg bot">
-      <div class="ai2-av">🧠</div>
-      <div class="ai2-bbl">
-        <strong>مرحباً!</strong> أنا المحلل الذكي v2.
-        <br><br>
-        ⚡ <strong>الجديد:</strong>
-        <ul style="margin:8px 0;padding-right:18px;">
-          <li>البيانات تُخزّن في <strong>IndexedDB</strong> (لا تُحذف بإغلاق التبويب)</li>
-          <li><strong>بحث ذكي محلي</strong> — يفهم الأرقام والأسماء والمناطق والتواريخ</li>
-          <li>الأسئلة الإحصائية البسيطة تُجاب <strong>محلياً فوراً</strong> بدون AI</li>
-          <li>الأسئلة التحليلية ترسل للـ AI مع <strong>سجلات مُصفّاة فقط</strong></li>
-          <li>دعم <strong>Streaming</strong> — الرد يظهر كلمة كلمة</li>
-        </ul>
-        ⚠️ اضغط "تحديث البيانات" أولاً، ثم اسأل ما تشاء.
-      </div>
-    </div>
-  </div>
+  <!-- البطاقات الإحصائية -->
+  <div class="ai3-cards" id="ai3_cards"></div>
 
-  <!-- إدخال -->
-  <div class="ai2-inbar">
-    <textarea id="ai2_input"
-      placeholder="اسأل عن بياناتك... (يجب تحديث البيانات أولاً)"
-      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ai2_send();}">
-    </textarea>
-    <button id="ai2_sendBtn" onclick="ai2_send()">➤ إرسال</button>
-  </div>
+  <!-- الرسوم البيانية -->
+  <div class="ai3-charts" id="ai3_charts"></div>
+
+  <!-- التبويبات -->
+  <div class="ai3-tabs" id="ai3_tabs"></div>
+  <div id="ai3_panels"></div>
 
 </div>
 
@@ -2003,13 +1954,13 @@ async function wilayatApply() {
   "use strict";
 
   // ═══════════════════════════════════════════════════════
-  // 1. IndexedDB — قاعدة بيانات محلية دائمة
+  // 1. IndexedDB
   // ═══════════════════════════════════════════════════════
   var DB_NAME = 'VetClinicDB';
   var DB_VER  = 1;
   var db = null;
 
-  function ai2_openDB() {
+  function ai3_openDB() {
     return new Promise(function(resolve, reject) {
       var req = indexedDB.open(DB_NAME, DB_VER);
       req.onerror = function() { reject(req.error); };
@@ -2026,7 +1977,7 @@ async function wilayatApply() {
     });
   }
 
-  function ai2_putMany(storeName, rows) {
+  function ai3_putMany(storeName, rows) {
     return new Promise(function(resolve, reject) {
       if (!db) { reject(new Error('DB غير مفتوح')); return; }
       var tx = db.transaction(storeName, 'readwrite');
@@ -2038,7 +1989,7 @@ async function wilayatApply() {
     });
   }
 
-  function ai2_clearStore(storeName) {
+  function ai3_clearStore(storeName) {
     return new Promise(function(resolve, reject) {
       if (!db) { reject(new Error('DB غير مفتوح')); return; }
       var tx = db.transaction(storeName, 'readwrite');
@@ -2049,7 +2000,7 @@ async function wilayatApply() {
     });
   }
 
-  function ai2_getAll(storeName) {
+  function ai3_getAll(storeName) {
     return new Promise(function(resolve, reject) {
       if (!db) { reject(new Error('DB غير مفتوح')); return; }
       var tx = db.transaction(storeName, 'readonly');
@@ -2060,7 +2011,7 @@ async function wilayatApply() {
     });
   }
 
-  function ai2_setMeta(key, value) {
+  function ai3_setMeta(key, value) {
     return new Promise(function(resolve, reject) {
       if (!db) { reject(new Error('DB غير مفتوح')); return; }
       var tx = db.transaction('meta', 'readwrite');
@@ -2071,7 +2022,7 @@ async function wilayatApply() {
     });
   }
 
-  function ai2_getMeta(key) {
+  function ai3_getMeta(key) {
     return new Promise(function(resolve, reject) {
       if (!db) { reject(new Error('DB غير مفتوح')); return; }
       var tx = db.transaction('meta', 'readonly');
@@ -2083,34 +2034,9 @@ async function wilayatApply() {
   }
 
   // ═══════════════════════════════════════════════════════
-  // 2. الإعدادات والمتغيرات
+  // 2. الاتصال بـ GAS API
   // ═══════════════════════════════════════════════════════
-  var ana_key = localStorage.getItem('ana_or_key')   || '';
-  var ana_mdl = localStorage.getItem('ana_or_model') || 'deepseek/deepseek-r1:free';
-  var ana_hist = [];
-  var abortCtrl = null;
-
-  var keyInp = document.getElementById('ai2_keyInp');
-  var keyOk  = document.getElementById('ai2_keyOk');
-  var mSel   = document.getElementById('ai2_modelSel');
-
-  if (ana_key) { keyInp.value = ana_key; keyOk.textContent = '✅ محفوظ'; }
-  if ([...mSel.options].some(function(o){ return o.value === ana_mdl; })) mSel.value = ana_mdl;
-  mSel.onchange = function() { ana_mdl = this.value; localStorage.setItem('ana_or_model', ana_mdl); };
-
-  window.ai2_saveKey = function() {
-    ana_key = keyInp.value.trim();
-    if (!ana_key) { showToast('المفتاح فارغ', 'warning'); return; }
-    localStorage.setItem('ana_or_key', ana_key);
-    localStorage.setItem('ana_or_model', mSel.value);
-    keyOk.textContent = '✅ تم الحفظ';
-    showToast('تم حفظ المفتاح', 'success');
-  };
-
-  // ═══════════════════════════════════════════════════════
-  // 3. الاتصال بـ GAS API
-  // ═══════════════════════════════════════════════════════
-  async function ai2_callApi(action, payload) {
+  async function ai3_callApi(action, payload) {
     var url = window._activeApiUrl || window.TR_API_URL || '';
     if (!url) throw new Error('لم يتم تحديد رابط الولاية');
     var body = JSON.stringify(Object.assign({ action: action }, payload || {}));
@@ -2124,575 +2050,525 @@ async function wilayatApply() {
   }
 
   // ═══════════════════════════════════════════════════════
-  // 4. جلب البيانات وتخزينها في IndexedDB
+  // 3. جلب البيانات
   // ═══════════════════════════════════════════════════════
-  window.ai2_loadAll = async function() {
-    var btn  = document.getElementById('ai2_refreshBtn');
-    var stat = document.getElementById('ai2_stat');
-    var badges = document.getElementById('ai2_badges');
+  window.ai3_loadAll = async function() {
+    var btn = document.getElementById('ai3_refreshBtn');
+    var stat = document.getElementById('ai3_stat');
+    var badges = document.getElementById('ai3_badges');
 
     btn.disabled = true;
-    btn.textContent = '⏳ جاري الجلب...';
-    stat.innerHTML = '<span class="ai2-pulse">جلب البيانات من Google Sheets...</span>';
+    btn.innerHTML = '⏳ جاري الجلب...';
+    stat.innerHTML = '<span class="ai3-pulse">جلب البيانات من Google Sheets...</span>';
     badges.innerHTML = '';
 
     try {
-      if (!db) await ai2_openDB();
+      if (!db) await ai3_openDB();
 
-      // مسح القديم
       await Promise.all([
-        ai2_clearStore('breeders'), ai2_clearStore('treatment'),
-        ai2_clearStore('vaccination'), ai2_clearStore('vaccRequests'),
-        ai2_clearStore('samples')
+        ai3_clearStore('breeders'), ai3_clearStore('treatment'),
+        ai3_clearStore('vaccination'), ai3_clearStore('vaccRequests'),
+        ai3_clearStore('samples')
       ]);
 
-      var allData = await ai2_callApi('getAllDataForCache', {});
+      var allData = await ai3_callApi('getAllDataForCache', {});
       if (!allData || !allData.success) throw new Error(allData.message || 'فشل الجلب');
 
       var badgeList = [];
       var counts = {};
+      var allRegions = new Set();
 
-      // ── بيانات المربين ──
       if (allData.breeders && Array.isArray(allData.breeders)) {
-        await ai2_putMany('breeders', allData.breeders);
+        await ai3_putMany('breeders', allData.breeders);
         counts.breeders = allData.breeders.length;
         badgeList.push({ label: 'مربون (' + counts.breeders + ')', status: 'ok' });
+        allData.breeders.forEach(function(r){ if(r.region) allRegions.add(r.region); });
       } else { badgeList.push({ label: 'مربون (0)', status: 'empty' }); }
 
-      // ── بيانات العلاج ──
       if (allData.treatment && Array.isArray(allData.treatment)) {
-        await ai2_putMany('treatment', allData.treatment);
+        await ai3_putMany('treatment', allData.treatment);
         counts.treatment = allData.treatment.length;
         badgeList.push({ label: 'علاج (' + counts.treatment + ')', status: 'ok' });
+        allData.treatment.forEach(function(r){ if(r.region) allRegions.add(r.region); });
       } else { badgeList.push({ label: 'علاج (0)', status: 'empty' }); }
 
-      // ── بيانات التحصين ──
       if (allData.vaccination && Array.isArray(allData.vaccination)) {
-        await ai2_putMany('vaccination', allData.vaccination);
+        await ai3_putMany('vaccination', allData.vaccination);
         counts.vaccination = allData.vaccination.length;
         badgeList.push({ label: 'تحصين (' + counts.vaccination + ')', status: 'ok' });
+        allData.vaccination.forEach(function(r){ if(r.region) allRegions.add(r.region); });
       } else { badgeList.push({ label: 'تحصين (0)', status: 'empty' }); }
 
-      // ── طلبات التحصين ──
       if (allData.vaccRequests && Array.isArray(allData.vaccRequests)) {
-        await ai2_putMany('vaccRequests', allData.vaccRequests);
+        await ai3_putMany('vaccRequests', allData.vaccRequests);
         counts.vaccRequests = allData.vaccRequests.length;
         badgeList.push({ label: 'طلبات (' + counts.vaccRequests + ')', status: 'ok' });
+        allData.vaccRequests.forEach(function(r){ if(r.region) allRegions.add(r.region); });
       } else { badgeList.push({ label: 'طلبات (0)', status: 'empty' }); }
 
-      // ── بيانات العينات ──
       if (allData.samples && Array.isArray(allData.samples)) {
-        await ai2_putMany('samples', allData.samples);
+        await ai3_putMany('samples', allData.samples);
         counts.samples = allData.samples.length;
         badgeList.push({ label: 'عينات (' + counts.samples + ')', status: 'ok' });
+        allData.samples.forEach(function(r){ if(r.region) allRegions.add(r.region); });
       } else { badgeList.push({ label: 'عينات (0)', status: 'empty' }); }
 
-      // حفظ الميتا
-      await ai2_setMeta('lastUpdate', Date.now());
-      await ai2_setMeta('counts', JSON.stringify(counts));
+      await ai3_setMeta('lastUpdate', Date.now());
+      await ai3_setMeta('counts', JSON.stringify(counts));
+      await ai3_setMeta('regions', JSON.stringify([...allRegions]));
 
-      // تحديث UI
       var okCount = badgeList.filter(function(b){ return b.status === 'ok'; }).length;
       stat.innerHTML = '<strong>✅ تم التحديث:</strong> ' + okCount + '/5 أوراق — ' + new Date().toLocaleString('ar-OM');
-      badges.innerHTML = badgeList.map(function(b){
-        return '<span class="ai2-badge ' + b.status + '">' + b.label + '</span>';
-      }).join('');
+      badges.innerHTML = badgeList.map(function(b){ return '<span class="ai3-badge ' + b.status + '">' + b.label + '</span>'; }).join('');
+
+      // تحديث قائمة المناطق
+      var regionSel = document.getElementById('ai3_filter_region');
+      regionSel.innerHTML = '<option value="">📍 كل المناطق</option>';
+      [...allRegions].sort().forEach(function(reg){
+        regionSel.innerHTML += '<option value="' + ai3_esc(reg) + '">' + ai3_esc(reg) + '</option>';
+      });
 
       showToast('تم تحديث البيانات: ' + okCount + '/5 ✅', 'success');
+      ai3_refreshDashboard();
 
     } catch(err) {
-      stat.innerHTML = '<span style="color:#dc2626;">⚠️ خطأ: ' + ai2_esc(err.message) + '</span>';
-      badges.innerHTML = '<span class="ai2-badge fail">فشل الجلب ✗</span>';
+      stat.innerHTML = '<span style="color:#dc2626;">⚠️ خطأ: ' + ai3_esc(err.message) + '</span>';
+      badges.innerHTML = '<span class="ai3-badge fail">فشل الجلب ✗</span>';
       console.error('Load error:', err);
       showToast('فشل التحديث: ' + err.message, 'error');
     }
 
     btn.disabled = false;
-    btn.textContent = '🔄 تحديث البيانات من الشيت';
+    btn.innerHTML = '🔄 تحديث البيانات';
   };
 
   // ═══════════════════════════════════════════════════════
-  // 5. محرك البحث الذكي المحلي (Fuzzy + Filter)
+  // 4. البحث الذكي
   // ═══════════════════════════════════════════════════════
+  var searchTimer = null;
+  window.ai3_debouncedSearch = function() {
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(ai3_doSearch, 300);
+  };
 
-  var STAT_KEYWORDS = ['كم', 'عدد', 'إجمالي', 'مجموع', 'متوسط', 'أكثر', 'أقل', 'نسبة', 'توزيع', 'count', 'total', 'how many', 'average', 'sum'];
-  var SEARCH_KEYWORDS = ['ابحث', 'بحث', 'اعطني', 'تفاصيل', 'سجل', 'find', 'search', 'details', 'رقم', 'اسم', 'منطقة', 'phone', 'name', 'region'];
+  async function ai3_doSearch() {
+    var query = document.getElementById('ai3_search').value.trim().toLowerCase();
+    var tableFilter = document.getElementById('ai3_filter_table').value;
+    var regionFilter = document.getElementById('ai3_filter_region').value;
+    var dateFilter = document.getElementById('ai3_filter_date').value;
 
-  function ai2_isStatQuestion(q) {
-    q = q.toLowerCase();
-    return STAT_KEYWORDS.some(function(k){ return q.includes(k.toLowerCase()); });
-  }
-  function ai2_isSearchQuestion(q) {
-    q = q.toLowerCase();
-    return SEARCH_KEYWORDS.some(function(k){ return q.includes(k.toLowerCase()); });
-  }
+    if (!db) await ai3_openDB();
 
-  function ai2_fuzzyMatch(text, query) {
-    if (!text || !query) return false;
-    text = String(text).toLowerCase().trim();
-    query = query.toLowerCase().trim();
-    if (text === query) return true;
-    if (text.includes(query)) return true;
-    var idx = 0;
-    for (var i = 0; i < text.length && idx < query.length; i++) {
-      if (text[i] === query[idx]) idx++;
+    var results = {};
+    var tables = tableFilter === 'all' ? ['breeders','treatment','vaccination','vaccRequests','samples'] : [tableFilter];
+
+    for (var t = 0; t < tables.length; t++) {
+      var tbl = tables[t];
+      var rows = await ai3_getAll(tbl);
+      var filtered = [];
+
+      rows.forEach(function(r){
+        // فلتر المنطقة
+        if (regionFilter && r.region !== regionFilter) return;
+        // فلتر التاريخ
+        if (dateFilter && r.financialDate) {
+          var d = new Date(r.financialDate);
+          var now = new Date();
+          if (dateFilter === 'today' && d.toDateString() !== now.toDateString()) return;
+          if (dateFilter === 'week' && (now - d) > 7 * 86400000) return;
+          if (dateFilter === 'month' && (now - d) > 30 * 86400000) return;
+          if (dateFilter === 'year' && (now - d) > 365 * 86400000) return;
+        }
+        // البحث النصي
+        if (query) {
+          var text = JSON.stringify(r).toLowerCase();
+          if (!text.includes(query)) return;
+        }
+        filtered.push(r);
+      });
+
+      results[tbl] = filtered;
     }
-    return idx === query.length;
-  }
 
-  function ai2_extractPhone(q) {
-    var m = q.match(/9\d{7}/);
-    return m ? m[0] : null;
-  }
-
-  function ai2_extractName(q) {
-    var patterns = [
-      /بحث عن اسم\s+(.+?)(?:\?|$)/i,
-      /ابحث عن\s+(.+?)(?:\?|$)/i,
-      /اسم\s+(.+?)(?:\?|$)/i,
-      /find\s+(.+?)(?:\?|$)/i
-    ];
-    for (var i = 0; i < patterns.length; i++) {
-      var m = q.match(patterns[i]);
-      if (m && m[1]) return m[1].trim();
-    }
-    return null;
-  }
-
-  async function ai2_localSearch(query) {
-    if (!db) await ai2_openDB();
-    var results = { breeders: [], treatment: [], vaccination: [], vaccRequests: [], samples: [] };
-    var phone = ai2_extractPhone(query);
-    var name  = ai2_extractName(query);
-    var qLow  = query.toLowerCase();
-
-    // ── المربين ──
-    var breeders = await ai2_getAll('breeders');
-    breeders.forEach(function(r){
-      if (phone && r.phone && r.phone.includes(phone)) { results.breeders.push(r); return; }
-      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.breeders.push(r); return; }
-      if (r.region && ai2_fuzzyMatch(r.region, query)) { results.breeders.push(r); return; }
-      if (r.civil && r.civil.includes(query)) { results.breeders.push(r); return; }
-      var allText = [r.phone, r.name, r.region, r.civil, r.camel, r.goat, r.sheep, r.cow].filter(Boolean).join(' ').toLowerCase();
-      if (allText.includes(qLow)) results.breeders.push(r);
-    });
-
-    // ── العلاج ──
-    var treatment = await ai2_getAll('treatment');
-    treatment.forEach(function(r){
-      if (phone && r.phone && r.phone.includes(phone)) { results.treatment.push(r); return; }
-      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.treatment.push(r); return; }
-      if (r.region && ai2_fuzzyMatch(r.region, query)) { results.treatment.push(r); return; }
-      var diseases = [r.disease1, r.disease2, r.disease3, r.disease4, r.disease5].filter(Boolean).join(' ').toLowerCase();
-      if (diseases.includes(qLow)) { results.treatment.push(r); return; }
-      var drugs = [r.drug1, r.drug2, r.drug3, r.drug4, r.drug5].filter(Boolean).join(' ').toLowerCase();
-      if (drugs.includes(qLow)) { results.treatment.push(r); return; }
-      var allText = [r.phone, r.name, r.region, r.receipt, r.amount].filter(Boolean).join(' ').toLowerCase();
-      if (allText.includes(qLow)) results.treatment.push(r);
-    });
-
-    // ── التحصين ──
-    var vaccination = await ai2_getAll('vaccination');
-    vaccination.forEach(function(r){
-      if (phone && r.phone && r.phone.includes(phone)) { results.vaccination.push(r); return; }
-      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.vaccination.push(r); return; }
-      if (r.region && ai2_fuzzyMatch(r.region, query)) { results.vaccination.push(r); return; }
-      var allText = [r.phone, r.name, r.region, r.fmdCow, r.fmdGoat, r.fmdSheep, r.lumpyCow, r.rabiesSheep, r.rabiesGoat, r.rabiesCow, r.rabiesCamel, r.rabiesHorse].filter(Boolean).join(' ').toLowerCase();
-      if (allText.includes(qLow)) results.vaccination.push(r);
-    });
-
-    // ── طلبات التحصين ──
-    var vaccRequests = await ai2_getAll('vaccRequests');
-    vaccRequests.forEach(function(r){
-      if (phone && r.phone && r.phone.includes(phone)) { results.vaccRequests.push(r); return; }
-      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.vaccRequests.push(r); return; }
-      if (r.region && ai2_fuzzyMatch(r.region, query)) { results.vaccRequests.push(r); return; }
-      var allText = [r.phone, r.name, r.region, r.entryDate, r.dataUpdater].filter(Boolean).join(' ').toLowerCase();
-      if (allText.includes(qLow)) results.vaccRequests.push(r);
-    });
-
-    // ── العينات ──
-    var samples = await ai2_getAll('samples');
-    samples.forEach(function(r){
-      if (phone && r.phone && r.phone.includes(phone)) { results.samples.push(r); return; }
-      if (name && r.name && ai2_fuzzyMatch(r.name, name)) { results.samples.push(r); return; }
-      if (r.caseNumber && r.caseNumber.includes(query)) { results.samples.push(r); return; }
-      if (r.animalType && ai2_fuzzyMatch(r.animalType, query)) { results.samples.push(r); return; }
-      if (r.sampleType && ai2_fuzzyMatch(r.sampleType, query)) { results.samples.push(r); return; }
-      var allText = [r.phone, r.name, r.animalType, r.sampleType, r.test1, r.result1].filter(Boolean).join(' ').toLowerCase();
-      if (allText.includes(qLow)) results.samples.push(r);
-    });
-
-    return results;
+    ai3_renderResults(results);
   }
 
   // ═══════════════════════════════════════════════════════
-  // 6. حساب إحصائيات محلية
+  // 5. عرض النتائج في التبويبات
   // ═══════════════════════════════════════════════════════
-  async function ai2_localStats(query) {
-    if (!db) await ai2_openDB();
-    var counts = {};
-    var countsMeta = await ai2_getMeta('counts');
-    if (countsMeta) counts = JSON.parse(countsMeta);
+  function ai3_renderResults(results) {
+    var tabs = document.getElementById('ai3_tabs');
+    var panels = document.getElementById('ai3_panels');
+    tabs.innerHTML = '';
+    panels.innerHTML = '';
 
-    var stats = {
-      breeders: { total: counts.breeders || 0, regions: {} },
-      treatment: { total: counts.treatment || 0, diseases: {}, drugs: {} },
-      vaccination: { total: counts.vaccination || 0 },
-      vaccRequests: { total: counts.vaccRequests || 0 },
-      samples: { total: counts.samples || 0 }
+    var tabNames = {
+      breeders: '👥 المربين',
+      treatment: '💊 العلاج',
+      vaccination: '💉 التحصين',
+      vaccRequests: '📋 طلبات التحصين',
+      samples: '🧪 العينات'
     };
 
-    // توزيع المناطق — المربين
-    var breeders = await ai2_getAll('breeders');
-    breeders.forEach(function(r){
-      var reg = r.region || 'غير محدد';
-      stats.breeders.regions[reg] = (stats.breeders.regions[reg] || 0) + 1;
-    });
+    var first = true;
+    Object.keys(results).forEach(function(tbl){
+      var rows = results[tbl];
+      if (rows.length === 0) return;
 
-    // أكثر الأمراض والأدوية — العلاج
-    var treatment = await ai2_getAll('treatment');
-    treatment.forEach(function(r){
-      [r.disease1, r.disease2, r.disease3, r.disease4, r.disease5].forEach(function(d){
-        if (d) { stats.treatment.diseases[d] = (stats.treatment.diseases[d] || 0) + 1; }
-      });
-      [r.drug1, r.drug2, r.drug3, r.drug4, r.drug5].forEach(function(d){
-        if (d) { stats.treatment.drugs[d] = (stats.treatment.drugs[d] || 0) + 1; }
-      });
-    });
+      var tabId = 'ai3_tab_' + tbl;
+      var panelId = 'ai3_panel_' + tbl;
 
-    return stats;
-  }
+      // تبويب
+      var tabBtn = document.createElement('button');
+      tabBtn.className = 'ai3-tab' + (first ? ' active' : '');
+      tabBtn.textContent = tabNames[tbl] + ' (' + rows.length + ')';
+      tabBtn.onclick = function() {
+        document.querySelectorAll('.ai3-tab').forEach(function(t){ t.classList.remove('active'); });
+        document.querySelectorAll('.ai3-tab-panel').forEach(function(p){ p.classList.remove('active'); });
+        tabBtn.classList.add('active');
+        document.getElementById(panelId).classList.add('active');
+      };
+      tabs.appendChild(tabBtn);
 
-  // ═══════════════════════════════════════════════════════
-  // 7. معالجة السؤال + إرسال للـ AI
-  // ═══════════════════════════════════════════════════════
-  window.ai2_send = function() { ai2_process(document.getElementById('ai2_input').value.trim()); };
-  window.ai2_quick = function(q) { ai2_process(q); };
+      // لوحة
+      var panel = document.createElement('div');
+      panel.className = 'ai3-tab-panel' + (first ? ' active' : '');
+      panel.id = panelId;
 
-  async function ai2_process(question) {
-    if (!question) return;
-    if (!ana_key) { showToast('أدخل مفتاح OpenRouter أولاً', 'warning'); return; }
+      var html = '<div class="ai3-table-wrap ai3-fade">';
+      html += '<div class="ai3-table-hdr"><div class="ai3-table-hdr-title">' + tabNames[tbl] + ' — ' + rows.length + ' سجل</div></div>';
+      html += '<div class="ai3-table-scroll"><table class="ai3-table"><thead><tr>';
 
-    var chat = document.getElementById('ai2_chat');
-    var btn  = document.getElementById('ai2_sendBtn');
+      // رؤوس الأعمدة
+      var keys = Object.keys(rows[0]).filter(function(k){ return !k.startsWith('_'); });
+      keys.forEach(function(k){ html += '<th>' + ai3_esc(ai3_colName(k)) + '</th>'; });
+      html += '</tr></thead><tbody>';
 
-    // إضافة سؤال المستخدم
-    chat.innerHTML += '<div class="ai2-msg user"><div class="ai2-av">👤</div><div class="ai2-bbl">' + ai2_esc(question) + '</div></div>';
-
-    // التحقق من وجود بيانات
-    if (!db) {
-      try { await ai2_openDB(); } catch(e) {}
-    }
-    var lastUpdate = await ai2_getMeta('lastUpdate');
-    if (!lastUpdate) {
-      chat.innerHTML += '<div class="ai2-msg bot"><div class="ai2-av">🧠</div><div class="ai2-bbl" style="color:#dc2626;">⚠️ لا توجد بيانات محلية. اضغط "تحديث البيانات" أولاً.</div></div>';
-      chat.scrollTop = 9e9; return;
-    }
-
-    var tid = 'ai2_t' + Date.now();
-    chat.innerHTML += '<div class="ai2-msg bot ai2-typing" id="' + tid + '"><div class="ai2-av">🧠</div><div class="ai2-bbl">⚡ تحليل السؤال...</div></div>';
-    chat.scrollTop = 9e9;
-    btn.disabled = true;
-
-    // ── التصنيف ──
-    var isStat = ai2_isStatQuestion(question);
-    var isSearch = ai2_isSearchQuestion(question);
-    var isGeneral = !isStat && !isSearch;
-
-    var contextData = '';
-    var modeLabel = '';
-
-    try {
-      if (isStat) {
-        modeLabel = '📊 إحصاء محلي';
-        var stats = await ai2_localStats(question);
-        contextData = JSON.stringify(stats, null, 1);
-        // إذا كان السؤال بسيط جداً (كم عدد المربين فقط) نجاب محلياً
-        if (/كم عدد المربين|عدد المربين|total breeders/i.test(question)) {
-          var localReply = '**إجمالي المربين:** ' + stats.breeders.total + '\n\n**التوزيع حسب المناطق:**\n';
-          var sortedRegions = Object.entries(stats.breeders.regions).sort(function(a,b){ return b[1]-a[1]; });
-          sortedRegions.forEach(function(kv){ localReply += '- ' + kv[0] + ': **' + kv[1] + '**\n'; });
-          ai2_showReply(tid, localReply);
-          btn.disabled = false; chat.scrollTop = 9e9; return;
-        }
-      } else if (isSearch) {
-        modeLabel = '🔍 بحث ذكي';
-        var searchResults = await ai2_localSearch(question);
-        var allMatches = [];
-        ['breeders', 'treatment', 'vaccination', 'vaccRequests', 'samples'].forEach(function(tbl){
-          if (searchResults[tbl] && searchResults[tbl].length > 0) {
-            allMatches.push('=== ' + tbl + ' (' + searchResults[tbl].length + ' سجل) ===');
-            searchResults[tbl].slice(0, 25).forEach(function(r){
-              allMatches.push(JSON.stringify(r));
-            });
-          }
+      // الصفوف
+      rows.slice(0, 200).forEach(function(r){
+        html += '<tr>';
+        keys.forEach(function(k){
+          var val = r[k];
+          if (val === null || val === undefined) val = '';
+          html += '<td>' + ai3_esc(String(val)) + '</td>';
         });
-        contextData = allMatches.join('\n');
-        if (contextData.length > 10000) contextData = contextData.slice(0, 10000) + '\n... [مختصر]';
-      } else {
-        modeLabel = '📈 تحليل عام';
-        var stats = await ai2_localStats(question);
-        var searchResults = await ai2_localSearch(question);
-        var summary = [];
-        summary.push('=== إحصائيات سريعة ===');
-        summary.push('مربين: ' + stats.breeders.total);
-        summary.push('علاج: ' + stats.treatment.total);
-        summary.push('تحصين: ' + stats.vaccination.total);
-        summary.push('طلبات: ' + stats.vaccRequests.total);
-        summary.push('عينات: ' + stats.samples.total);
-        var breeders = await ai2_getAll('breeders');
-        var treatment = await ai2_getAll('treatment');
-        if (breeders.length > 0) summary.push('\n=== عينة مربين (5) ===\n' + JSON.stringify(breeders.slice(0, 5)));
-        if (treatment.length > 0) summary.push('\n=== عينة علاج (5) ===\n' + JSON.stringify(treatment.slice(0, 5)));
-        contextData = summary.join('\n');
-      }
-
-      // ── تحديث واجهة الكتابة ──
-      var el = document.getElementById(tid);
-      if (el) el.querySelector('.ai2-bbl').innerHTML = '⚡ ' + modeLabel + ' — جارٍ الاتصال بالذكاء الاصطناعي... <span class="ai2-stop" onclick="ai2_stop()">⏹️ إيقاف</span>';
-
-      // ── إعداد الرسائل ──
-      var wilayat = localStorage.getItem('selected_wilayat_name') || 'غير محددة';
-      var systemMsg = 'أنت محلل بيانات متخصص لعيادة الثروة الحيوانية في ولاية ' + wilayat + '، سلطنة عُمان.\n\n' +
-        '📋 قواعد الرد:\n' +
-        '1. استخدم جداول Markdown للمقارنات والإحصائيات\n' +
-        '2. استخدم ✅ للموجود و ❌ للغير موجود\n' +
-        '3. استخدم **غامق** للأرقام المهمة\n' +
-        '4. ابدأ بملخص رقمي مختصر\n' +
-        '5. إذا كان السؤال عن وجود أرقام: استخدم | الرقم | الحالة | السجل | الاسم | المنطقة |\n' +
-        '6. إذا كان إحصائيات: استخدم | البيان | القيمة | النسبة |\n' +
-        '7. لا تستخدم [data] أو [1] — استخدم نص واضح\n' +
-        '8. اكتب بالعربية الفصحى';
-
-      var userMsg = 'السؤال: ' + question + '\n\n' +
-        'وضع التحليل: ' + modeLabel + '\n' +
-        'البيانات المستخرجة محلياً من قاعدة البيانات:\n' + contextData;
-
-      // ── إرسال مع Streaming ──
-      abortCtrl = new AbortController();
-      var r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        signal: abortCtrl.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + ana_key,
-          'HTTP-Referer': location.href,
-          'X-Title': 'Vet Clinic AI Analyzer v2'
-        },
-        body: JSON.stringify({
-          model: ana_mdl,
-          stream: true,
-          messages: [
-            { role: 'system', content: systemMsg },
-            { role: 'user', content: userMsg }
-          ],
-          max_tokens: 2500
-        })
+        html += '</tr>';
       });
 
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      if (!r.body) throw new Error('لا يوجد دعم للـ Streaming');
+      html += '</tbody></table></div></div>';
+      panel.innerHTML = html;
+      panels.appendChild(panel);
 
-      var reader = r.body.getReader();
-      var decoder = new TextDecoder();
-      var fullText = '';
-      var el2 = document.getElementById(tid);
-      if (el2) { el2.classList.remove('ai2-typing'); el2.querySelector('.ai2-bbl').innerHTML = ''; }
+      first = false;
+    });
 
-      while (true) {
-        var chunk = await reader.read();
-        if (chunk.done) break;
-        var text = decoder.decode(chunk.value, { stream: true });
-        var lines = text.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-          var line = lines[i].trim();
-          if (!line || !line.startsWith('data:')) continue;
-          var jsonStr = line.replace('data:', '').trim();
-          if (jsonStr === '[DONE]') break;
-          try {
-            var obj = JSON.parse(jsonStr);
-            var delta = obj.choices && obj.choices[0] && obj.choices[0].delta && obj.choices[0].delta.content;
-            if (delta) {
-              fullText += delta;
-              if (el2) el2.querySelector('.ai2-bbl').innerHTML = ai2_formatReply(fullText);
-              chat.scrollTop = 9e9;
-            }
-          } catch(e) {}
-        }
-      }
-
-      // حفظ في السجل
-      ana_hist.push({ role: 'user', content: question });
-      ana_hist.push({ role: 'assistant', content: fullText });
-      if (ana_hist.length > 14) ana_hist = ana_hist.slice(-14);
-
-      // تنسيق نهائي
-      if (el2) el2.querySelector('.ai2-bbl').innerHTML = ai2_formatReply(fullText);
-
-    } catch(err) {
-      if (err.name === 'AbortError') {
-        var el3 = document.getElementById(tid);
-        if (el3) { el3.classList.remove('ai2-typing'); el3.querySelector('.ai2-bbl').innerHTML = '⏹️ تم إيقاف الرد.'; }
-      } else {
-        var el4 = document.getElementById(tid);
-        if (el4) { el4.classList.remove('ai2-typing'); el4.querySelector('.ai2-bbl').innerHTML = '❌ خطأ: ' + ai2_esc(err.message); }
-      }
+    if (first) {
+      panels.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;font-size:16px;">🔍 لا توجد نتائج مطابقة</div>';
     }
-
-    btn.disabled = false;
-    chat.scrollTop = 9e9;
   }
 
-  window.ai2_stop = function() {
-    if (abortCtrl) { abortCtrl.abort(); abortCtrl = null; }
+  function ai3_colName(key) {
+    var map = {
+      phone: 'الهاتف', name: 'الاسم', region: 'المنطقة', civil: 'الرقم المدني',
+      camel: 'جمال', goat: 'ماعز', sheep: 'أغنام', cow: 'أبقار',
+      disease1: 'المرض 1', disease2: 'المرض 2', disease3: 'المرض 3',
+      drug1: 'الدواء 1', drug2: 'الدواء 2', drug3: 'الدواء 3',
+      receipt: 'الإيصال', amount: 'المبلغ', financialDate: 'التاريخ',
+      fmdCow: 'حمى قلاعية بقر', fmdGoat: 'حمى قلاعية ماعز', fmdSheep: 'حمى قلاعية أغنام',
+      lumpyCow: 'جدري بقر', rabiesSheep: 'داء الكلب أغنام', rabiesGoat: 'داء الكلب ماعز',
+      rabiesCow: 'داء الكلب بقر', rabiesCamel: 'داء الكلب جمال', rabiesHorse: 'داء الكلب خيل',
+      entryDate: 'تاريخ الإدخال', dataUpdater: 'المحدث', caseNumber: 'رقم العينة',
+      animalType: 'نوع الحيوان', sampleType: 'نوع العينة', test1: 'الفحص', result1: 'النتيجة'
+    };
+    return map[key] || key;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 6. البطاقات الإحصائية
+  // ═══════════════════════════════════════════════════════
+  async function ai3_refreshDashboard() {
+    if (!db) await ai3_openDB();
+
+    var countsMeta = await ai3_getMeta('counts');
+    var counts = countsMeta ? JSON.parse(countsMeta) : {};
+
+    var cards = document.getElementById('ai3_cards');
+    cards.innerHTML = '';
+
+    var cardData = [
+      { icon: '👥', num: counts.breeders || 0, label: 'إجمالي المربين', sub: 'مسجلين في النظام', color: '#0284c7' },
+      { icon: '💊', num: counts.treatment || 0, label: 'سجلات العلاج', sub: 'حالات علاجية', color: '#059669' },
+      { icon: '💉', num: counts.vaccination || 0, label: 'سجلات التحصين', sub: 'عمليات تحصين', color: '#7c3aed' },
+      { icon: '📋', num: counts.vaccRequests || 0, label: 'طلبات التحصين', sub: 'طلبات مقدمة', color: '#ea580c' },
+      { icon: '🧪', num: counts.samples || 0, label: 'العينات المخبرية', sub: 'فحوصات مخبرية', color: '#db2777' }
+    ];
+
+    cardData.forEach(function(c){
+      var div = document.createElement('div');
+      div.className = 'ai3-card ai3-fade';
+      div.innerHTML = '<div class="ai3-card-icon">' + c.icon + '</div><div class="ai3-card-num" style="color:' + c.color + '">' + c.num + '</div><div class="ai3-card-label">' + c.label + '</div><div class="ai3-card-sub">' + c.sub + '</div>';
+      cards.appendChild(div);
+    });
+
+    ai3_drawCharts();
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 7. الرسوم البيانية (Canvas يدوي)
+  // ═══════════════════════════════════════════════════════
+  async function ai3_drawCharts() {
+    if (!db) await ai3_openDB();
+    var chartsDiv = document.getElementById('ai3_charts');
+    chartsDiv.innerHTML = '';
+
+    // ── رسم 1: توزيع المربين حسب المنطقة ──
+    var breeders = await ai3_getAll('breeders');
+    var regionMap = {};
+    breeders.forEach(function(r){ var reg = r.region || 'غير محدد'; regionMap[reg] = (regionMap[reg] || 0) + 1; });
+    var regionData = Object.entries(regionMap).sort(function(a,b){ return b[1]-a[1]; }).slice(0, 10);
+
+    if (regionData.length > 0) {
+      var box1 = document.createElement('div');
+      box1.className = 'ai3-chart-box ai3-fade';
+      box1.innerHTML = '<div class="ai3-chart-title">📍 توزيع المربين حسب المنطقة</div><canvas id="ai3_chart_regions" class="ai3-chart-canvas"></canvas>';
+      chartsDiv.appendChild(box1);
+      setTimeout(function(){ ai3_drawBarChart('ai3_chart_regions', regionData, '#0284c7'); }, 50);
+    }
+
+    // ── رسم 2: أكثر الأمراض ──
+    var treatment = await ai3_getAll('treatment');
+    var diseaseMap = {};
+    treatment.forEach(function(r){
+      [r.disease1, r.disease2, r.disease3, r.disease4, r.disease5].forEach(function(d){ if(d) diseaseMap[d] = (diseaseMap[d]||0)+1; });
+    });
+    var diseaseData = Object.entries(diseaseMap).sort(function(a,b){ return b[1]-a[1]; }).slice(0, 10);
+
+    if (diseaseData.length > 0) {
+      var box2 = document.createElement('div');
+      box2.className = 'ai3-chart-box ai3-fade';
+      box2.innerHTML = '<div class="ai3-chart-title">🦠 أكثر الأمراض تسجيلاً</div><canvas id="ai3_chart_diseases" class="ai3-chart-canvas"></canvas>';
+      chartsDiv.appendChild(box2);
+      setTimeout(function(){ ai3_drawBarChart('ai3_chart_diseases', diseaseData, '#dc2626'); }, 50);
+    }
+
+    // ── رسم 3: أكثر الأدوية ──
+    var drugMap = {};
+    treatment.forEach(function(r){
+      [r.drug1, r.drug2, r.drug3, r.drug4, r.drug5].forEach(function(d){ if(d) drugMap[d] = (drugMap[d]||0)+1; });
+    });
+    var drugData = Object.entries(drugMap).sort(function(a,b){ return b[1]-a[1]; }).slice(0, 10);
+
+    if (drugData.length > 0) {
+      var box3 = document.createElement('div');
+      box3.className = 'ai3-chart-box ai3-fade';
+      box3.innerHTML = '<div class="ai3-chart-title">💊 أكثر الأدوية صرفاً</div><canvas id="ai3_chart_drugs" class="ai3-chart-canvas"></canvas>';
+      chartsDiv.appendChild(box3);
+      setTimeout(function(){ ai3_drawBarChart('ai3_chart_drugs', drugData, '#059669'); }, 50);
+    }
+
+    // ── رسم 4: أنواع الحيوانات في العينات ──
+    var samples = await ai3_getAll('samples');
+    var animalMap = {};
+    samples.forEach(function(r){ var a = r.animalType || 'غير محدد'; animalMap[a] = (animalMap[a] || 0) + 1; });
+    var animalData = Object.entries(animalMap).sort(function(a,b){ return b[1]-a[1]; });
+
+    if (animalData.length > 0) {
+      var box4 = document.createElement('div');
+      box4.className = 'ai3-chart-box ai3-fade';
+      box4.innerHTML = '<div class="ai3-chart-title">🐄 توزيع العينات حسب نوع الحيوان</div><canvas id="ai3_chart_animals" class="ai3-chart-canvas"></canvas>';
+      chartsDiv.appendChild(box4);
+      setTimeout(function(){ ai3_drawPieChart('ai3_chart_animals', animalData); }, 50);
+    }
+  }
+
+  function ai3_drawBarChart(canvasId, data, color) {
+    var canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    var w = rect.width, h = rect.height;
+    var padding = { top: 20, right: 20, bottom: 60, left: 50 };
+    var chartW = w - padding.left - padding.right;
+    var chartH = h - padding.top - padding.bottom;
+
+    var maxVal = Math.max.apply(null, data.map(function(d){ return d[1]; }));
+    var barW = chartW / data.length * 0.7;
+    var gap = chartW / data.length * 0.3;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // محاور
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, padding.top);
+    ctx.lineTo(padding.left, h - padding.bottom);
+    ctx.lineTo(w - padding.right, h - padding.bottom);
+    ctx.stroke();
+
+    // أعمدة
+    data.forEach(function(item, i){
+      var val = item[1];
+      var barH = (val / maxVal) * chartH;
+      var x = padding.left + i * (barW + gap) + gap / 2;
+      var y = h - padding.bottom - barH;
+
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.85;
+      ctx.fillRect(x, y, barW, barH);
+      ctx.globalAlpha = 1;
+
+      // القيمة
+      ctx.fillStyle = '#1e3a5f';
+      ctx.font = 'bold 12px Tahoma';
+      ctx.textAlign = 'center';
+      ctx.fillText(val, x + barW / 2, y - 6);
+
+      // التسمية
+      ctx.fillStyle = '#64748b';
+      ctx.font = '11px Tahoma';
+      ctx.save();
+      ctx.translate(x + barW / 2, h - padding.bottom + 15);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillText(item[0], 0, 0);
+      ctx.restore();
+    });
+  }
+
+  function ai3_drawPieChart(canvasId, data) {
+    var canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    var w = rect.width, h = rect.height;
+    var cx = w / 2, cy = h / 2 - 10;
+    var radius = Math.min(w, h) / 2 - 40;
+    var total = data.reduce(function(s, d){ return s + d[1]; }, 0);
+
+    var colors = ['#0284c7', '#059669', '#7c3aed', '#ea580c', '#db2777', '#ca8a04', '#0891b2', '#c026d3'];
+    var startAngle = -Math.PI / 2;
+
+    ctx.clearRect(0, 0, w, h);
+
+    data.forEach(function(item, i){
+      var angle = (item[1] / total) * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // النسبة
+      var midAngle = startAngle + angle / 2;
+      var lx = cx + Math.cos(midAngle) * (radius * 0.65);
+      var ly = cy + Math.sin(midAngle) * (radius * 0.65);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 12px Tahoma';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      var pct = Math.round((item[1] / total) * 100) + '%';
+      if ((item[1] / total) > 0.05) ctx.fillText(pct, lx, ly);
+
+      startAngle += angle;
+    });
+
+    // مفتاح الألوان
+    var legendY = h - 20;
+    var legendX = 20;
+    data.forEach(function(item, i){
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(legendX, legendY - 8, 10, 10);
+      ctx.fillStyle = '#334155';
+      ctx.font = '11px Tahoma';
+      ctx.textAlign = 'left';
+      ctx.fillText(item[0] + ' (' + item[1] + ')', legendX + 14, legendY);
+      legendX += ctx.measureText(item[0] + ' (' + item[1] + ')').width + 30;
+      if (legendX > w - 100) { legendX = 20; legendY += 18; }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 8. التصدير
+  // ═══════════════════════════════════════════════════════
+  window.ai3_exportJSON = async function() {
+    if (!db) await ai3_openDB();
+    var data = {};
+    data.breeders = await ai3_getAll('breeders');
+    data.treatment = await ai3_getAll('treatment');
+    data.vaccination = await ai3_getAll('vaccination');
+    data.vaccRequests = await ai3_getAll('vaccRequests');
+    data.samples = await ai3_getAll('samples');
+
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'vet_clinic_data_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('تم تصدير JSON ✅', 'success');
+  };
+
+  window.ai3_exportCSV = async function() {
+    if (!db) await ai3_openDB();
+    var tables = ['breeders', 'treatment', 'vaccination', 'vaccRequests', 'samples'];
+    var csvParts = [];
+
+    for (var i = 0; i < tables.length; i++) {
+      var tbl = tables[i];
+      var rows = await ai3_getAll(tbl);
+      if (rows.length === 0) continue;
+      csvParts.push('=== ' + tbl + ' ===');
+      var keys = Object.keys(rows[0]).filter(function(k){ return !k.startsWith('_'); });
+      csvParts.push(keys.join(','));
+      rows.forEach(function(r){
+        csvParts.push(keys.map(function(k){ return '"' + String(r[k] || '').replace(/"/g, '""') + '"'; }).join(','));
+      });
+      csvParts.push('');
+    }
+
+    var blob = new Blob([csvParts.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'vet_clinic_data_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('تم تصدير CSV ✅', 'success');
   };
 
   // ═══════════════════════════════════════════════════════
-  // 8. تنسيق الرد إلى HTML
+  // 9. مساعدة
   // ═══════════════════════════════════════════════════════
-  function ai2_formatReply(text) {
-    if (!text) return '';
-    text = text.replace(/\[data\]/g, '').replace(/\[\d+\]/g, '').replace(/\n{3,}/g, '\n\n').trim();
-
-    var lines = text.split('\n');
-    var html = [];
-    var inTable = false;
-    var tableRows = [];
-    var inList = false;
-    var inCode = false;
-    var codeLines = [];
-
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i];
-      var trimmed = line.trim();
-
-      // كود بلوك
-      if (trimmed.startsWith('```')) {
-        if (inCode) {
-          html.push('<pre><code>' + ai2_esc(codeLines.join('\n')) + '</code></pre>');
-          codeLines = [];
-          inCode = false;
-        } else {
-          inCode = true;
-        }
-        continue;
-      }
-      if (inCode) { codeLines.push(line); continue; }
-
-      // جدول Markdown
-      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-        if (!inTable) { inTable = true; tableRows = []; }
-        tableRows.push(trimmed);
-        continue;
-      }
-      if (inTable && !trimmed.startsWith('|')) {
-        html.push(ai2_renderTable(tableRows));
-        inTable = false; tableRows = [];
-      }
-
-      // قائمة
-      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-        if (!inList) { inList = true; html.push('<ul style="margin:6px 0;padding-right:20px;">'); }
-        html.push('<li style="margin:4px 0;">' + ai2_esc(trimmed.replace(/^[-*]\s+/, '')) + '</li>');
-        continue;
-      }
-      if (inList && !trimmed.startsWith('- ') && !trimmed.startsWith('* ')) {
-        html.push('</ul>'); inList = false;
-      }
-
-      // عنوان
-      if (trimmed.startsWith('### ')) {
-        html.push('<h3>' + ai2_esc(trimmed.replace('### ', '')) + '</h3>');
-        continue;
-      }
-      if (trimmed.startsWith('## ')) {
-        html.push('<h2>' + ai2_esc(trimmed.replace('## ', '')) + '</h2>');
-        continue;
-      }
-      if (trimmed.startsWith('# ')) {
-        html.push('<h2>' + ai2_esc(trimmed.replace('# ', '')) + '</h2>');
-        continue;
-      }
-
-      // سطر فارغ
-      if (trimmed === '') { html.push('<br>'); continue; }
-
-      // نص عادي مع تنسيق inline
-      var formatted = ai2_esc(trimmed)
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/`(.+?)`/g, '<code>$1</code>');
-      html.push('<p>' + formatted + '</p>');
-    }
-
-    if (inTable && tableRows.length > 0) html.push(ai2_renderTable(tableRows));
-    if (inList) html.push('</ul>');
-    if (inCode) html.push('<pre><code>' + ai2_esc(codeLines.join('\n')) + '</code></pre>');
-
-    return html.join('\n');
-  }
-
-  function ai2_renderTable(rows) {
-    if (rows.length < 2) return '';
-    var html = '<table>';
-    for (var i = 0; i < rows.length; i++) {
-      var cells = rows[i].split('|').map(function(c){ return c.trim(); }).filter(function(c){ return c !== ''; });
-      if (cells.every(function(c){ return /^[-:]+$/.test(c); })) continue;
-      var tag = (i === 0) ? 'th' : 'td';
-      html += '<tr>';
-      cells.forEach(function(cell){
-        var content = cell
-          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-          .replace(/✅/g, '<span style="color:#059669;font-size:16px;">✅</span>')
-          .replace(/❌/g, '<span style="color:#dc2626;font-size:16px;">❌</span>');
-        html += '<' + tag + '>' + content + '</' + tag + '>';
-      });
-      html += '</tr>';
-    }
-    html += '</table>';
-    return html;
-  }
-
-  function ai2_esc(t) {
+  function ai3_esc(t) {
     return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  function ai2_showReply(tid, text) {
-    var el = document.getElementById(tid);
-    if (el) {
-      el.classList.remove('ai2-typing');
-      el.querySelector('.ai2-bbl').innerHTML = ai2_formatReply(text);
-    }
-  }
-
   // ═══════════════════════════════════════════════════════
-  // 9. مساعدة وتحكم
-  // ═══════════════════════════════════════════════════════
-  window.ai2_clearChat = function() {
-    ana_hist = [];
-    document.getElementById('ai2_chat').innerHTML = `
-      <div class="ai2-msg bot">
-        <div class="ai2-av">🧠</div>
-        <div class="ai2-bbl">تم مسح المحادثة. اسأل سؤالاً جديداً.</div>
-      </div>`;
-  };
-
-  document.getElementById('ai2_input').addEventListener('input', function() {
-    this.style.height = '48px';
-    this.style.height = Math.min(this.scrollHeight, 140) + 'px';
-  });
-
-  // ═══════════════════════════════════════════════════════
-  // 10. تهيئة عند فتح الصفحة
+  // 10. تهيئة
   // ═══════════════════════════════════════════════════════
   (async function init() {
     try {
-      await ai2_openDB();
-      var lastUpdate = await ai2_getMeta('lastUpdate');
-      var countsMeta = await ai2_getMeta('counts');
-      var stat = document.getElementById('ai2_stat');
-      var badges = document.getElementById('ai2_badges');
+      await ai3_openDB();
+      var lastUpdate = await ai3_getMeta('lastUpdate');
+      var countsMeta = await ai3_getMeta('counts');
+      var regionsMeta = await ai3_getMeta('regions');
+      var stat = document.getElementById('ai3_stat');
+      var badges = document.getElementById('ai3_badges');
 
       if (lastUpdate && countsMeta) {
         var counts = JSON.parse(countsMeta);
@@ -2706,10 +2582,21 @@ async function wilayatApply() {
         if (counts.vaccination) badgeList.push({ label: 'تحصين (' + counts.vaccination + ')', status: 'ok' });
         if (counts.vaccRequests) badgeList.push({ label: 'طلبات (' + counts.vaccRequests + ')', status: 'ok' });
         if (counts.samples) badgeList.push({ label: 'عينات (' + counts.samples + ')', status: 'ok' });
-        badges.innerHTML = badgeList.map(function(b){ return '<span class="ai2-badge ' + b.status + '">' + b.label + '</span>'; }).join('');
+        badges.innerHTML = badgeList.map(function(b){ return '<span class="ai3-badge ' + b.status + '">' + b.label + '</span>'; }).join('');
+
+        if (regionsMeta) {
+          var regions = JSON.parse(regionsMeta);
+          var regionSel = document.getElementById('ai3_filter_region');
+          regionSel.innerHTML = '<option value="">📍 كل المناطق</option>';
+          regions.sort().forEach(function(reg){
+            regionSel.innerHTML += '<option value="' + ai3_esc(reg) + '">' + ai3_esc(reg) + '</option>';
+          });
+        }
+
+        ai3_refreshDashboard();
       }
     } catch(e) {
-      console.log('IndexedDB init error:', e);
+      console.log('Init error:', e);
     }
   })();
 
