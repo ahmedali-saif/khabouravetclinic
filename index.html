@@ -1793,155 +1793,168 @@ window.ana_loadCache = async function() {
   var info = document.getElementById('ana_cacheInfo');
   var mods = document.getElementById('ana_cacheModules');
 
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = '⏳ جاري الجلب...';
   info.className  = 'ana-cache-info loading';
-  info.textContent= 'جاري جلب البيانات من Google Sheets...';
   mods.innerHTML  = '';
 
-  var report  = {};
-  var modsList= [];
+  var report   = {};
+  var modsList = [];
 
-  // ١. سجلات العلاج
+  // ١. سجل العلاج
   try {
     if (typeof trcallApi === 'function') {
-      info.textContent = 'جلب سجلات العلاج...';
-      var r = await trcallApi('trsearchInTreatmentSheet', { keyword: '' });
-      if (r && r.rows) {
+      info.textContent = 'جلب سجل العلاج...';
+      var r1 = await trcallApi('trsearchInTreatmentSheet', { keyword: '' });
+      if (r1 && r1.rows) {
         report.treatment = {
-          total: r.rows.length,
-          sample: r.rows.slice(0, 30).map(function(row) {
+          total: r1.rows.length,
+          sample: r1.rows.slice(0, 50).map(function(row) {
             return {
-              phone: row[1]||'', name: row[2]||'', region: row[4]||'',
-              disease: [row[6],row[9],row[12]].filter(Boolean).join('، '),
-              amount: row[42]||'', date: row[46]||''
+              phone:    row[1]  || '',
+              name:     row[2]  || '',
+              region:   row[4]  || '',
+              disease:  [row[6], row[9], row[12]].filter(Boolean).join('، '),
+              drug:     [row[7], row[10], row[13]].filter(Boolean).join('، '),
+              doctor:   row[44] || '',
+              amount:   row[42] || '',
+              date:     row[46] || '',
+              status:   row[47] || ''
             };
           })
         };
-        modsList.push({ label: 'علاج (' + r.rows.length + ')', status: 'ok' });
+        modsList.push({ label: 'علاج (' + r1.rows.length + ')', status: 'ok' });
+      } else {
+        modsList.push({ label: 'علاج (0)', status: 'empty' });
       }
-    } else { modsList.push({ label: 'علاج', status: 'empty' }); }
-  } catch(e) { modsList.push({ label: 'علاج ✗', status: 'fail' }); }
+    } else {
+      modsList.push({ label: 'علاج', status: 'empty' });
+    }
+  } catch(e) {
+    modsList.push({ label: 'علاج ✗', status: 'fail' });
+    report.treatment = { error: e.message };
+  }
 
-  // ٢. المربون
+  // ٢. سجل المربين
   try {
     if (typeof bd_callApi === 'function') {
-      info.textContent = 'جلب سجلات المربين...';
+      info.textContent = 'جلب سجل المربين...';
       var r2 = await bd_callApi('bd_getAllBreeders');
       if (r2 && r2.data) {
         var rows2 = r2.data.slice(1);
         report.breeders = {
-          total: rows2.length,
+          total:   rows2.length,
           regions: ana_countBy(rows2, 3),
-          sample: rows2.slice(0, 20).map(function(row) {
-            return { phone:row[0]||'', name:row[1]||'', region:row[3]||'', civil:row[4]||'' };
+          sample:  rows2.slice(0, 30).map(function(row) {
+            return {
+              phone:  row[0] || '',
+              name:   row[1] || '',
+              region: row[3] || '',
+              civil:  row[4] || '',
+              cattle: row[5] || '',
+              sheep:  row[6] || '',
+              goats:  row[7] || '',
+              camels: row[8] || ''
+            };
           })
         };
         modsList.push({ label: 'مربون (' + rows2.length + ')', status: 'ok' });
+      } else {
+        modsList.push({ label: 'مربون (0)', status: 'empty' });
       }
-    } else { modsList.push({ label: 'مربون', status: 'empty' }); }
-  } catch(e) { modsList.push({ label: 'مربون ✗', status: 'fail' }); }
+    } else {
+      modsList.push({ label: 'مربون', status: 'empty' });
+    }
+  } catch(e) {
+    modsList.push({ label: 'مربون ✗', status: 'fail' });
+    report.breeders = { error: e.message };
+  }
 
-  // ٣. التحصين
+  // ٣. سجل التحصين
   try {
     if (typeof vaccCallApi === 'function') {
-      info.textContent = 'جلب سجلات التحصين...';
+      info.textContent = 'جلب سجل التحصين...';
       var r3 = await vaccCallApi('getAllTotalVaccinatedAnimals', {});
-      if (r3) { report.vaccination = r3; modsList.push({ label: 'تحصين', status: 'ok' }); }
-    } else { modsList.push({ label: 'تحصين', status: 'empty' }); }
-  } catch(e) { modsList.push({ label: 'تحصين ✗', status: 'fail' }); }
+      if (r3) {
+        var vaccCount = Array.isArray(r3)    ? r3.length
+                      : r3.rows             ? r3.rows.length
+                      : r3.recordCount      ? r3.recordCount
+                      : '✓';
+        report.vaccination = r3;
+        modsList.push({ label: 'تحصين (' + vaccCount + ')', status: 'ok' });
+      } else {
+        modsList.push({ label: 'تحصين (0)', status: 'empty' });
+      }
+    } else {
+      modsList.push({ label: 'تحصين', status: 'empty' });
+    }
+  } catch(e) {
+    modsList.push({ label: 'تحصين ✗', status: 'fail' });
+    report.vaccination = { error: e.message };
+  }
 
-  // ٤. العينات
+  // ٤. طلبات التحصين — vr_callApi("getFortificationsData")
   try {
-    if (typeof focallApi === 'function') {
-      info.textContent = 'جلب العينات المخبرية...';
-      var r4a = await focallApi('fogetUniquePhoneCount');
-      var r4b = await focallApi('fosearchSamplesData', { keyword: '' });
-      report.samples = {
-        uniqueBreeders: r4a.count || 0,
-        lastSample:     r4a.lastSample || '',
-        total:          r4b && r4b.rows ? r4b.rows.length : 0,
-        sample:         r4b && r4b.rows ? r4b.rows.slice(0, 20).map(function(row) {
-          return {
-            phone:row[1]||'', animalType:row[7]||'',
-            sampleType:row[10]||'', disease:row[20]||'',
-            dateSent:row[18]||'', result:[row[22],row[24],row[26]].filter(Boolean).join('، ')
-          };
-        }) : []
-      };
-      modsList.push({ label: 'عينات (' + (r4b&&r4b.rows?r4b.rows.length:0) + ')', status: 'ok' });
-    } else { modsList.push({ label: 'عينات', status: 'empty' }); }
-  } catch(e) { modsList.push({ label: 'عينات ✗', status: 'fail' }); }
-
-  // ٥. المالي
-  try {
-    if (typeof fin_callApi === 'function') {
-      info.textContent = 'جلب البيانات المالية...';
-      var today = new Date().toISOString().slice(0,10);
-      var r5 = await fin_callApi('getFinancialData', { dateFrom: today.slice(0,4)+'-01-01', dateTo: today });
-      if (r5 && r5.filteredData) {
-        var total = r5.filteredData.reduce(function(s,x){ return s+(parseFloat(x.amount)||0); }, 0);
-        report.financial = {
-          total: Math.round(total) + ' ريال',
-          recordCount: r5.filteredData.length,
-          sample: r5.filteredData.slice(0, 15)
+    if (typeof vr_callApi === 'function') {
+      info.textContent = 'جلب طلبات التحصين...';
+      var r4 = await vr_callApi('getFortificationsData');
+      if (r4 && r4.data && r4.data.length > 0) {
+        report.vaccRequests = {
+          total:     r4.data.length,
+          vaccinated: r4.data.filter(function(r){ return r.vaccinated; }).length,
+          sample:    r4.data.slice(0, 40).map(function(r) {
+            return {
+              phone:     r.phone     || '',
+              name:      r.name      || '',
+              area:      r.area      || '',
+              entryDate: r.entryDate || '',
+              vaccinated: r.vaccinated ? 'محصن' : 'غير محصن',
+              summary:   r.summary   || ''
+            };
+          })
         };
-        modsList.push({ label: 'مالي ('+Math.round(total)+'ر)', status: 'ok' });
+        var vaccReqCount    = r4.data.length;
+        var vaccReqDoneCount = r4.data.filter(function(r){ return r.vaccinated; }).length;
+        modsList.push({
+          label:  'طلبات تحصين (' + vaccReqDoneCount + '/' + vaccReqCount + ')',
+          status: 'ok'
+        });
+      } else {
+        modsList.push({ label: 'طلبات تحصين (0)', status: 'empty' });
       }
-    } else { modsList.push({ label: 'مالي', status: 'empty' }); }
-  } catch(e) { modsList.push({ label: 'مالي ✗', status: 'fail' }); }
+    } else {
+      modsList.push({ label: 'طلبات تحصين', status: 'empty' });
+    }
+  } catch(e) {
+    modsList.push({ label: 'طلبات تحصين ✗', status: 'fail' });
+    report.vaccRequests = { error: e.message };
+  }
 
-  // ٦. الجرد
-  try {
-    if (typeof dim_callApi === 'function') {
-      info.textContent = 'جلب الجرد الدوائي...';
-      var today2 = new Date().toISOString().slice(0,10);
-      var r6 = await dim_callApi('getFinancialInventory', { dateFrom: today2.slice(0,4)+'-01-01', dateTo: today2 });
-      if (r6 && r6.data) {
-        report.inventory = { items: r6.data.slice(0, 30) };
-        modsList.push({ label: 'جرد ('+r6.data.length+')', status: 'ok' });
-      }
-    } else { modsList.push({ label: 'جرد', status: 'empty' }); }
-  } catch(e) { modsList.push({ label: 'جرد ✗', status: 'fail' }); }
-
-  // ٧. الأمراض
-  try {
-    if (typeof dtr_callApi === 'function') {
-      info.textContent = 'جلب بيانات الأمراض...';
-      var r7 = await dtr_callApi('getDiseaseMonthlyData', { disease:'', dateFrom:'', dateTo:'', clinic:'' });
-      if (r7 && r7.rawRows) {
-        report.diseases = { rowCount: r7.rawRows.length };
-        modsList.push({ label: 'أمراض ('+r7.rawRows.length+')', status: 'ok' });
-      }
-    } else { modsList.push({ label: 'أمراض', status: 'empty' }); }
-  } catch(e) { modsList.push({ label: 'أمراض ✗', status: 'fail' }); }
-
-  // ─── حفظ في sessionStorage ──────────────────────────────
+  // ─── حفظ في sessionStorage ───────────────────────────
   var dataStr = JSON.stringify(report);
   try {
     sessionStorage.setItem(ANA_CACHE_KEY,  dataStr);
     sessionStorage.setItem(ANA_CACHE_TIME, Date.now().toString());
     sessionStorage.setItem(ANA_CACHE_MODS, JSON.stringify(modsList));
-  } catch(e) {
-    // إذا امتلأ sessionStorage — قلص البيانات
+  } catch(storageErr) {
     try {
       var slim = JSON.parse(dataStr);
-      if (slim.treatment) slim.treatment.sample = slim.treatment.sample.slice(0, 10);
-      if (slim.samples)   slim.samples.sample   = slim.samples.sample.slice(0, 10);
+      if (slim.treatment)    slim.treatment.sample    = slim.treatment.sample.slice(0, 15);
+      if (slim.breeders)     slim.breeders.sample     = slim.breeders.sample.slice(0, 15);
+      if (slim.vaccRequests) slim.vaccRequests.sample = slim.vaccRequests.sample.slice(0, 15);
       sessionStorage.setItem(ANA_CACHE_KEY,  JSON.stringify(slim));
       sessionStorage.setItem(ANA_CACHE_TIME, Date.now().toString());
       sessionStorage.setItem(ANA_CACHE_MODS, JSON.stringify(modsList));
     } catch(e2) { console.warn('sessionStorage ممتلئ'); }
   }
 
-  btn.disabled = false;
+  btn.disabled    = false;
   btn.textContent = '🔄 تحديث البيانات';
   ana_updateCacheUI();
 
   var okCount = modsList.filter(function(m){ return m.status === 'ok'; }).length;
-  showToast('تم تحديث الكاش: ' + okCount + '/' + modsList.length + ' موديول ✅', 'success');
+  showToast('تم تحديث الكاش: ' + okCount + '/4 ✅', 'success');
 };
-
 // ─── مساعد ───────────────────────────────────────────────
 function ana_countBy(rows, idx) {
   var map = {};
