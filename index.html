@@ -3173,26 +3173,28 @@ window.ai_analyze = async function() {
   if (!q) { showToast('⚠️ اكتب سؤالك أولاً', 'warning'); return; }
   if (!ai_DATA) { showToast('⚠️ اضغط "تحميل البيانات" أولاً', 'warning'); return; }
 
+  var url = window._activeApiUrl;
+  if (!url) { showToast('⚠️ اختر الولاية أولاً', 'warning'); return; }
+
   var btn = document.getElementById('ai_analyzeBtn');
   var sp  = document.getElementById('ai_spinner');
   var res = document.getElementById('ai_result');
   btn.disabled = true;
   sp.style.display = 'inline-block';
   res.style.display = 'block';
-  res.textContent = '';
+  res.textContent = '⏳ جاري التحليل...';
 
-  // بناء ملخص البيانات للإرسال (منع تجاوز الحد)
   function summarize(arr, limit) {
     if (!Array.isArray(arr)) return [];
     return arr.slice(0, limit);
   }
 
   var summary = {
-    breeders:     summarize(ai_DATA.breeders,    150),
-    treatment:    summarize(ai_DATA.treatment,   150),
-    vaccination:  summarize(ai_DATA.vaccination, 100),
-    samples:      summarize(ai_DATA.samples,      80),
-    vaccRequests: summarize(ai_DATA.vaccRequests, 80)
+    breeders:     summarize(ai_DATA.breeders,    120),
+    treatment:    summarize(ai_DATA.treatment,   120),
+    vaccination:  summarize(ai_DATA.vaccination,  80),
+    samples:      summarize(ai_DATA.samples,       60),
+    vaccRequests: summarize(ai_DATA.vaccRequests,  60)
   };
 
   var counts = {
@@ -3213,54 +3215,36 @@ window.ai_analyze = async function() {
     '- حالات تحصين: ' + counts.vaccination + '\n' +
     '- عينات: ' + counts.samples + '\n' +
     '- طلبات تحصين: ' + counts.vaccRequests + '\n\n' +
-    'عينة من بيانات المربين (' + summary.breeders.length + ' مربي):\n' +
-    JSON.stringify(summary.breeders, null, 0).substring(0, 4000) + '\n\n' +
-    'عينة من بيانات العلاج (' + summary.treatment.length + ' حالة):\n' +
-    JSON.stringify(summary.treatment, null, 0).substring(0, 4000) + '\n\n' +
-    'عينة من بيانات التحصين (' + summary.vaccination.length + ' حالة):\n' +
-    JSON.stringify(summary.vaccination, null, 0).substring(0, 3000) + '\n\n' +
-    'عينة من العينات (' + summary.samples.length + ' عينة):\n' +
-    JSON.stringify(summary.samples, null, 0).substring(0, 2000) + '\n\n' +
+    'عينة بيانات المربين:\n' +
+    JSON.stringify(summary.breeders).substring(0, 3500) + '\n\n' +
+    'عينة بيانات العلاج:\n' +
+    JSON.stringify(summary.treatment).substring(0, 3500) + '\n\n' +
+    'عينة بيانات التحصين:\n' +
+    JSON.stringify(summary.vaccination).substring(0, 2500) + '\n\n' +
+    'عينة العينات:\n' +
+    JSON.stringify(summary.samples).substring(0, 1500) + '\n\n' +
     'السؤال: ' + q + '\n\n' +
-    'أجب بالعربية بشكل منظم. استخدم نقاطاً وأرقاماً. كن دقيقاً ومحددaً في الأرقام.';
+    'أجب بالعربية بشكل منظم ومفصّل. استخدم نقاطاً وأرقاماً دقيقة.';
 
   try {
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
+    var response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        stream: true,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'claudeAnalyze', prompt: prompt }),
+      redirect: 'follow'
     });
 
-    var reader  = response.body.getReader();
-    var decoder = new TextDecoder();
-    var buffer  = '';
+    var data = await response.json();
 
-    while (true) {
-      var _ref = await reader.read();
-      if (_ref.done) break;
-      buffer += decoder.decode(_ref.value, { stream: true });
-      var lines = buffer.split('\n');
-      buffer = lines.pop();
-      for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if (!line.startsWith('data: ')) continue;
-        var raw = line.slice(6).trim();
-        if (raw === '[DONE]') break;
-        try {
-          var j = JSON.parse(raw);
-          if (j.type === 'content_block_delta' && j.delta && j.delta.text) {
-            res.textContent += j.delta.text;
-          }
-        } catch(_) {}
-      }
+    if (data.success) {
+      res.textContent = data.result;
+    } else {
+      res.textContent = '❌ ' + (data.message || 'فشل التحليل');
     }
+
   } catch(e) {
-    res.textContent = '❌ خطأ: ' + e.message;
+    res.textContent = '❌ خطأ في الاتصال: ' + e.message;
   }
 
   btn.disabled = false;
