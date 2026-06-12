@@ -1005,7 +1005,7 @@ window.showToast = function(message, type) {
   <button onclick="showPage('samples')">نموذج العينات</button>
   <button onclick="showPage('dashboard')">طباعة نماذج العينات</button>
   <button onclick="showPage('settings')">طباعة شهادة التحصين</button>
-  <button onclick="showPage('aiAnalysis')">📊 تحليل البيانات AI</button>
+  <button onclick="showPage('aiAnalysis')">🤖 البحث والتحليل</button>
   <button onclick="showPage('reports')">الأدوية المصروفة</button>
   <button onclick="showPage('financialInventory')">الجرد المالي</button>
   <button onclick="showPage('diseaseTracking')">تتبع المرض</button>
@@ -1610,999 +1610,7 @@ async function wilayatApply() {
   })();
   </script>
 </div>
-<!-- ===== صفحة تحليل البيانات الذكي — الإصدار 3 (100% محلي بدون AI) ===== -->
-<div id="aiAnalysis" class="page">
-<style>
-/* ═══ CSS الأساسي ═══ */
-#aiAnalysis .ai3-wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Tahoma, Arial, 'Noto Naskh Arabic', sans-serif;
-  direction: rtl;
-}
-
-#aiAnalysis .ai3-hdr {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 18px;
-  padding: 18px 22px;
-  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
-  border-radius: 14px;
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(15,23,42,0.3);
-}
-
-#aiAnalysis .ai3-hdr-icon { font-size: 44px; }
-#aiAnalysis .ai3-hdr-title { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
-#aiAnalysis .ai3-hdr-sub { font-size: 13px; opacity: 0.85; }
-
-/* ═══ شريط التحكم ═══ */
-#aiAnalysis .ai3-bar {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border: 2px solid #334155;
-  border-radius: 12px;
-}
-
-#aiAnalysis .ai3-btn {
-  padding: 9px 18px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-family: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-#aiAnalysis .ai3-btn-blue { background: #0284c7; color: #fff; }
-#aiAnalysis .ai3-btn-blue:hover { background: #0369a1; }
-#aiAnalysis .ai3-btn-green { background: #059669; color: #fff; }
-#aiAnalysis .ai3-btn-green:hover { background: #047857; }
-#aiAnalysis .ai3-btn-purple { background: #7c3aed; color: #fff; }
-#aiAnalysis .ai3-btn-purple:hover { background: #6d28d9; }
-#aiAnalysis .ai3-btn-orange { background: #ea580c; color: #fff; }
-#aiAnalysis .ai3-btn-orange:hover { background: #c2410c; }
-#aiAnalysis .ai3-btn:disabled { opacity: 0.5; cursor: default; }
-
-#aiAnalysis .ai3-stat {
-  flex: 1;
-  font-size: 12px;
-  color: #475569;
-  min-width: 220px;
-}
-#aiAnalysis .ai3-stat strong { color: #0f172a; }
-
-#aiAnalysis .ai3-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-
-#aiAnalysis .ai3-badge {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid;
-  font-weight: 600;
-}
-#aiAnalysis .ai3-badge.ok { background: #dcfce7; color: #166534; border-color: #86efac; }
-#aiAnalysis .ai3-badge.fail { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
-#aiAnalysis .ai3-badge.empty { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
-
-/* ═══ البحث والفلاتر ═══ */
-#aiAnalysis .ai3-search-panel {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 14px;
-  background: #f0f9ff;
-  border: 2px solid #0ea5e9;
-  border-radius: 12px;
-}
-
-#aiAnalysis .ai3-search-panel input,
-#aiAnalysis .ai3-search-panel select {
-  padding: 10px 12px;
-  border: 2px solid #cbd5e1;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 13px;
-  background: #fff;
-}
-
-#aiAnalysis .ai3-search-panel input:focus,
-#aiAnalysis .ai3-search-panel select:focus {
-  outline: none;
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
-}
-
-#aiAnalysis .ai3-search-full {
-  grid-column: 1 / -1;
-  font-size: 14px;
-}
-
-/* ═══ البطاقات الإحصائية ═══ */
-#aiAnalysis .ai3-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-#aiAnalysis .ai3-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-#aiAnalysis .ai3-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-#aiAnalysis .ai3-card-icon { font-size: 32px; margin-bottom: 6px; }
-#aiAnalysis .ai3-card-num { font-size: 28px; font-weight: bold; color: #1e3a5f; margin-bottom: 4px; }
-#aiAnalysis .ai3-card-label { font-size: 13px; color: #64748b; }
-#aiAnalysis .ai3-card-sub { font-size: 11px; color: #94a3b8; margin-top: 4px; }
-
-/* ═══ الرسوم البيانية ═══ */
-#aiAnalysis .ai3-charts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-#aiAnalysis .ai3-chart-box {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-#aiAnalysis .ai3-chart-title {
-  font-size: 15px;
-  font-weight: bold;
-  color: #1e3a5f;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-#aiAnalysis .ai3-chart-canvas {
-  width: 100%;
-  height: 260px;
-}
-
-/* ═══ الجداول ═══ */
-#aiAnalysis .ai3-table-wrap {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-#aiAnalysis .ai3-table-hdr {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-#aiAnalysis .ai3-table-hdr-title { font-size: 15px; font-weight: bold; color: #1e3a5f; }
-
-#aiAnalysis .ai3-table-scroll {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-#aiAnalysis .ai3-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-#aiAnalysis .ai3-table th {
-  background: #1e3a5f;
-  color: #fff;
-  font-weight: bold;
-  padding: 10px 12px;
-  text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-#aiAnalysis .ai3-table td {
-  padding: 8px 12px;
-  text-align: center;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-}
-
-#aiAnalysis .ai3-table tr:nth-child(even) { background: #f8fafc; }
-#aiAnalysis .ai3-table tr:hover { background: #f0f9ff; }
-#aiAnalysis .ai3-table td strong { color: #1e3a5f; }
-
-/* ═══ التبويبات ═══ */
-#aiAnalysis .ai3-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 0;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-#aiAnalysis .ai3-tab {
-  padding: 10px 20px;
-  background: #f1f5f9;
-  border: none;
-  border-radius: 8px 8px 0 0;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  color: #64748b;
-  transition: all 0.2s;
-}
-
-#aiAnalysis .ai3-tab:hover { background: #e2e8f0; color: #334155; }
-#aiAnalysis .ai3-tab.active { background: #1e3a5f; color: #fff; }
-
-#aiAnalysis .ai3-tab-panel { display: none; padding-top: 16px; }
-#aiAnalysis .ai3-tab-panel.active { display: block; }
-
-/* ═══ Animations ═══ */
-@keyframes ai3FadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-#aiAnalysis .ai3-fade { animation: ai3FadeIn 0.4s ease; }
-
-@keyframes ai3Pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-#aiAnalysis .ai3-pulse { animation: ai3Pulse 1.5s infinite; }
-</style>
-
-<div class="ai3-wrap">
-
-  <!-- Header -->
-  <div class="ai3-hdr">
-    <div class="ai3-hdr-icon">📊</div>
-    <div>
-      <div class="ai3-hdr-title">مركز تحليل البيانات — 100% محلي</div>
-      <div class="ai3-hdr-sub">
-        بحث ذكي • إحصائيات فورية • رسوم بيانية • تصدير — بدون اتصال بـ AI
-      </div>
-    </div>
-  </div>
-
-  <!-- شريط التحكم -->
-  <div class="ai3-bar">
-    <button class="ai3-btn ai3-btn-blue" id="ai3_refreshBtn" onclick="ai3_loadAll()">
-      🔄 تحديث البيانات
-    </button>
-    <button class="ai3-btn ai3-btn-green" onclick="ai3_exportJSON()">
-      📥 تصدير JSON
-    </button>
-    <button class="ai3-btn ai3-btn-purple" onclick="ai3_exportCSV()">
-      📄 تصدير CSV
-    </button>
-    <div class="ai3-stat" id="ai3_stat">
-      لم يتم جلب البيانات بعد — اضغط "تحديث البيانات"
-    </div>
-    <div class="ai3-badges" id="ai3_badges"></div>
-  </div>
-
-  <!-- البحث والفلاتر -->
-  <div class="ai3-search-panel">
-    <input type="text" class="ai3-search-full" id="ai3_search" placeholder="🔍 ابحث في كل البيانات: رقم هاتف، اسم، منطقة، مرض، دواء، نوع حيوان..." oninput="ai3_debouncedSearch()" />
-    <select id="ai3_filter_table" onchange="ai3_debouncedSearch()">
-      <option value="all">🔎 كل الجداول</option>
-      <option value="breeders">👥 المربين</option>
-      <option value="treatment">💊 العلاج</option>
-      <option value="vaccination">💉 التحصين</option>
-      <option value="vaccRequests">📋 طلبات التحصين</option>
-      <option value="samples">🧪 العينات</option>
-    </select>
-    <select id="ai3_filter_region" onchange="ai3_debouncedSearch()">
-      <option value="">📍 كل المناطق</option>
-    </select>
-    <select id="ai3_filter_date" onchange="ai3_debouncedSearch()">
-      <option value="">📅 كل التواريخ</option>
-      <option value="today">اليوم</option>
-      <option value="week">آخر أسبوع</option>
-      <option value="month">آخر شهر</option>
-      <option value="year">آخر سنة</option>
-    </select>
-  </div>
-
-  <!-- البطاقات الإحصائية -->
-  <div class="ai3-cards" id="ai3_cards"></div>
-
-  <!-- الرسوم البيانية -->
-  <div class="ai3-charts" id="ai3_charts"></div>
-
-  <!-- التبويبات -->
-  <div class="ai3-tabs" id="ai3_tabs"></div>
-  <div id="ai3_panels"></div>
-
-</div>
-
-<script>
-(function(){
-  "use strict";
-
-  // ═══════════════════════════════════════════════════════
-  // 1. IndexedDB
-  // ═══════════════════════════════════════════════════════
-  var DB_NAME = 'VetClinicDB';
-  var DB_VER  = 1;
-  var db = null;
-
-  function ai3_openDB() {
-    return new Promise(function(resolve, reject) {
-      var req = indexedDB.open(DB_NAME, DB_VER);
-      req.onerror = function() { reject(req.error); };
-      req.onsuccess = function() { db = req.result; resolve(db); };
-      req.onupgradeneeded = function(e) {
-        var d = e.target.result;
-        if (!d.objectStoreNames.contains('breeders'))     d.createObjectStore('breeders',     { keyPath: 'phone' });
-        if (!d.objectStoreNames.contains('treatment'))    d.createObjectStore('treatment',    { keyPath: '_id', autoIncrement: true });
-        if (!d.objectStoreNames.contains('vaccination'))  d.createObjectStore('vaccination',  { keyPath: '_id', autoIncrement: true });
-        if (!d.objectStoreNames.contains('vaccRequests')) d.createObjectStore('vaccRequests', { keyPath: '_id', autoIncrement: true });
-        if (!d.objectStoreNames.contains('samples'))      d.createObjectStore('samples',      { keyPath: '_id', autoIncrement: true });
-        if (!d.objectStoreNames.contains('meta'))         d.createObjectStore('meta',         { keyPath: 'key' });
-      };
-    });
-  }
-
-  function ai3_putMany(storeName, rows) {
-    return new Promise(function(resolve, reject) {
-      if (!db) { reject(new Error('DB غير مفتوح')); return; }
-      var tx = db.transaction(storeName, 'readwrite');
-      var store = tx.objectStore(storeName);
-      var count = 0;
-      rows.forEach(function(r) { store.put(r); count++; });
-      tx.oncomplete = function() { resolve(count); };
-      tx.onerror = function() { reject(tx.error); };
-    });
-  }
-
-  function ai3_clearStore(storeName) {
-    return new Promise(function(resolve, reject) {
-      if (!db) { reject(new Error('DB غير مفتوح')); return; }
-      var tx = db.transaction(storeName, 'readwrite');
-      var store = tx.objectStore(storeName);
-      store.clear();
-      tx.oncomplete = function() { resolve(); };
-      tx.onerror = function() { reject(tx.error); };
-    });
-  }
-
-  function ai3_getAll(storeName) {
-    return new Promise(function(resolve, reject) {
-      if (!db) { reject(new Error('DB غير مفتوح')); return; }
-      var tx = db.transaction(storeName, 'readonly');
-      var store = tx.objectStore(storeName);
-      var req = store.getAll();
-      req.onsuccess = function() { resolve(req.result || []); };
-      req.onerror = function() { reject(req.error); };
-    });
-  }
-
-  function ai3_setMeta(key, value) {
-    return new Promise(function(resolve, reject) {
-      if (!db) { reject(new Error('DB غير مفتوح')); return; }
-      var tx = db.transaction('meta', 'readwrite');
-      var store = tx.objectStore('meta');
-      store.put({ key: key, value: value, time: Date.now() });
-      tx.oncomplete = function() { resolve(); };
-      tx.onerror = function() { reject(tx.error); };
-    });
-  }
-
-  function ai3_getMeta(key) {
-    return new Promise(function(resolve, reject) {
-      if (!db) { reject(new Error('DB غير مفتوح')); return; }
-      var tx = db.transaction('meta', 'readonly');
-      var store = tx.objectStore('meta');
-      var req = store.get(key);
-      req.onsuccess = function() { resolve(req.result ? req.result.value : null); };
-      req.onerror = function() { reject(req.error); };
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 2. الاتصال بـ GAS API
-  // ═══════════════════════════════════════════════════════
-  async function ai3_callApi(action, payload) {
-    var url = window._activeApiUrl || window.TR_API_URL || '';
-    if (!url) throw new Error('لم يتم تحديد رابط الولاية');
-    var body = JSON.stringify(Object.assign({ action: action }, payload || {}));
-    var r = await fetch(url, {
-      method: 'POST', mode: 'cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: body, redirect: 'follow'
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 3. جلب البيانات
-  // ═══════════════════════════════════════════════════════
-  window.ai3_loadAll = async function() {
-    var btn = document.getElementById('ai3_refreshBtn');
-    var stat = document.getElementById('ai3_stat');
-    var badges = document.getElementById('ai3_badges');
-
-    btn.disabled = true;
-    btn.innerHTML = '⏳ جاري الجلب...';
-    stat.innerHTML = '<span class="ai3-pulse">جلب البيانات من Google Sheets...</span>';
-    badges.innerHTML = '';
-
-    try {
-      if (!db) await ai3_openDB();
-
-      await Promise.all([
-        ai3_clearStore('breeders'), ai3_clearStore('treatment'),
-        ai3_clearStore('vaccination'), ai3_clearStore('vaccRequests'),
-        ai3_clearStore('samples')
-      ]);
-
-      var allData = await ai3_callApi('getAllDataForCache', {});
-      if (!allData || !allData.success) throw new Error(allData.message || 'فشل الجلب');
-
-      var badgeList = [];
-      var counts = {};
-      var allRegions = new Set();
-
-      if (allData.breeders && Array.isArray(allData.breeders)) {
-        await ai3_putMany('breeders', allData.breeders);
-        counts.breeders = allData.breeders.length;
-        badgeList.push({ label: 'مربون (' + counts.breeders + ')', status: 'ok' });
-        allData.breeders.forEach(function(r){ if(r.region) allRegions.add(r.region); });
-      } else { badgeList.push({ label: 'مربون (0)', status: 'empty' }); }
-
-      if (allData.treatment && Array.isArray(allData.treatment)) {
-        await ai3_putMany('treatment', allData.treatment);
-        counts.treatment = allData.treatment.length;
-        badgeList.push({ label: 'علاج (' + counts.treatment + ')', status: 'ok' });
-        allData.treatment.forEach(function(r){ if(r.region) allRegions.add(r.region); });
-      } else { badgeList.push({ label: 'علاج (0)', status: 'empty' }); }
-
-      if (allData.vaccination && Array.isArray(allData.vaccination)) {
-        await ai3_putMany('vaccination', allData.vaccination);
-        counts.vaccination = allData.vaccination.length;
-        badgeList.push({ label: 'تحصين (' + counts.vaccination + ')', status: 'ok' });
-        allData.vaccination.forEach(function(r){ if(r.region) allRegions.add(r.region); });
-      } else { badgeList.push({ label: 'تحصين (0)', status: 'empty' }); }
-
-      if (allData.vaccRequests && Array.isArray(allData.vaccRequests)) {
-        await ai3_putMany('vaccRequests', allData.vaccRequests);
-        counts.vaccRequests = allData.vaccRequests.length;
-        badgeList.push({ label: 'طلبات (' + counts.vaccRequests + ')', status: 'ok' });
-        allData.vaccRequests.forEach(function(r){ if(r.region) allRegions.add(r.region); });
-      } else { badgeList.push({ label: 'طلبات (0)', status: 'empty' }); }
-
-      if (allData.samples && Array.isArray(allData.samples)) {
-        await ai3_putMany('samples', allData.samples);
-        counts.samples = allData.samples.length;
-        badgeList.push({ label: 'عينات (' + counts.samples + ')', status: 'ok' });
-        allData.samples.forEach(function(r){ if(r.region) allRegions.add(r.region); });
-      } else { badgeList.push({ label: 'عينات (0)', status: 'empty' }); }
-
-      await ai3_setMeta('lastUpdate', Date.now());
-      await ai3_setMeta('counts', JSON.stringify(counts));
-      await ai3_setMeta('regions', JSON.stringify([...allRegions]));
-
-      var okCount = badgeList.filter(function(b){ return b.status === 'ok'; }).length;
-      stat.innerHTML = '<strong>✅ تم التحديث:</strong> ' + okCount + '/5 أوراق — ' + new Date().toLocaleString('ar-OM');
-      badges.innerHTML = badgeList.map(function(b){ return '<span class="ai3-badge ' + b.status + '">' + b.label + '</span>'; }).join('');
-
-      // تحديث قائمة المناطق
-      var regionSel = document.getElementById('ai3_filter_region');
-      regionSel.innerHTML = '<option value="">📍 كل المناطق</option>';
-      [...allRegions].sort().forEach(function(reg){
-        regionSel.innerHTML += '<option value="' + ai3_esc(reg) + '">' + ai3_esc(reg) + '</option>';
-      });
-
-      showToast('تم تحديث البيانات: ' + okCount + '/5 ✅', 'success');
-      ai3_refreshDashboard();
-
-    } catch(err) {
-      stat.innerHTML = '<span style="color:#dc2626;">⚠️ خطأ: ' + ai3_esc(err.message) + '</span>';
-      badges.innerHTML = '<span class="ai3-badge fail">فشل الجلب ✗</span>';
-      console.error('Load error:', err);
-      showToast('فشل التحديث: ' + err.message, 'error');
-    }
-
-    btn.disabled = false;
-    btn.innerHTML = '🔄 تحديث البيانات';
-  };
-
-  // ═══════════════════════════════════════════════════════
-  // 4. البحث الذكي
-  // ═══════════════════════════════════════════════════════
-  var searchTimer = null;
-  window.ai3_debouncedSearch = function() {
-    if (searchTimer) clearTimeout(searchTimer);
-    searchTimer = setTimeout(ai3_doSearch, 300);
-  };
-
-  async function ai3_doSearch() {
-    var query = document.getElementById('ai3_search').value.trim().toLowerCase();
-    var tableFilter = document.getElementById('ai3_filter_table').value;
-    var regionFilter = document.getElementById('ai3_filter_region').value;
-    var dateFilter = document.getElementById('ai3_filter_date').value;
-
-    if (!db) await ai3_openDB();
-
-    var results = {};
-    var tables = tableFilter === 'all' ? ['breeders','treatment','vaccination','vaccRequests','samples'] : [tableFilter];
-
-    for (var t = 0; t < tables.length; t++) {
-      var tbl = tables[t];
-      var rows = await ai3_getAll(tbl);
-      var filtered = [];
-
-      rows.forEach(function(r){
-        // فلتر المنطقة
-        if (regionFilter && r.region !== regionFilter) return;
-        // فلتر التاريخ
-        if (dateFilter && r.financialDate) {
-          var d = new Date(r.financialDate);
-          var now = new Date();
-          if (dateFilter === 'today' && d.toDateString() !== now.toDateString()) return;
-          if (dateFilter === 'week' && (now - d) > 7 * 86400000) return;
-          if (dateFilter === 'month' && (now - d) > 30 * 86400000) return;
-          if (dateFilter === 'year' && (now - d) > 365 * 86400000) return;
-        }
-        // البحث النصي
-        if (query) {
-          var text = JSON.stringify(r).toLowerCase();
-          if (!text.includes(query)) return;
-        }
-        filtered.push(r);
-      });
-
-      results[tbl] = filtered;
-    }
-
-    ai3_renderResults(results);
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 5. عرض النتائج في التبويبات
-  // ═══════════════════════════════════════════════════════
-  function ai3_renderResults(results) {
-    var tabs = document.getElementById('ai3_tabs');
-    var panels = document.getElementById('ai3_panels');
-    tabs.innerHTML = '';
-    panels.innerHTML = '';
-
-    var tabNames = {
-      breeders: '👥 المربين',
-      treatment: '💊 العلاج',
-      vaccination: '💉 التحصين',
-      vaccRequests: '📋 طلبات التحصين',
-      samples: '🧪 العينات'
-    };
-
-    var first = true;
-    Object.keys(results).forEach(function(tbl){
-      var rows = results[tbl];
-      if (rows.length === 0) return;
-
-      var tabId = 'ai3_tab_' + tbl;
-      var panelId = 'ai3_panel_' + tbl;
-
-      // تبويب
-      var tabBtn = document.createElement('button');
-      tabBtn.className = 'ai3-tab' + (first ? ' active' : '');
-      tabBtn.textContent = tabNames[tbl] + ' (' + rows.length + ')';
-      tabBtn.onclick = function() {
-        document.querySelectorAll('.ai3-tab').forEach(function(t){ t.classList.remove('active'); });
-        document.querySelectorAll('.ai3-tab-panel').forEach(function(p){ p.classList.remove('active'); });
-        tabBtn.classList.add('active');
-        document.getElementById(panelId).classList.add('active');
-      };
-      tabs.appendChild(tabBtn);
-
-      // لوحة
-      var panel = document.createElement('div');
-      panel.className = 'ai3-tab-panel' + (first ? ' active' : '');
-      panel.id = panelId;
-
-      var html = '<div class="ai3-table-wrap ai3-fade">';
-      html += '<div class="ai3-table-hdr"><div class="ai3-table-hdr-title">' + tabNames[tbl] + ' — ' + rows.length + ' سجل</div></div>';
-      html += '<div class="ai3-table-scroll"><table class="ai3-table"><thead><tr>';
-
-      // رؤوس الأعمدة
-      var keys = Object.keys(rows[0]).filter(function(k){ return !k.startsWith('_'); });
-      keys.forEach(function(k){ html += '<th>' + ai3_esc(ai3_colName(k)) + '</th>'; });
-      html += '</tr></thead><tbody>';
-
-      // الصفوف
-      rows.slice(0, 200).forEach(function(r){
-        html += '<tr>';
-        keys.forEach(function(k){
-          var val = r[k];
-          if (val === null || val === undefined) val = '';
-          html += '<td>' + ai3_esc(String(val)) + '</td>';
-        });
-        html += '</tr>';
-      });
-
-      html += '</tbody></table></div></div>';
-      panel.innerHTML = html;
-      panels.appendChild(panel);
-
-      first = false;
-    });
-
-    if (first) {
-      panels.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;font-size:16px;">🔍 لا توجد نتائج مطابقة</div>';
-    }
-  }
-
-  function ai3_colName(key) {
-    var map = {
-      phone: 'الهاتف', name: 'الاسم', region: 'المنطقة', civil: 'الرقم المدني',
-      camel: 'جمال', goat: 'ماعز', sheep: 'أغنام', cow: 'أبقار',
-      disease1: 'المرض 1', disease2: 'المرض 2', disease3: 'المرض 3',
-      drug1: 'الدواء 1', drug2: 'الدواء 2', drug3: 'الدواء 3',
-      receipt: 'الإيصال', amount: 'المبلغ', financialDate: 'التاريخ',
-      fmdCow: 'حمى قلاعية بقر', fmdGoat: 'حمى قلاعية ماعز', fmdSheep: 'حمى قلاعية أغنام',
-      lumpyCow: 'جدري بقر', rabiesSheep: 'داء الكلب أغنام', rabiesGoat: 'داء الكلب ماعز',
-      rabiesCow: 'داء الكلب بقر', rabiesCamel: 'داء الكلب جمال', rabiesHorse: 'داء الكلب خيل',
-      entryDate: 'تاريخ الإدخال', dataUpdater: 'المحدث', caseNumber: 'رقم العينة',
-      animalType: 'نوع الحيوان', sampleType: 'نوع العينة', test1: 'الفحص', result1: 'النتيجة'
-    };
-    return map[key] || key;
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 6. البطاقات الإحصائية
-  // ═══════════════════════════════════════════════════════
-  async function ai3_refreshDashboard() {
-    if (!db) await ai3_openDB();
-
-    var countsMeta = await ai3_getMeta('counts');
-    var counts = countsMeta ? JSON.parse(countsMeta) : {};
-
-    var cards = document.getElementById('ai3_cards');
-    cards.innerHTML = '';
-
-    var cardData = [
-      { icon: '👥', num: counts.breeders || 0, label: 'إجمالي المربين', sub: 'مسجلين في النظام', color: '#0284c7' },
-      { icon: '💊', num: counts.treatment || 0, label: 'سجلات العلاج', sub: 'حالات علاجية', color: '#059669' },
-      { icon: '💉', num: counts.vaccination || 0, label: 'سجلات التحصين', sub: 'عمليات تحصين', color: '#7c3aed' },
-      { icon: '📋', num: counts.vaccRequests || 0, label: 'طلبات التحصين', sub: 'طلبات مقدمة', color: '#ea580c' },
-      { icon: '🧪', num: counts.samples || 0, label: 'العينات المخبرية', sub: 'فحوصات مخبرية', color: '#db2777' }
-    ];
-
-    cardData.forEach(function(c){
-      var div = document.createElement('div');
-      div.className = 'ai3-card ai3-fade';
-      div.innerHTML = '<div class="ai3-card-icon">' + c.icon + '</div><div class="ai3-card-num" style="color:' + c.color + '">' + c.num + '</div><div class="ai3-card-label">' + c.label + '</div><div class="ai3-card-sub">' + c.sub + '</div>';
-      cards.appendChild(div);
-    });
-
-    ai3_drawCharts();
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 7. الرسوم البيانية (Canvas يدوي)
-  // ═══════════════════════════════════════════════════════
-  async function ai3_drawCharts() {
-    if (!db) await ai3_openDB();
-    var chartsDiv = document.getElementById('ai3_charts');
-    chartsDiv.innerHTML = '';
-
-    // ── رسم 1: توزيع المربين حسب المنطقة ──
-    var breeders = await ai3_getAll('breeders');
-    var regionMap = {};
-    breeders.forEach(function(r){ var reg = r.region || 'غير محدد'; regionMap[reg] = (regionMap[reg] || 0) + 1; });
-    var regionData = Object.entries(regionMap).sort(function(a,b){ return b[1]-a[1]; }).slice(0, 10);
-
-    if (regionData.length > 0) {
-      var box1 = document.createElement('div');
-      box1.className = 'ai3-chart-box ai3-fade';
-      box1.innerHTML = '<div class="ai3-chart-title">📍 توزيع المربين حسب المنطقة</div><canvas id="ai3_chart_regions" class="ai3-chart-canvas"></canvas>';
-      chartsDiv.appendChild(box1);
-      setTimeout(function(){ ai3_drawBarChart('ai3_chart_regions', regionData, '#0284c7'); }, 50);
-    }
-
-    // ── رسم 2: أكثر الأمراض ──
-    var treatment = await ai3_getAll('treatment');
-    var diseaseMap = {};
-    treatment.forEach(function(r){
-      [r.disease1, r.disease2, r.disease3, r.disease4, r.disease5].forEach(function(d){ if(d) diseaseMap[d] = (diseaseMap[d]||0)+1; });
-    });
-    var diseaseData = Object.entries(diseaseMap).sort(function(a,b){ return b[1]-a[1]; }).slice(0, 10);
-
-    if (diseaseData.length > 0) {
-      var box2 = document.createElement('div');
-      box2.className = 'ai3-chart-box ai3-fade';
-      box2.innerHTML = '<div class="ai3-chart-title">🦠 أكثر الأمراض تسجيلاً</div><canvas id="ai3_chart_diseases" class="ai3-chart-canvas"></canvas>';
-      chartsDiv.appendChild(box2);
-      setTimeout(function(){ ai3_drawBarChart('ai3_chart_diseases', diseaseData, '#dc2626'); }, 50);
-    }
-
-    // ── رسم 3: أكثر الأدوية ──
-    var drugMap = {};
-    treatment.forEach(function(r){
-      [r.drug1, r.drug2, r.drug3, r.drug4, r.drug5].forEach(function(d){ if(d) drugMap[d] = (drugMap[d]||0)+1; });
-    });
-    var drugData = Object.entries(drugMap).sort(function(a,b){ return b[1]-a[1]; }).slice(0, 10);
-
-    if (drugData.length > 0) {
-      var box3 = document.createElement('div');
-      box3.className = 'ai3-chart-box ai3-fade';
-      box3.innerHTML = '<div class="ai3-chart-title">💊 أكثر الأدوية صرفاً</div><canvas id="ai3_chart_drugs" class="ai3-chart-canvas"></canvas>';
-      chartsDiv.appendChild(box3);
-      setTimeout(function(){ ai3_drawBarChart('ai3_chart_drugs', drugData, '#059669'); }, 50);
-    }
-
-    // ── رسم 4: أنواع الحيوانات في العينات ──
-    var samples = await ai3_getAll('samples');
-    var animalMap = {};
-    samples.forEach(function(r){ var a = r.animalType || 'غير محدد'; animalMap[a] = (animalMap[a] || 0) + 1; });
-    var animalData = Object.entries(animalMap).sort(function(a,b){ return b[1]-a[1]; });
-
-    if (animalData.length > 0) {
-      var box4 = document.createElement('div');
-      box4.className = 'ai3-chart-box ai3-fade';
-      box4.innerHTML = '<div class="ai3-chart-title">🐄 توزيع العينات حسب نوع الحيوان</div><canvas id="ai3_chart_animals" class="ai3-chart-canvas"></canvas>';
-      chartsDiv.appendChild(box4);
-      setTimeout(function(){ ai3_drawPieChart('ai3_chart_animals', animalData); }, 50);
-    }
-  }
-
-  function ai3_drawBarChart(canvasId, data, color) {
-    var canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
-    var dpr = window.devicePixelRatio || 1;
-    var rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-
-    var w = rect.width, h = rect.height;
-    var padding = { top: 20, right: 20, bottom: 60, left: 50 };
-    var chartW = w - padding.left - padding.right;
-    var chartH = h - padding.top - padding.bottom;
-
-    var maxVal = Math.max.apply(null, data.map(function(d){ return d[1]; }));
-    var barW = chartW / data.length * 0.7;
-    var gap = chartW / data.length * 0.3;
-
-    ctx.clearRect(0, 0, w, h);
-
-    // محاور
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, padding.top);
-    ctx.lineTo(padding.left, h - padding.bottom);
-    ctx.lineTo(w - padding.right, h - padding.bottom);
-    ctx.stroke();
-
-    // أعمدة
-    data.forEach(function(item, i){
-      var val = item[1];
-      var barH = (val / maxVal) * chartH;
-      var x = padding.left + i * (barW + gap) + gap / 2;
-      var y = h - padding.bottom - barH;
-
-      ctx.fillStyle = color;
-      ctx.globalAlpha = 0.85;
-      ctx.fillRect(x, y, barW, barH);
-      ctx.globalAlpha = 1;
-
-      // القيمة
-      ctx.fillStyle = '#1e3a5f';
-      ctx.font = 'bold 12px Tahoma';
-      ctx.textAlign = 'center';
-      ctx.fillText(val, x + barW / 2, y - 6);
-
-      // التسمية
-      ctx.fillStyle = '#64748b';
-      ctx.font = '11px Tahoma';
-      ctx.save();
-      ctx.translate(x + barW / 2, h - padding.bottom + 15);
-      ctx.rotate(-Math.PI / 4);
-      ctx.fillText(item[0], 0, 0);
-      ctx.restore();
-    });
-  }
-
-  function ai3_drawPieChart(canvasId, data) {
-    var canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
-    var dpr = window.devicePixelRatio || 1;
-    var rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-
-    var w = rect.width, h = rect.height;
-    var cx = w / 2, cy = h / 2 - 10;
-    var radius = Math.min(w, h) / 2 - 40;
-    var total = data.reduce(function(s, d){ return s + d[1]; }, 0);
-
-    var colors = ['#0284c7', '#059669', '#7c3aed', '#ea580c', '#db2777', '#ca8a04', '#0891b2', '#c026d3'];
-    var startAngle = -Math.PI / 2;
-
-    ctx.clearRect(0, 0, w, h);
-
-    data.forEach(function(item, i){
-      var angle = (item[1] / total) * 2 * Math.PI;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
-      ctx.closePath();
-      ctx.fillStyle = colors[i % colors.length];
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // النسبة
-      var midAngle = startAngle + angle / 2;
-      var lx = cx + Math.cos(midAngle) * (radius * 0.65);
-      var ly = cy + Math.sin(midAngle) * (radius * 0.65);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 12px Tahoma';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      var pct = Math.round((item[1] / total) * 100) + '%';
-      if ((item[1] / total) > 0.05) ctx.fillText(pct, lx, ly);
-
-      startAngle += angle;
-    });
-
-    // مفتاح الألوان
-    var legendY = h - 20;
-    var legendX = 20;
-    data.forEach(function(item, i){
-      ctx.fillStyle = colors[i % colors.length];
-      ctx.fillRect(legendX, legendY - 8, 10, 10);
-      ctx.fillStyle = '#334155';
-      ctx.font = '11px Tahoma';
-      ctx.textAlign = 'left';
-      ctx.fillText(item[0] + ' (' + item[1] + ')', legendX + 14, legendY);
-      legendX += ctx.measureText(item[0] + ' (' + item[1] + ')').width + 30;
-      if (legendX > w - 100) { legendX = 20; legendY += 18; }
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 8. التصدير
-  // ═══════════════════════════════════════════════════════
-  window.ai3_exportJSON = async function() {
-    if (!db) await ai3_openDB();
-    var data = {};
-    data.breeders = await ai3_getAll('breeders');
-    data.treatment = await ai3_getAll('treatment');
-    data.vaccination = await ai3_getAll('vaccination');
-    data.vaccRequests = await ai3_getAll('vaccRequests');
-    data.samples = await ai3_getAll('samples');
-
-    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'vet_clinic_data_' + new Date().toISOString().slice(0,10) + '.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('تم تصدير JSON ✅', 'success');
-  };
-
-  window.ai3_exportCSV = async function() {
-    if (!db) await ai3_openDB();
-    var tables = ['breeders', 'treatment', 'vaccination', 'vaccRequests', 'samples'];
-    var csvParts = [];
-
-    for (var i = 0; i < tables.length; i++) {
-      var tbl = tables[i];
-      var rows = await ai3_getAll(tbl);
-      if (rows.length === 0) continue;
-      csvParts.push('=== ' + tbl + ' ===');
-      var keys = Object.keys(rows[0]).filter(function(k){ return !k.startsWith('_'); });
-      csvParts.push(keys.join(','));
-      rows.forEach(function(r){
-        csvParts.push(keys.map(function(k){ return '"' + String(r[k] || '').replace(/"/g, '""') + '"'; }).join(','));
-      });
-      csvParts.push('');
-    }
-
-    var blob = new Blob([csvParts.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'vet_clinic_data_' + new Date().toISOString().slice(0,10) + '.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('تم تصدير CSV ✅', 'success');
-  };
-
-  // ═══════════════════════════════════════════════════════
-  // 9. مساعدة
-  // ═══════════════════════════════════════════════════════
-  function ai3_esc(t) {
-    return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 10. تهيئة
-  // ═══════════════════════════════════════════════════════
-  (async function init() {
-    try {
-      await ai3_openDB();
-      var lastUpdate = await ai3_getMeta('lastUpdate');
-      var countsMeta = await ai3_getMeta('counts');
-      var regionsMeta = await ai3_getMeta('regions');
-      var stat = document.getElementById('ai3_stat');
-      var badges = document.getElementById('ai3_badges');
-
-      if (lastUpdate && countsMeta) {
-        var counts = JSON.parse(countsMeta);
-        var age = Math.round((Date.now() - lastUpdate) / 60000);
-        var ageText = age < 1 ? 'الآن' : age + ' دقيقة';
-        stat.innerHTML = '<strong>✅ بيانات محلية:</strong> آخر تحديث منذ ' + ageText + ' — ' + new Date(lastUpdate).toLocaleString('ar-OM');
-
-        var badgeList = [];
-        if (counts.breeders) badgeList.push({ label: 'مربون (' + counts.breeders + ')', status: 'ok' });
-        if (counts.treatment) badgeList.push({ label: 'علاج (' + counts.treatment + ')', status: 'ok' });
-        if (counts.vaccination) badgeList.push({ label: 'تحصين (' + counts.vaccination + ')', status: 'ok' });
-        if (counts.vaccRequests) badgeList.push({ label: 'طلبات (' + counts.vaccRequests + ')', status: 'ok' });
-        if (counts.samples) badgeList.push({ label: 'عينات (' + counts.samples + ')', status: 'ok' });
-        badges.innerHTML = badgeList.map(function(b){ return '<span class="ai3-badge ' + b.status + '">' + b.label + '</span>'; }).join('');
-
-        if (regionsMeta) {
-          var regions = JSON.parse(regionsMeta);
-          var regionSel = document.getElementById('ai3_filter_region');
-          regionSel.innerHTML = '<option value="">📍 كل المناطق</option>';
-          regions.sort().forEach(function(reg){
-            regionSel.innerHTML += '<option value="' + ai3_esc(reg) + '">' + ai3_esc(reg) + '</option>';
-          });
-        }
-
-        ai3_refreshDashboard();
-      }
-    } catch(e) {
-      console.log('Init error:', e);
-    }
-  })();
-
-})();
-</script>
-</div>
+  
 <div id="login" class="page active">
 <style>
 #login { padding: 0 !important; }
@@ -3912,7 +2920,381 @@ function dim_printTable() {
 }
 </script>
 </div>
+<!-- ===== صفحة البحث والتحليل بالذكاء الاصطناعي ===== -->
+<div id="aiAnalysis" class="page">
+<style>
+#aiAnalysis { direction: rtl; font-family: Tahoma, Arial, sans-serif; }
+#aiAnalysis .ai-wrap { max-width: 1200px; margin: 0 auto; padding: 10px 0; }
+#aiAnalysis .ai-top { background: #f8ffff; border: 3px solid #00b8d9; border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+#aiAnalysis .ai-top h2 { color: #004e66; margin: 0 0 10px; font-size: 16px; }
+#aiAnalysis .ai-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+#aiAnalysis .ai-chip { background: #e0f7fa; color: #006080; border: 1px solid #00b8d9; border-radius: 20px; padding: 5px 14px; font-size: 12px; cursor: pointer; font-family: inherit; transition: all .2s; }
+#aiAnalysis .ai-chip:hover { background: #00b8d9; color: #fff; }
+#aiAnalysis .ai-input-row { display: flex; gap: 8px; align-items: flex-end; }
+#aiAnalysis .ai-textarea { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 13px; resize: vertical; min-height: 70px; }
+#aiAnalysis .ai-textarea:focus { border-color: #00b8d9; outline: none; }
+#aiAnalysis .ai-btn { padding: 10px 22px; background: #00b8d9; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit; white-space: nowrap; }
+#aiAnalysis .ai-btn:hover { background: #0097a7; }
+#aiAnalysis .ai-btn:disabled { opacity: .6; cursor: not-allowed; }
+#aiAnalysis .ai-data-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+#aiAnalysis .ai-badge { background: #2bb673; color: #fff; border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: bold; }
+#aiAnalysis .ai-badge.warn { background: #e67e22; }
+#aiAnalysis .ai-badge.info { background: #3498db; }
+#aiAnalysis .ai-results { background: #f8ffff; border: 3px solid #00b8d9; border-radius: 8px; padding: 16px; min-height: 120px; margin-bottom: 12px; font-size: 14px; line-height: 1.9; white-space: pre-wrap; }
+#aiAnalysis .ai-search-section { background: #f8ffff; border: 3px solid #2bb673; border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+#aiAnalysis .ai-search-section h3 { color: #1a6e45; margin: 0 0 10px; font-size: 14px; }
+#aiAnalysis .ai-search-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+#aiAnalysis .ai-search-input { padding: 7px 12px; border: 2px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 13px; width: 200px; }
+#aiAnalysis .ai-search-input:focus { border-color: #2bb673; outline: none; }
+#aiAnalysis .ai-search-btn { padding: 7px 18px; background: #2bb673; color: #fff; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: inherit; }
+#aiAnalysis .ai-tbl-wrap { max-height: 400px; overflow: auto; border: 1px solid #ddd; border-radius: 5px; }
+#aiAnalysis .ai-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+#aiAnalysis .ai-tbl th { background: #00b8d9; color: #fff; padding: 7px 10px; text-align: center; position: sticky; top: 0; z-index: 2; border: 1px solid #ccc; }
+#aiAnalysis .ai-tbl td { padding: 6px 10px; border: 1px solid #ddd; text-align: center; }
+#aiAnalysis .ai-tbl tr:hover td { background: #ffff00; }
+#aiAnalysis .ai-stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 10px; margin-bottom: 12px; }
+#aiAnalysis .ai-stat { background: #f8ffff; border: 2px solid #b3e5fc; border-radius: 8px; padding: 12px; text-align: center; }
+#aiAnalysis .ai-stat .n { font-size: 26px; font-weight: bold; color: #00b8d9; }
+#aiAnalysis .ai-stat .l { font-size: 11px; color: #666; margin-top: 3px; }
+#aiAnalysis .ai-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-left: 6px; }
+#aiAnalysis .ai-copy-btn { padding: 6px 16px; background: #95a5a6; color: #fff; border: none; border-radius: 5px; font-size: 12px; cursor: pointer; font-family: inherit; }
+#aiAnalysis .ai-copy-btn:hover { background: #7f8c8d; }
+#aiAnalysis .ai-source-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+#aiAnalysis .ai-src-tab { padding: 6px 14px; border: 2px solid #00b8d9; border-radius: 5px; background: #fff; color: #00b8d9; font-size: 12px; font-weight: bold; cursor: pointer; font-family: inherit; }
+#aiAnalysis .ai-src-tab.active { background: #00b8d9; color: #fff; }
+</style>
 
+<div class="ai-wrap">
+  <!-- إحصاءات سريعة -->
+  <div class="ai-stats" id="ai_statsBar">
+    <div class="ai-stat"><div class="n" id="ai_cntBreeders">—</div><div class="l">مربي في الكاش</div></div>
+    <div class="ai-stat"><div class="n" id="ai_cntTreat">—</div><div class="l">حالة علاج</div></div>
+    <div class="ai-stat"><div class="n" id="ai_cntVacc">—</div><div class="l">حالة تحصين</div></div>
+    <div class="ai-stat"><div class="n" id="ai_cntSamples">—</div><div class="l">عينة</div></div>
+    <div class="ai-stat"><div class="n" id="ai_cntVaccReq">—</div><div class="l">طلب تحصين</div></div>
+  </div>
+
+  <!-- قسم البحث المباشر -->
+  <div class="ai-search-section">
+    <h3>🔍 بحث في قاعدة البيانات</h3>
+    <div class="ai-source-tabs">
+      <button class="ai-src-tab active" onclick="ai_setSearchSource('breeders',this)">المربين</button>
+      <button class="ai-src-tab" onclick="ai_setSearchSource('treatment',this)">العلاج</button>
+      <button class="ai-src-tab" onclick="ai_setSearchSource('vaccination',this)">التحصين</button>
+      <button class="ai-src-tab" onclick="ai_setSearchSource('samples',this)">العينات</button>
+      <button class="ai-src-tab" onclick="ai_setSearchSource('vaccRequests',this)">طلبات التحصين</button>
+    </div>
+    <div class="ai-search-row">
+      <input type="text" class="ai-search-input" id="ai_searchInput" placeholder="اكتب للبحث..." oninput="ai_doSearch()">
+      <button class="ai-search-btn" onclick="ai_doSearch()">بحث</button>
+      <button class="ai-search-btn" style="background:#e67e22" onclick="ai_loadAllData()">🔄 تحميل البيانات</button>
+      <span id="ai_searchCount" style="font-size:12px;color:#666;"></span>
+    </div>
+    <div class="ai-tbl-wrap" id="ai_searchResults">
+      <p style="text-align:center;padding:20px;color:#999;font-size:13px;">اضغط "تحميل البيانات" أولاً ثم ابدأ البحث</p>
+    </div>
+  </div>
+
+  <!-- قسم التحليل بالذكاء الاصطناعي -->
+  <div class="ai-top">
+    <h2>🤖 تحليل البيانات بالذكاء الاصطناعي</h2>
+    <div class="ai-data-bar">
+      <span id="ai_dataStatus" class="ai-badge warn">البيانات غير محملة</span>
+      <span id="ai_dataInfo" style="font-size:12px;color:#666;"></span>
+    </div>
+    <div class="ai-chips" id="ai_quickChips">
+      <button class="ai-chip" onclick="ai_setQ('لخّص إحصاءات قاعدة البيانات وأبرز الأرقام المهمة')">📊 ملخص شامل</button>
+      <button class="ai-chip" onclick="ai_setQ('ما أكثر الأمراض تكراراً في سجلات العلاج؟ رتّبها تنازلياً')">🦠 أكثر الأمراض</button>
+      <button class="ai-chip" onclick="ai_setQ('ما أكثر المناطق التي يأتي منها المربون؟ وما توزيع الحيوانات حسب المنطقة؟')">📍 توزيع المناطق</button>
+      <button class="ai-chip" onclick="ai_setQ('كم عدد الحالات غير المكتملة؟ وما أسباب ذلك المحتملة؟')">⚠️ حالات غير مكتملة</button>
+      <button class="ai-chip" onclick="ai_setQ('حلّل بيانات التحصين: ما أكثر اللقاحات استخداماً؟ وما نسبة التغطية؟')">💉 تحليل التحصين</button>
+      <button class="ai-chip" onclick="ai_setQ('ما الأدوية الأكثر صرفاً؟ وما الحيوانات التي تحتاج أكثر رعاية بيطرية؟')">💊 أكثر الأدوية</button>
+      <button class="ai-chip" onclick="ai_setQ('هل هناك أنماط موسمية في بيانات العلاج؟ حلّل التواريخ المتاحة')">📅 أنماط زمنية</button>
+      <button class="ai-chip" onclick="ai_setQ('من المربون الأكثر مراجعة للعيادة؟ وما الحيوانات التي يمتلكونها؟')">👤 أنشط المربين</button>
+      <button class="ai-chip" onclick="ai_setQ('حلّل بيانات العينات: ما أكثر الفحوصات طلباً؟ وما النتائج الشائعة؟')">🧪 تحليل العينات</button>
+      <button class="ai-chip" onclick="ai_setQ('هل يوجد ارتباط بين نوع المنطقة والأمراض المسجلة؟')">🔗 تحليل الارتباطات</button>
+    </div>
+    <div class="ai-input-row">
+      <textarea class="ai-textarea" id="ai_question" placeholder="اكتب سؤالك أو اطلب تحليلاً محدداً...&#10;مثال: ما أكثر المناطق التي يأتي منها المربون؟"></textarea>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button class="ai-btn" id="ai_analyzeBtn" onclick="ai_analyze()">🤖 تحليل<span class="ai-spinner" id="ai_spinner" style="display:none"></span></button>
+        <button class="ai-copy-btn" onclick="ai_copyResult()">📋 نسخ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- النتيجة -->
+  <div class="ai-results" id="ai_result" style="display:none"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+// ── حالة الصفحة ──
+var ai_DATA = null;         // البيانات المحملة
+var ai_SEARCH_SRC = 'breeders';
+
+// ── تحديث الإحصاءات ──
+function ai_updateStats(data) {
+  if (!data) return;
+  function cnt(arr) { return Array.isArray(arr) ? arr.length : 0; }
+  document.getElementById('ai_cntBreeders').textContent = cnt(data.breeders);
+  document.getElementById('ai_cntTreat').textContent    = cnt(data.treatment);
+  document.getElementById('ai_cntVacc').textContent     = cnt(data.vaccination);
+  document.getElementById('ai_cntSamples').textContent  = cnt(data.samples);
+  document.getElementById('ai_cntVaccReq').textContent  = cnt(data.vaccRequests);
+}
+
+// ── تحميل البيانات من Apps Script ──
+window.ai_loadAllData = async function() {
+  var url = window._activeApiUrl;
+  if (!url) { showToast('⚠️ اختر الولاية أولاً من صفحة الإعدادات', 'warning'); return; }
+  var btn = document.querySelector('#aiAnalysis .ai-search-btn[onclick*="loadAllData"]');
+  if (btn) { btn.textContent = '⏳ جاري التحميل...'; btn.disabled = true; }
+  try {
+    var res = await fetch(url, {
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getAllDataForCache' }),
+      redirect: 'follow'
+    });
+    var data = await res.json();
+    if (data.success) {
+      ai_DATA = data;
+      ai_updateStats(data);
+      var total = [data.breeders, data.treatment, data.vaccination, data.samples, data.vaccRequests]
+        .reduce(function(s,a){ return s + (Array.isArray(a)?a.length:0); }, 0);
+      document.getElementById('ai_dataStatus').textContent = '✅ البيانات محملة';
+      document.getElementById('ai_dataStatus').className  = 'ai-badge';
+      document.getElementById('ai_dataInfo').textContent  = 'إجمالي ' + total.toLocaleString('ar-SA') + ' سجل';
+      showToast('✅ تم تحميل البيانات بنجاح', 'success');
+      ai_doSearch();
+    } else {
+      showToast('❌ فشل تحميل البيانات', 'error');
+    }
+  } catch(e) {
+    showToast('❌ خطأ: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.textContent = '🔄 تحميل البيانات'; btn.disabled = false; }
+  }
+};
+
+// ── تبديل مصدر البحث ──
+window.ai_setSearchSource = function(src, el) {
+  ai_SEARCH_SRC = src;
+  document.querySelectorAll('#aiAnalysis .ai-src-tab').forEach(function(b){ b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  ai_doSearch();
+};
+
+// ── بحث مباشر ──
+window.ai_doSearch = function() {
+  var q = (document.getElementById('ai_searchInput').value || '').trim().toLowerCase();
+  var container = document.getElementById('ai_searchResults');
+  var countEl   = document.getElementById('ai_searchCount');
+
+  if (!ai_DATA) {
+    container.innerHTML = '<p style="text-align:center;padding:20px;color:#999;font-size:13px;">اضغط "تحميل البيانات" أولاً</p>';
+    return;
+  }
+
+  var rows = ai_DATA[ai_SEARCH_SRC] || [];
+
+  // فلترة
+  var filtered = q ? rows.filter(function(r) {
+    return Object.values(r).some(function(v){ return v && v.toString().toLowerCase().indexOf(q) !== -1; });
+  }) : rows;
+
+  countEl.textContent = filtered.length + ' نتيجة';
+
+  if (!filtered.length) {
+    container.innerHTML = '<p style="text-align:center;padding:20px;color:#e65050;font-size:13px;">لا توجد نتائج</p>';
+    return;
+  }
+
+  // رسم الجدول (أول 200 صف)
+  var display = filtered.slice(0, 200);
+  var keys = Object.keys(display[0]);
+
+  var LABELS = {
+    phone:'الهاتف', name:'الاسم', region:'المنطقة', possession:'الحيازة',
+    civil:'الرقم المدني', notes:'ملاحظات', goat:'ماعز', sheep:'أغنام',
+    cow:'أبقار', camel:'جمال', horse:'خيول', cat:'قطط', dog:'كلاب',
+    poultry:'دواجن', financialDate:'تاريخ الحيازة', dataEntry:'مدخل البيانات',
+    caseNumber:'رقم الحالة', disease1:'المرض', type1:'نوع الحيوان', count1:'العدد',
+    drug1:'الدواء', drugQty1:'الكمية', treatmentPlace:'مكان العلاج',
+    receipt:'الإيصال', amount:'المبلغ', dataUpdater:'معدل البيانات',
+    updateDate:'تاريخ التحديث', intoxSheep:'تسمم أغنام', intoxGoat:'تسمم ماعز',
+    pockSheep:'جدري أغنام', pockGoat:'جدري ماعز', fmdSheep:'قلاعية أغنام',
+    fmdGoat:'قلاعية ماعز', fmdCow:'قلاعية أبقار', rabiesGoat:'سعار ماعز',
+    rabiesSheep:'سعار أغنام', rabiesCow:'سعار أبقار', rabiesCamel:'سعار جمال',
+    lumpyCow:'جلد عقدي أبقار', sampleType:'نوع العينة', animalType:'نوع الحيوان',
+    gender:'الجنس', age:'العمر', test1:'فحص 1', result1:'نتيجة 1',
+    test2:'فحص 2', result2:'نتيجة 2', sampleSentDate:'تاريخ الإرسال',
+    suspectedDisease:'المرض المشتبه', entryDate:'تاريخ الإدخال'
+  };
+
+  // اختر أعمدة مهمة فقط
+  var SHOW_KEYS = {
+    breeders:     ['phone','name','region','possession','civil','goat','sheep','cow','camel','financialDate','dataEntry'],
+    treatment:    ['caseNumber','phone','name','region','disease1','type1','count1','drug1','drugQty1','treatmentPlace','amount','financialDate','dataEntry'],
+    vaccination:  ['caseNumber','phone','name','region','intoxSheep','intoxGoat','fmdSheep','fmdGoat','fmdCow','rabiesGoat','rabiesSheep','rabiesCow','financialDate','dataEntry'],
+    samples:      ['caseNumber','phone','name','region','animalType','sampleType','test1','result1','test2','result2','sampleSentDate','suspectedDisease','dataEntry'],
+    vaccRequests: ['phone','name','region','goat','sheep','cow','camel','financialDate','entryDate','dataEntry']
+  };
+  var showKeys = SHOW_KEYS[ai_SEARCH_SRC] || keys;
+
+  var th = showKeys.map(function(k){ return '<th>'+(LABELS[k]||k)+'</th>'; }).join('');
+  var tbody = display.map(function(r){
+    var tds = showKeys.map(function(k){
+      var v = r[k] !== undefined ? r[k] : '';
+      return '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="'+String(v).replace(/"/g,'')+'">'+v+'</td>';
+    }).join('');
+    return '<tr>'+tds+'</tr>';
+  }).join('');
+
+  container.innerHTML =
+    '<table class="ai-tbl"><thead><tr>'+th+'</tr></thead><tbody>'+tbody+'</tbody></table>';
+  if (filtered.length > 200) {
+    container.innerHTML += '<p style="text-align:center;font-size:12px;color:#888;padding:8px;">تعرض أول 200 من '+filtered.length+' نتيجة</p>';
+  }
+};
+
+// ── اختصار الأسئلة ──
+window.ai_setQ = function(q) {
+  document.getElementById('ai_question').value = q;
+  document.getElementById('ai_question').focus();
+};
+
+// ── التحليل بالذكاء الاصطناعي ──
+window.ai_analyze = async function() {
+  var q = (document.getElementById('ai_question').value || '').trim();
+  if (!q) { showToast('⚠️ اكتب سؤالك أولاً', 'warning'); return; }
+  if (!ai_DATA) { showToast('⚠️ اضغط "تحميل البيانات" أولاً', 'warning'); return; }
+
+  var btn = document.getElementById('ai_analyzeBtn');
+  var sp  = document.getElementById('ai_spinner');
+  var res = document.getElementById('ai_result');
+  btn.disabled = true;
+  sp.style.display = 'inline-block';
+  res.style.display = 'block';
+  res.textContent = '';
+
+  // بناء ملخص البيانات للإرسال (منع تجاوز الحد)
+  function summarize(arr, limit) {
+    if (!Array.isArray(arr)) return [];
+    return arr.slice(0, limit);
+  }
+
+  var summary = {
+    breeders:     summarize(ai_DATA.breeders,    150),
+    treatment:    summarize(ai_DATA.treatment,   150),
+    vaccination:  summarize(ai_DATA.vaccination, 100),
+    samples:      summarize(ai_DATA.samples,      80),
+    vaccRequests: summarize(ai_DATA.vaccRequests, 80)
+  };
+
+  var counts = {
+    breeders:     (ai_DATA.breeders    || []).length,
+    treatment:    (ai_DATA.treatment   || []).length,
+    vaccination:  (ai_DATA.vaccination || []).length,
+    samples:      (ai_DATA.samples     || []).length,
+    vaccRequests: (ai_DATA.vaccRequests|| []).length
+  };
+
+  var wilayat = localStorage.getItem('selected_wilayat_name') || 'غير محدد';
+
+  var prompt =
+    'أنت محلل بيانات بيطرية خبير. تعمل مع نظام عيادة بيطرية في ولاية ' + wilayat + ' بسلطنة عُمان.\n\n' +
+    'إجمالي السجلات:\n' +
+    '- مربين: ' + counts.breeders + '\n' +
+    '- حالات علاج: ' + counts.treatment + '\n' +
+    '- حالات تحصين: ' + counts.vaccination + '\n' +
+    '- عينات: ' + counts.samples + '\n' +
+    '- طلبات تحصين: ' + counts.vaccRequests + '\n\n' +
+    'عينة من بيانات المربين (' + summary.breeders.length + ' مربي):\n' +
+    JSON.stringify(summary.breeders, null, 0).substring(0, 4000) + '\n\n' +
+    'عينة من بيانات العلاج (' + summary.treatment.length + ' حالة):\n' +
+    JSON.stringify(summary.treatment, null, 0).substring(0, 4000) + '\n\n' +
+    'عينة من بيانات التحصين (' + summary.vaccination.length + ' حالة):\n' +
+    JSON.stringify(summary.vaccination, null, 0).substring(0, 3000) + '\n\n' +
+    'عينة من العينات (' + summary.samples.length + ' عينة):\n' +
+    JSON.stringify(summary.samples, null, 0).substring(0, 2000) + '\n\n' +
+    'السؤال: ' + q + '\n\n' +
+    'أجب بالعربية بشكل منظم. استخدم نقاطاً وأرقاماً. كن دقيقاً ومحددaً في الأرقام.';
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        stream: true,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    var reader  = response.body.getReader();
+    var decoder = new TextDecoder();
+    var buffer  = '';
+
+    while (true) {
+      var _ref = await reader.read();
+      if (_ref.done) break;
+      buffer += decoder.decode(_ref.value, { stream: true });
+      var lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (!line.startsWith('data: ')) continue;
+        var raw = line.slice(6).trim();
+        if (raw === '[DONE]') break;
+        try {
+          var j = JSON.parse(raw);
+          if (j.type === 'content_block_delta' && j.delta && j.delta.text) {
+            res.textContent += j.delta.text;
+          }
+        } catch(_) {}
+      }
+    }
+  } catch(e) {
+    res.textContent = '❌ خطأ: ' + e.message;
+  }
+
+  btn.disabled = false;
+  sp.style.display = 'none';
+};
+
+// ── نسخ النتيجة ──
+window.ai_copyResult = function() {
+  var t = document.getElementById('ai_result').textContent;
+  if (!t) return;
+  navigator.clipboard.writeText(t).then(function(){
+    showToast('✅ تم نسخ النتيجة', 'success');
+  });
+};
+
+// ── تحديث الإحصاءات عند فتح الصفحة (إذا البيانات محملة مسبقاً) ──
+document.addEventListener('DOMContentLoaded', function() {
+  // ربط مع قائمة التنقل
+  var origShowPage = window.showPage;
+  if (origShowPage && !origShowPage._aiPatch) {
+    window.showPage = function(pageId) {
+      origShowPage.apply(this, arguments);
+      if (pageId === 'aiAnalysis' && ai_DATA) {
+        ai_updateStats(ai_DATA);
+        ai_doSearch();
+      }
+    };
+    window.showPage._aiPatch = true;
+  }
+});
+
+})();
+</script>
+</div>
 <!-- ===================================================
      NOTE: صفحات treatment, breeder, vaccination, vaccinationRequests, samples
      financialInventory, diseaseTracking, animalDistribution, comprehensiveReport
