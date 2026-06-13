@@ -3205,14 +3205,52 @@ var counts = {
     vaccRequests: (ai_DATA.vaccRequests|| []).length
   };
 
+// بناء ملخص إحصائي شامل من كل البيانات
+  function buildTreatmentSummary(rows) {
+    if (!rows || !rows.length) return { rows: [], stats: {} };
+    var diseaseCount = {}, regionCount = {}, animalCount = {}, monthCount = {};
+    rows.forEach(function(r) {
+      // الأمراض
+      ['disease1','disease2','disease3','disease4','disease5'].forEach(function(k) {
+        var d = (r[k]||'').trim();
+        if (d && d !== '-') diseaseCount[d] = (diseaseCount[d]||0) + 1;
+      });
+      // المناطق
+      var reg = (r.region||'').trim();
+      if (reg) regionCount[reg] = (regionCount[reg]||0) + 1;
+      // الحيوانات
+      ['type1','type2','type3'].forEach(function(k) {
+        var t = (r[k]||'').trim();
+        if (t) animalCount[t] = (animalCount[t]||0) + 1;
+      });
+      // التواريخ الشهرية
+      var date = r.financialDate || r.date || '';
+      if (date) {
+        var m = date.toString().substring(0,7);
+        if (m) monthCount[m] = (monthCount[m]||0) + 1;
+      }
+    });
+    return {
+      rows: rows.slice(-20), // آخر 20 حالة فقط للأمثلة
+      stats: {
+        total: rows.length,
+        topDiseases: Object.entries(diseaseCount).sort((a,b)=>b[1]-a[1]).slice(0,15),
+        topRegions: Object.entries(regionCount).sort((a,b)=>b[1]-a[1]).slice(0,10),
+        topAnimals: Object.entries(animalCount).sort((a,b)=>b[1]-a[1]).slice(0,8),
+        monthlyTrend: Object.entries(monthCount).sort((a,b)=>a[0].localeCompare(b[0])).slice(-12)
+      }
+    };
+  }
+
+  var treatSummary = buildTreatmentSummary(ai_DATA.treatment);
+
   var summary = {
     breeders:     summarize(ai_DATA.breeders,    30),
-    treatment:    summarize(ai_DATA.treatment,   50),
+    treatment:    treatSummary,
     vaccination:  summarize(ai_DATA.vaccination, 20),
     samples:      summarize(ai_DATA.samples,     15),
     vaccRequests: summarize(ai_DATA.vaccRequests,15)
   };
-
   var wilayat = localStorage.getItem('selected_wilayat_name') || 'غير محدد';
 
   var prompt = [
@@ -3224,8 +3262,12 @@ var counts = {
     'طلبات=' + counts.vaccRequests,
     'بيانات المربين:',
     JSON.stringify(summary.breeders).substring(0, 1500),
-    'بيانات العلاج:',
-    JSON.stringify(summary.treatment).substring(0, 8000),
+    'إحصائيات العلاج الشاملة (من ' + counts.treatment + ' حالة كاملة):',
+    'أكثر الأمراض: ' + JSON.stringify(treatSummary.stats.topDiseases),
+    'توزيع المناطق: ' + JSON.stringify(treatSummary.stats.topRegions),
+    'أنواع الحيوانات: ' + JSON.stringify(treatSummary.stats.topAnimals),
+    'النشاط الشهري: ' + JSON.stringify(treatSummary.stats.monthlyTrend),
+    'آخر 20 حالة للمرجع: ' + JSON.stringify(treatSummary.rows).substring(0, 3000),
     'بيانات التحصين:',
     JSON.stringify(summary.vaccination).substring(0, 1000),
     'العينات:',
