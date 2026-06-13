@@ -3277,18 +3277,20 @@ var counts = {
   ].join(' ');
 
   try {
-    var response = await fetch(url, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'claudeAnalyze', prompt: prompt }),
-      redirect: 'follow'
+ var response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
     });
     var data = await response.json();
-    if (data.success) {
-      res.textContent = data.result;
+    if (data.content && data.content[0]) {
+      res.textContent = data.content[0].text;
     } else {
-      res.textContent = '❌ ' + (data.message || 'فشل التحليل');
+      res.textContent = '❌ ' + JSON.stringify(data);
     }
   } catch(e) {
     res.textContent = '❌ خطأ في الاتصال: ' + e.message;
