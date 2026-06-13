@@ -3206,33 +3206,32 @@ var counts = {
   };
 
   var summary = {
-    breeders:     summarize(ai_DATA.breeders,    300),
-    treatment:    summarize(ai_DATA.treatment,   9999),
-    vaccination:  summarize(ai_DATA.vaccination, 200),
-    samples:      summarize(ai_DATA.samples,      150),
-    vaccRequests: summarize(ai_DATA.vaccRequests, 150)
+    breeders:     summarize(ai_DATA.breeders,    30),
+    treatment:    summarize(ai_DATA.treatment,   50),
+    vaccination:  summarize(ai_DATA.vaccination, 20),
+    samples:      summarize(ai_DATA.samples,     15),
+    vaccRequests: summarize(ai_DATA.vaccRequests,15)
   };
 
   var wilayat = localStorage.getItem('selected_wilayat_name') || 'غير محدد';
 
   var prompt = [
-    'أنت محلل بيانات بيطرية خبير. تعمل مع نظام عيادة بيطرية في ولاية ' + wilayat + ' بسلطنة عُمان.',
-    'إجمالي السجلات:',
-    '- مربين: ' + counts.breeders,
-    '- حالات علاج: ' + counts.treatment,
-    '- حالات تحصين: ' + counts.vaccination,
-    '- عينات: ' + counts.samples,
-    '- طلبات تحصين: ' + counts.vaccRequests,
+    'أنت محلل بيانات بيطرية خبير في ولاية ' + wilayat + ' بسلطنة عُمان.',
+    'الإجمالي: مربين=' + counts.breeders,
+    'علاج=' + counts.treatment,
+    'تحصين=' + counts.vaccination,
+    'عينات=' + counts.samples,
+    'طلبات=' + counts.vaccRequests,
     'بيانات المربين:',
-    JSON.stringify(summary.breeders).substring(0, 3500),
+    JSON.stringify(summary.breeders).substring(0, 1500),
     'بيانات العلاج:',
-    JSON.stringify(summary.treatment).substring(0, 25000),
+    JSON.stringify(summary.treatment).substring(0, 8000),
     'بيانات التحصين:',
-    JSON.stringify(summary.vaccination).substring(0, 2500),
+    JSON.stringify(summary.vaccination).substring(0, 1000),
     'العينات:',
-    JSON.stringify(summary.samples).substring(0, 1500),
+    JSON.stringify(summary.samples).substring(0, 800),
     'السؤال: ' + q,
-    'أجب بالعربية بشكل منظم ومفصّل. استخدم نقاطاً وأرقاماً دقيقة.'
+    'أجب بالعربية بشكل منظم ومفصّل.'
   ].join(' ');
 
   try {
