@@ -3197,7 +3197,7 @@ window.ai_analyze = async function() {
     vaccRequests: summarize(ai_DATA.vaccRequests,  60)
   };
 
-  var counts = {
+var counts = {
     breeders:     (ai_DATA.breeders    || []).length,
     treatment:    (ai_DATA.treatment   || []).length,
     vaccination:  (ai_DATA.vaccination || []).length,
@@ -3205,26 +3205,35 @@ window.ai_analyze = async function() {
     vaccRequests: (ai_DATA.vaccRequests|| []).length
   };
 
+  var summary = {
+    breeders:     summarize(ai_DATA.breeders,    300),
+    treatment:    summarize(ai_DATA.treatment,   9999),
+    vaccination:  summarize(ai_DATA.vaccination, 200),
+    samples:      summarize(ai_DATA.samples,      150),
+    vaccRequests: summarize(ai_DATA.vaccRequests, 150)
+  };
+
   var wilayat = localStorage.getItem('selected_wilayat_name') || 'غير محدد';
 
-  var prompt =
-    'أنت محلل بيانات بيطرية خبير. تعمل مع نظام عيادة بيطرية في ولاية ' + wilayat + ' بسلطنة عُمان.\n\n' +
-    'إجمالي السجلات:\n' +
-    '- مربين: ' + counts.breeders + '\n' +
-    '- حالات علاج: ' + counts.treatment + '\n' +
-    '- حالات تحصين: ' + counts.vaccination + '\n' +
-    '- عينات: ' + counts.samples + '\n' +
-    '- طلبات تحصين: ' + counts.vaccRequests + '\n\n' +
-    'عينة بيانات المربين:\n' +
-    JSON.stringify(summary.breeders).substring(0, 3500) + '\n\n' +
-    'عينة بيانات العلاج:\n' +
-    JSON.stringify(summary.treatment).substring(0, 3500) + '\n\n' +
-    'عينة بيانات التحصين:\n' +
-    JSON.stringify(summary.vaccination).substring(0, 2500) + '\n\n' +
-    'عينة العينات:\n' +
-    JSON.stringify(summary.samples).substring(0, 1500) + '\n\n' +
-    'السؤال: ' + q + '\n\n' +
-    'أجب بالعربية بشكل منظم ومفصّل. استخدم نقاطاً وأرقاماً دقيقة.';
+  var prompt = [
+    'أنت محلل بيانات بيطرية خبير. تعمل مع نظام عيادة بيطرية في ولاية ' + wilayat + ' بسلطنة عُمان.',
+    'إجمالي السجلات:',
+    '- مربين: ' + counts.breeders,
+    '- حالات علاج: ' + counts.treatment,
+    '- حالات تحصين: ' + counts.vaccination,
+    '- عينات: ' + counts.samples,
+    '- طلبات تحصين: ' + counts.vaccRequests,
+    'بيانات المربين:',
+    JSON.stringify(summary.breeders).substring(0, 3500),
+    'بيانات العلاج:',
+    JSON.stringify(summary.treatment).substring(0, 25000),
+    'بيانات التحصين:',
+    JSON.stringify(summary.vaccination).substring(0, 2500),
+    'العينات:',
+    JSON.stringify(summary.samples).substring(0, 1500),
+    'السؤال: ' + q,
+    'أجب بالعربية بشكل منظم ومفصّل. استخدم نقاطاً وأرقاماً دقيقة.'
+  ].join(' ');
 
   try {
     var response = await fetch(url, {
@@ -3234,23 +3243,18 @@ window.ai_analyze = async function() {
       body: JSON.stringify({ action: 'claudeAnalyze', prompt: prompt }),
       redirect: 'follow'
     });
-
     var data = await response.json();
-
     if (data.success) {
       res.textContent = data.result;
     } else {
       res.textContent = '❌ ' + (data.message || 'فشل التحليل');
     }
-
   } catch(e) {
     res.textContent = '❌ خطأ في الاتصال: ' + e.message;
   }
-
   btn.disabled = false;
   sp.style.display = 'none';
 };
-
 // ── نسخ النتيجة ──
 window.ai_copyResult = function() {
   var t = document.getElementById('ai_result').textContent;
