@@ -8907,7 +8907,9 @@ function dp_log(msg) {
   <button class="tab-btn" onclick="rpt_showTab('poultry')">🐔 أمراض الدواجن</button>
   <button class="tab-btn" onclick="rpt_showTab('vaccination')">💉 التحصين</button>
   <button class="tab-btn" onclick="rpt_showTab('beneficiaries')">👥 عداد المستفيدين</button>
-  <button class="tab-btn" onclick="rpt_showTab('medicines')">💊 الأدوية المصروفة</button>
+   <button class="tab-btn" onclick="rpt_showTab('medicines')">💊 الأدوية المصروفة</button>
+  <button class="tab-btn" onclick="rpt_showTab('charts')">📈 الرسوم البيانية</button>
+  <button class="tab-btn" id="rpt_refreshBtn" style="background:#e8f5e9;color:#2e7d32;border-color:#2e7d32" onclick="rpt_refreshData()">🔄 تحديث</button>
   <button class="tab-btn" id="rpt_refreshBtn" style="background:#e8f5e9;color:#2e7d32;border-color:#2e7d32" onclick="rpt_refreshData()">🔄 تحديث</button>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;padding:8px 12px;border:2px solid #00b8d9;border-radius:6px">
     <span style="font-weight:bold;color:#00b8d9">📅 الفترة:</span>
@@ -8952,6 +8954,48 @@ function dp_log(msg) {
   </div>
 </div>
 
+<div id="tab-charts" class="tab-pane">
+  <div class="card">
+    <h3>📈 الرسوم البيانية — التحصين والمستفيدون</h3>
+
+    <div class="fb">
+      <button class="bp" onclick="rpt_buildCharts(true)">🔄 تحديث الرسوم</button>
+      <button class="bp" style="background:#6c5ce7" onclick="rpt_printCharts()">🖨️ طباعة</button>
+      <span id="rpt_chartsStatus" style="font-size:12px;color:#666"></span>
+    </div>
+
+    <div id="rpt_kpiRow" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:10px 0 14px"></div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:12px">
+
+      <div style="background:#f8ffff;border:2px solid #00b8d9;border-radius:10px;padding:10px">
+        <div style="font-size:13px;font-weight:bold;color:#004e66;margin-bottom:8px">💉 عدد الجرعات حسب نوع اللقاح</div>
+        <div id="rptc_doses_nd" style="display:none;text-align:center;color:#999;padding:34px;font-size:13px">لا توجد بيانات</div>
+        <div style="position:relative;height:300px"><canvas id="rptc_doses"></canvas></div>
+      </div>
+
+      <div style="background:#f8ffff;border:2px solid #2bb673;border-radius:10px;padding:10px">
+        <div style="font-size:13px;font-weight:bold;color:#1b5e20;margin-bottom:8px">🐄 الحيوانات المحصنة حسب المنطقة</div>
+        <div id="rptc_region_nd" style="display:none;text-align:center;color:#999;padding:34px;font-size:13px">لا توجد بيانات</div>
+        <div style="position:relative;height:300px"><canvas id="rptc_region"></canvas></div>
+      </div>
+
+      <div style="background:#f8ffff;border:2px solid #9b59b6;border-radius:10px;padding:10px">
+        <div style="font-size:13px;font-weight:bold;color:#5b2c6f;margin-bottom:8px">👥 عداد المستفيدين</div>
+        <div id="rptc_bene_nd" style="display:none;text-align:center;color:#999;padding:34px;font-size:13px">لا توجد بيانات</div>
+        <div style="position:relative;height:270px"><canvas id="rptc_bene"></canvas></div>
+      </div>
+
+      <div style="background:#f8ffff;border:2px solid #e67e22;border-radius:10px;padding:10px">
+        <div style="font-size:13px;font-weight:bold;color:#7f4400;margin-bottom:8px">🐐 توزيع الحيوانات المحصنة حسب النوع</div>
+        <div id="rptc_types_nd" style="display:none;text-align:center;color:#999;padding:34px;font-size:13px">لا توجد بيانات</div>
+        <div style="position:relative;height:270px"><canvas id="rptc_types"></canvas></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    rpt_SERVICE_URL — رابط خدمة التقرير الشامل (ثابت مخصص)
@@ -8982,6 +9026,7 @@ function rpt_showTab(name) {
   document.querySelectorAll('.tab-btn').forEach(function(el) {
     if (el.getAttribute('onclick') && el.getAttribute('onclick').indexOf(name) >= 0) el.classList.add('active');
   });
+  if (name === 'charts') rpt_buildCharts(false);
 }
 
 function rpt_filterT(inputId, tbodyId) {
@@ -9025,6 +9070,10 @@ function rpt_printTab(tabId) {
 
 function rpt_buildAll() {
   if (!rpt_D) return;
+
+  rpt_chartsBuilt = false;
+  var _cp = document.getElementById('tab-charts');
+  if (_cp && _cp.classList.contains('active')) setTimeout(function(){ rpt_buildCharts(true); }, 120);
 
   // أمراض الحيوانات
   var h = '';
@@ -9070,6 +9119,264 @@ document.getElementById('rpt_tb5').innerHTML =
     });
   });
   document.getElementById('rpt_tb4').innerHTML = h;
+}
+
+/* ============================================================
+   لوحة الرسوم البيانية — التحصين والمستفيدون
+   ============================================================ */
+var rpt_chartObjs   = {};
+var rpt_chartsBuilt = false;
+var RPT_PALETTE = ['#00b8d9','#2bb673','#f39c12','#e65050','#9b59b6','#1abc9c',
+                   '#e67e22','#3498db','#e91e63','#607d8b','#795548','#8e44ad'];
+
+function rpt_killChart(id) {
+  if (rpt_chartObjs[id]) { try { rpt_chartObjs[id].destroy(); } catch (e) {} delete rpt_chartObjs[id]; }
+}
+function rpt_num(v) {
+  var n = parseFloat(String(v == null ? '' : v).replace(/,/g, '').trim());
+  return isNaN(n) ? 0 : n;
+}
+function rpt_sum(arr) { return arr.reduce(function(a,b){ return a + b; }, 0); }
+function rpt_noData(id, empty) {
+  var nd = document.getElementById(id + '_nd');
+  var cv = document.getElementById(id);
+  if (nd) nd.style.display = empty ? 'block' : 'none';
+  if (cv && cv.parentElement) cv.parentElement.style.display = empty ? 'none' : 'block';
+  return empty;
+}
+function rpt_kpiBox(icon, value, label, color) {
+  return '<div style="background:#fff;border:2px solid ' + color + ';border-radius:10px;' +
+         'padding:12px 6px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.07)">' +
+         '<div style="font-size:20px;line-height:1">' + icon + '</div>' +
+         '<div style="font-size:22px;font-weight:bold;color:' + color + ';margin:5px 0">' +
+         Number(value).toLocaleString('ar-SA') + '</div>' +
+         '<div style="font-size:11.5px;color:#666">' + label + '</div></div>';
+}
+
+async function rpt_buildCharts(force) {
+  var st = document.getElementById('rpt_chartsStatus');
+  if (typeof Chart === 'undefined') {
+    if (st) st.textContent = '❌ مكتبة الرسوم غير محمّلة';
+    return;
+  }
+  if (rpt_chartsBuilt && !force) return;
+  if (st) { st.textContent = '⏳ جاري تجهيز الرسوم البيانية...'; st.style.color = '#e67e22'; }
+
+  try {
+    if (!rpt_D) rpt_D = await rpt_callApi("getReportData");
+
+    var from = (document.getElementById('rpt_dateFrom') || {}).value || '';
+    var to   = (document.getElementById('rpt_dateTo')   || {}).value || '';
+
+    var regionMap = {}, caseCount = 0;
+    var res = await Promise.allSettled([
+      rpt_callApi("getVaccinationByRegion", { dateFrom: from, dateTo: to }),
+      rpt_callApi("getAllTotalVaccinatedAnimals", { filters: { dateFrom: from, dateTo: to } })
+    ]);
+    if (res[0].status === 'fulfilled' && res[0].value && typeof res[0].value === 'object')
+      regionMap = res[0].value;
+    if (res[1].status === 'fulfilled' && res[1].value && res[1].value.recordCount)
+      caseCount = rpt_num(res[1].value.recordCount);
+
+    /* ── ١) الجرعات حسب نوع اللقاح ── */
+    var vLabels = [], vValues = [], totalDoses = 0;
+    (rpt_D.vaccination || []).forEach(function (r) {
+      if (r.type === 'total') return;
+      var vals = r.values || [];
+      if (!vals.length) return;
+      var tot = rpt_num(vals[vals.length - 1]);
+      if (tot === 0) for (var i = 0; i < vals.length - 1; i++) tot += rpt_num(vals[i]);
+      if (tot > 0) { vLabels.push(r.vaccine || '—'); vValues.push(tot); totalDoses += tot; }
+    });
+
+    /* ── ٢) الحيوانات المحصنة حسب المنطقة ── */
+    function rTot(k) {
+      var d = regionMap[k] || {};
+      return rpt_num(d.goats) + rpt_num(d.sheep) + rpt_num(d.cattle) + rpt_num(d.camels);
+    }
+    var regions = Object.keys(regionMap)
+      .filter(function (k) { return rTot(k) > 0; })
+      .sort(function (a, b) { return rTot(b) - rTot(a); })
+      .slice(0, 15);
+
+    var gArr = [], sArr = [], cArr = [], mArr = [];
+    regions.forEach(function (k) {
+      var d = regionMap[k] || {};
+      gArr.push(rpt_num(d.goats)); sArr.push(rpt_num(d.sheep));
+      cArr.push(rpt_num(d.cattle)); mArr.push(rpt_num(d.camels));
+    });
+    var sumG = rpt_sum(gArr), sumS = rpt_sum(sArr), sumC = rpt_sum(cArr), sumM = rpt_sum(mArr);
+    var totalAnimals = sumG + sumS + sumC + sumM;
+
+    /* ── ٣) المستفيدون ── */
+    var bTher = Math.round(rpt_num((rpt_D.beneficiaries || {}).therapeutic));
+    var bVacc = Math.round(rpt_num((rpt_D.beneficiaries || {}).vaccination));
+
+    /* ── البطاقات الإحصائية ── */
+    document.getElementById('rpt_kpiRow').innerHTML =
+      rpt_kpiBox('💉', totalDoses,   'إجمالي الجرعات',        '#00b8d9') +
+      rpt_kpiBox('🐄', totalAnimals, 'الحيوانات المحصنة',     '#2bb673') +
+      rpt_kpiBox('📋', caseCount,    'عدد حالات التحصين',     '#e67e22') +
+      rpt_kpiBox('👥', bVacc,        'المستفيدون من التحصين', '#9b59b6') +
+      rpt_kpiBox('🩺', bTher,        'المستفيدون من العلاج',  '#e65050');
+
+    var baseOpts = {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { font: { family: 'Tahoma', size: 11 }, padding: 10, boxWidth: 12 } } }
+    };
+
+    /* ── مخطط ١: الجرعات (أعمدة أفقية) ── */
+    rpt_killChart('rptc_doses');
+    if (!rpt_noData('rptc_doses', vLabels.length === 0)) {
+      rpt_chartObjs['rptc_doses'] = new Chart(document.getElementById('rptc_doses'), {
+        type: 'bar',
+        data: {
+          labels: vLabels,
+          datasets: [{
+            label: 'عدد الجرعات',
+            data: vValues,
+            backgroundColor: vLabels.map(function (_, i) { return RPT_PALETTE[i % RPT_PALETTE.length]; }),
+            borderRadius: 5, barPercentage: 0.7
+          }]
+        },
+        options: Object.assign({}, baseOpts, {
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function (c) { return 'الجرعات: ' + c.parsed.x.toLocaleString('ar-SA'); } } }
+          },
+          scales: {
+            x: { beginAtZero: true, ticks: { font: { family: 'Tahoma', size: 11 } } },
+            y: { ticks: { font: { family: 'Tahoma', size: 11, weight: 'bold' } }, grid: { display: false } }
+          }
+        })
+      });
+    }
+
+    /* ── مخطط ٢: المناطق (أعمدة مكدّسة) ── */
+    rpt_killChart('rptc_region');
+    if (!rpt_noData('rptc_region', regions.length === 0)) {
+      rpt_chartObjs['rptc_region'] = new Chart(document.getElementById('rptc_region'), {
+        type: 'bar',
+        data: {
+          labels: regions,
+          datasets: [
+            { label: 'ماعز',  data: gArr, backgroundColor: '#00b8d9', borderRadius: 3 },
+            { label: 'أغنام', data: sArr, backgroundColor: '#2bb673', borderRadius: 3 },
+            { label: 'أبقار', data: cArr, backgroundColor: '#f39c12', borderRadius: 3 },
+            { label: 'جمال',  data: mArr, backgroundColor: '#e65050', borderRadius: 3 }
+          ]
+        },
+        options: Object.assign({}, baseOpts, {
+          plugins: { legend: { position: 'top', labels: { font: { family: 'Tahoma', size: 11 }, boxWidth: 12, padding: 8 } } },
+          scales: {
+            x: { stacked: true, ticks: { font: { family: 'Tahoma', size: 10 }, maxRotation: 45, autoSkip: false }, grid: { display: false } },
+            y: { stacked: true, beginAtZero: true, ticks: { font: { family: 'Tahoma', size: 11 } } }
+          }
+        })
+      });
+    }
+
+    /* ── مخطط ٣: المستفيدون (دائري) ── */
+    rpt_killChart('rptc_bene');
+    if (!rpt_noData('rptc_bene', (bTher + bVacc) === 0)) {
+      rpt_chartObjs['rptc_bene'] = new Chart(document.getElementById('rptc_bene'), {
+        type: 'doughnut',
+        data: {
+          labels: ['المستفيدون من الخدمات العلاجية', 'المستفيدون من التحصين'],
+          datasets: [{ data: [bTher, bVacc], backgroundColor: ['#e65050', '#9b59b6'], borderWidth: 3, borderColor: '#fff' }]
+        },
+        options: Object.assign({}, baseOpts, {
+          cutout: '52%',
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Tahoma', size: 11 }, padding: 10, boxWidth: 12 } },
+            tooltip: {
+              callbacks: {
+                label: function (c) {
+                  var t = c.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                  var p = t > 0 ? Math.round(c.parsed / t * 100) : 0;
+                  return c.label + ': ' + c.parsed.toLocaleString('ar-SA') + ' (' + p + '%)';
+                }
+              }
+            }
+          }
+        })
+      });
+    }
+
+    /* ── مخطط ٤: توزيع الحيوانات حسب النوع ── */
+    rpt_killChart('rptc_types');
+    if (!rpt_noData('rptc_types', totalAnimals === 0)) {
+      rpt_chartObjs['rptc_types'] = new Chart(document.getElementById('rptc_types'), {
+        type: 'pie',
+        data: {
+          labels: ['ماعز', 'أغنام', 'أبقار', 'جمال'],
+          datasets: [{ data: [sumG, sumS, sumC, sumM], backgroundColor: ['#00b8d9','#2bb673','#f39c12','#e65050'], borderWidth: 3, borderColor: '#fff' }]
+        },
+        options: Object.assign({}, baseOpts, {
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Tahoma', size: 11 }, padding: 10, boxWidth: 12 } },
+            tooltip: {
+              callbacks: {
+                label: function (c) {
+                  var t = c.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                  var p = t > 0 ? Math.round(c.parsed / t * 100) : 0;
+                  return c.label + ': ' + c.parsed.toLocaleString('ar-SA') + ' (' + p + '%)';
+                }
+              }
+            }
+          }
+        })
+      });
+    }
+
+    rpt_chartsBuilt = true;
+    if (st) { st.textContent = '✅ تم تحديث الرسوم'; st.style.color = '#2e7d32'; }
+    setTimeout(function () { if (st) st.textContent = ''; }, 3000);
+
+  } catch (err) {
+    if (st) { st.textContent = '❌ خطأ: ' + (err.message || err); st.style.color = '#c62828'; }
+  }
+}
+
+function rpt_printCharts() {
+  var defs = [
+    ['rptc_doses',  '💉 عدد الجرعات حسب نوع اللقاح'],
+    ['rptc_region', '🐄 الحيوانات المحصنة حسب المنطقة'],
+    ['rptc_bene',   '👥 عداد المستفيدين'],
+    ['rptc_types',  '🐐 توزيع الحيوانات المحصنة حسب النوع']
+  ];
+  var imgs = '';
+  defs.forEach(function (d) {
+    var c = rpt_chartObjs[d[0]];
+    if (c) imgs += '<div class="cw"><h3>' + d[1] + '</h3><img src="' + c.toBase64Image() + '"></div>';
+  });
+  if (!imgs) { showToast('لا توجد رسوم للطباعة', 'warning'); return; }
+
+  var from = (document.getElementById('rpt_dateFrom') || {}).value || '—';
+  var to   = (document.getElementById('rpt_dateTo')   || {}).value || '—';
+  var kpi  = (document.getElementById('rpt_kpiRow') || {}).innerHTML || '';
+
+  var w = window.open('', '_blank', 'width=1000,height=760');
+  w.document.write('<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8">' +
+    '<title>الرسوم البيانية — التقرير الشامل</title><style>' +
+    'body{font-family:Tahoma,Arial;direction:rtl;padding:18px;margin:0}' +
+    'h2{text-align:center;color:#00b8d9;margin-bottom:4px}' +
+    '.info{text-align:center;color:#555;font-size:12px;margin-bottom:14px}' +
+    '.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}' +
+    '.cw{margin-bottom:18px;page-break-inside:avoid;text-align:center}' +
+    '.cw h3{font-size:13px;color:#004e66;margin-bottom:6px}' +
+    '.cw img{max-width:100%;border:1px solid #ddd;border-radius:6px}' +
+    '@media print{@page{size:A4 portrait;margin:10mm}button{display:none!important}}' +
+    '</style></head><body>' +
+    '<h2>📈 الرسوم البيانية — التحصين والمستفيدون</h2>' +
+    '<div class="info">الفترة: من ' + from + ' إلى ' + to + '</div>' +
+    '<div class="kpi">' + kpi + '</div>' + imgs +
+    '<div style="text-align:center"><button onclick="window.print()" ' +
+    'style="padding:9px 30px;background:#00b8d9;color:#fff;border:none;border-radius:6px;' +
+    'font-size:14px;font-weight:bold;cursor:pointer;font-family:Tahoma">🖨️ طباعة</button></div>' +
+    '</body></html>');
+  w.document.close();
 }
 
 async function rpt_loadReport() {
