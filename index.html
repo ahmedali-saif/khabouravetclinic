@@ -9194,10 +9194,19 @@ async function rpt_buildCharts(force) {
       var d = regionMap[k] || {};
       return rpt_num(d.goats) + rpt_num(d.sheep) + rpt_num(d.cattle) + rpt_num(d.camels);
     }
-    var regions = Object.keys(regionMap)
+    var allRegions = Object.keys(regionMap)
       .filter(function (k) { return rTot(k) > 0; })
-      .sort(function (a, b) { return rTot(b) - rTot(a); })
-      .slice(0, 15);
+      .sort(function (a, b) { return rTot(b) - rTot(a); });
+
+    var regions = allRegions.slice(0, 15);   /* الرسم: أعلى ١٥ منطقة فقط */
+
+    /* الإجمالي: جميع المناطق بلا استثناء */
+    var allG = 0, allS = 0, allC = 0, allM = 0;
+    allRegions.forEach(function (k) {
+      var d = regionMap[k] || {};
+      allG += rpt_num(d.goats);  allS += rpt_num(d.sheep);
+      allC += rpt_num(d.cattle); allM += rpt_num(d.camels);
+    });
 
     var gArr = [], sArr = [], cArr = [], mArr = [];
     regions.forEach(function (k) {
@@ -9206,7 +9215,7 @@ async function rpt_buildCharts(force) {
       cArr.push(rpt_num(d.cattle)); mArr.push(rpt_num(d.camels));
     });
     var sumG = rpt_sum(gArr), sumS = rpt_sum(sArr), sumC = rpt_sum(cArr), sumM = rpt_sum(mArr);
-    var totalAnimals = sumG + sumS + sumC + sumM;
+    var totalAnimals = allG + allS + allC + allM;   /* إجمالي كل المناطق */
 
     /* ── ٣) المستفيدون ── */
     var bTher = Math.round(rpt_num((rpt_D.beneficiaries || {}).therapeutic));
@@ -9311,7 +9320,7 @@ async function rpt_buildCharts(force) {
         type: 'pie',
         data: {
           labels: ['ماعز', 'أغنام', 'أبقار', 'جمال'],
-          datasets: [{ data: [sumG, sumS, sumC, sumM], backgroundColor: ['#00b8d9','#2bb673','#f39c12','#e65050'], borderWidth: 3, borderColor: '#fff' }]
+          datasets: [{ data: [allG, allS, allC, allM], backgroundColor: ['#00b8d9','#2bb673','#f39c12','#e65050'], borderWidth: 3, borderColor: '#fff' }]
         },
         options: Object.assign({}, baseOpts, {
           plugins: {
