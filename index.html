@@ -1625,6 +1625,20 @@ async function wilayatApply() {
   padding: 50px 50px 42px; width: 100%; max-width: 560px;
 }
 #login .logo-area { text-align: center; margin-bottom: 28px; }
+#login .lbrand-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; margin-bottom: 28px;
+}
+#login .lbrand-row .logo-area { margin-bottom: 0; flex: 1; min-width: 0; }
+#login .lbrand-logo {
+  height: 74px; width: auto; max-width: 125px;
+  object-fit: contain; flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.12));
+}
+@media (max-width: 520px) {
+  #login .lbrand-logo { height: 46px; max-width: 68px; }
+  #login .lbrand-row  { gap: 8px; }
+}
 #login .logo-circle {
   width: 82px; height: 82px;
   background: linear-gradient(135deg, #1a3a5c 0%, #2e7dcd 100%);
@@ -1737,12 +1751,26 @@ async function wilayatApply() {
 
   <!-- LOGIN VIEW -->
   <div id="l_loginView">
-    <div class="logo-area">
-      <div class="logo-circle">
-        <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2z"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <div class="lbrand-row">
+
+      <img class="lbrand-logo"
+           src="https://drive.google.com/thumbnail?id=1oZqrrr86Pg1oe0kXGXhOWrJgIghxgJRh&sz=w1000"
+           alt="شعار سلطنة عمان"
+           onerror="this.style.display='none'">
+
+      <div class="logo-area">
+        <div class="logo-circle">
+          <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2z"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <h1 class="ltitle">تسجيل الدخول</h1>
+        <p class="lsubtitle">أدخل بيانات حسابك للمتابعة</p>
       </div>
-      <h1 class="ltitle">تسجيل الدخول</h1>
-      <p class="lsubtitle">أدخل بيانات حسابك للمتابعة</p>
+
+      <img class="lbrand-logo"
+           src="https://drive.google.com/thumbnail?id=1zDmwGFlbURJuHY25PuQW25BoyIt26lfK&sz=w1000"
+           alt="الشعار الثاني"
+           onerror="this.style.display='none'">
+
     </div>
 
     <div class="lform-group">
