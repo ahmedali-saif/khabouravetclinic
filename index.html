@@ -1625,19 +1625,22 @@ async function wilayatApply() {
   padding: 50px 50px 42px; width: 100%; max-width: 560px;
 }
 #login .logo-area { text-align: center; margin-bottom: 28px; }
-#login .lbrand-row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 14px; margin-bottom: 28px;
-}
-#login .lbrand-row .logo-area { margin-bottom: 0; flex: 1; min-width: 0; }
+#login .login-wrap { gap: 26px; }
+#login .lcard { flex-shrink: 1; }
 #login .lbrand-logo {
-  height: 74px; width: auto; max-width: 125px;
+  height: 110px; width: auto; max-width: 170px;
   object-fit: contain; flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,.12));
+  filter: drop-shadow(0 3px 8px rgba(30,60,100,.15));
 }
-@media (max-width: 520px) {
-  #login .lbrand-logo { height: 46px; max-width: 68px; }
-  #login .lbrand-row  { gap: 8px; }
+@media (max-width: 980px) {
+  #login .login-wrap { gap: 12px; }
+  #login .lbrand-logo { height: 70px; max-width: 100px; }
+  #login .lcard { padding: 38px 28px 32px; }
+}
+@media (max-width: 700px) {
+  #login .login-wrap { flex-wrap: wrap; }
+  #login .lcard { order: 3; flex-basis: 100%; }
+  #login .lbrand-logo { height: 56px; max-width: 82px; }
 }
 #login .logo-circle {
   width: 82px; height: 82px;
@@ -1747,30 +1750,21 @@ async function wilayatApply() {
 </style>
 
 <div class="login-wrap">
+
+<img class="lbrand-logo"
+     src="https://drive.google.com/thumbnail?id=1zDmwGFlbURJuHY25PuQW25BoyIt26lfK&sz=w1000"
+     alt="شعار العيادة" onerror="this.style.display='none'">
+
 <div class="lcard">
 
   <!-- LOGIN VIEW -->
   <div id="l_loginView">
-    <div class="lbrand-row">
-
-      <img class="lbrand-logo"
-           src="https://drive.google.com/thumbnail?id=1oZqrrr86Pg1oe0kXGXhOWrJgIghxgJRh&sz=w1000"
-           alt="شعار سلطنة عمان"
-           onerror="this.style.display='none'">
-
-      <div class="logo-area">
-        <div class="logo-circle">
-          <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2z"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        </div>
-        <h1 class="ltitle">تسجيل الدخول</h1>
-        <p class="lsubtitle">أدخل بيانات حسابك للمتابعة</p>
+    <div class="logo-area">
+      <div class="logo-circle">
+        <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2z"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </div>
-
-      <img class="lbrand-logo"
-           src="https://drive.google.com/thumbnail?id=1zDmwGFlbURJuHY25PuQW25BoyIt26lfK&sz=w1000"
-           alt="الشعار الثاني"
-           onerror="this.style.display='none'">
-
+      <h1 class="ltitle">تسجيل الدخول</h1>
+      <p class="lsubtitle">أدخل بيانات حسابك للمتابعة</p>
     </div>
 
     <div class="lform-group">
@@ -1884,6 +1878,11 @@ async function wilayatApply() {
   </div>
 
 </div><!-- end lcard -->
+
+<img class="lbrand-logo"
+     src="https://drive.google.com/thumbnail?id=1oZqrrr86Pg1oe0kXGXhOWrJgIghxgJRh&sz=w1000"
+     alt="شعار سلطنة عمان" onerror="this.style.display='none'">
+
 </div><!-- end login-wrap -->
 
 <script>
